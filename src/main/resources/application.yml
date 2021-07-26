@@ -1,0 +1,15 @@
+server:
+  address: 0.0.0.0
+  port: 8080
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2console
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL5Dialect
+    hibernate:
+      ddl-auto: update
+      show-sql: true # 실제 서비스시 삭제

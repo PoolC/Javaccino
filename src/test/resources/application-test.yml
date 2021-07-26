@@ -1,0 +1,16 @@
+server:
+  address: localhost
+  port: 8080
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
