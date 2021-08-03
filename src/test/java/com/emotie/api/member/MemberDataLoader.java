@@ -1,6 +1,7 @@
 package com.emotie.api.member;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
@@ -10,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,6 +35,8 @@ public class MemberDataLoader implements CommandLineRunner {
 
     public static String authorizationToken = "authorization_token", passwordResetToken = "password_reset_token";
 
+    private String introduction = "안녕하세요";
+
     @Override
     public void run(String... args) {
         memberRepository.save(
@@ -41,6 +45,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(authorizedEmail)
                         .nickname(authorizedEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(null)
@@ -54,6 +61,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(unauthorizedEmail)
                         .nickname(unauthorizedEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(null)
@@ -67,6 +77,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(expelledEmail)
                         .nickname(expelledEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(null)
@@ -80,6 +93,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(getAuthorizationTokenEmail)
                         .nickname(getAuthorizationTokenEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(authorizationToken)
@@ -93,6 +109,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(expiredAuthorizationTokenEmail)
                         .nickname(expiredAuthorizationTokenEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(authorizationToken)
@@ -106,6 +125,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(getPasswordResetTokenEmail)
                         .nickname(getPasswordResetTokenEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(passwordResetToken)
                         .passwordResetTokenValidUntil(LocalDateTime.now().plusDays(1))
                         .authorizationToken(null)
@@ -119,6 +141,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .email(expiredPasswordResetTokenEmail)
                         .nickname(expiredPasswordResetTokenEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
                         .passwordResetToken(passwordResetToken)
                         .passwordResetTokenValidUntil(LocalDateTime.now().minusDays(1))
                         .authorizationToken(null)
