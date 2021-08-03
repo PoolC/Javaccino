@@ -1,5 +1,10 @@
 package com.emotie.api.member.domain;
 
+import com.emotie.api.auth.dto.PasswordResetRequest;
+import com.emotie.api.auth.exception.ExpiredTokenException;
+import com.emotie.api.auth.exception.UnauthenticatedException;
+import com.emotie.api.auth.exception.UnauthorizedException;
+import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -126,5 +131,66 @@ public class Member extends TimestampEntity implements UserDetails {
     @Override
     public int hashCode() {
         return Objects.hash(getUUID());
+    }
+
+    public void updateAuthorizationToken(String authorizationToken) {
+        this.authorizationToken = authorizationToken;
+        this.authorizationTokenValidUntil = LocalDateTime.now().plusDays(1l);
+    }
+
+    public void checkAuthorizationTokenAndChangeMemberRole(String authorizationToken) {
+        checkAuthorizationToken(authorizationToken);
+        changeMember();
+    }
+
+    public void updatePasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+        this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1l);
+    }
+
+    public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
+        checkPasswordResetToken(passwordResetToken);
+        updatePassword(request);
+    }
+
+    public void checkAuthorized() {
+        if (this.isEnabled())
+            throw new UnauthorizedException("이미 인증된 회원입니다.");
+    }
+
+    public void loginAndCheckExpelled() {
+        if (this.isAccountNonExpired()) {
+            throw new UnauthenticatedException("추방된 회원입니다.");
+        }
+    }
+
+    private void checkAuthorizationToken(String authorizationToken) {
+        checkTokenExpired(this.authorizationTokenValidUntil);
+        checkTokenCorrect(this.authorizationToken, authorizationToken);
+    }
+
+    private void checkPasswordResetToken(String passwordResetToken) {
+        checkTokenExpired(this.passwordResetTokenValidUntil);
+        checkTokenCorrect(this.passwordResetToken, passwordResetToken);
+    }
+
+    private void checkTokenExpired(LocalDateTime memberTokenValidUntil) {
+        if (!memberTokenValidUntil.isAfter(LocalDateTime.now()))
+            throw new ExpiredTokenException("토큰이 만료되었습니다.");
+    }
+
+    private void checkTokenCorrect(String memberToken, String inputToken) {
+        if (!memberToken.equals(inputToken))
+            throw new WrongTokenException("인증 토큰이 틀렸습니다.");
+    }
+
+    private void changeMember() {
+        this.roles.changeRole(MemberRole.MEMBER);
+        this.authorizationToken = null;
+        this.authorizationTokenValidUntil = null;
+    }
+
+    private void updatePassword(PasswordResetRequest request) {
+        this.passwordHash = request.getPassword();
     }
 }
