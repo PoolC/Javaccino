@@ -7,9 +7,22 @@ spring:
       enabled: true
       path: /h2console
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL5Dialect
+    #        dialect: org.hibernate.dialect.MySQL5Dialect
     hibernate:
       ddl-auto: update
       show-sql: true # 실제 서비스시 삭제
+  mail:
+    default-encoding: UTF-8
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_ADDRESS} # 실제 서비스 시 환경변수로 변경
+    password: ${EMAIL_PASSWORD} # 실제 서비스 시 환경병수로 변경
+    protocol: smtp
+    tls: true
+    properties.mail.smtp:
+      auth: true
+      starttls.enable: true
+      ssl.trust: smtp.gmail.com
