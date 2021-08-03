@@ -32,6 +32,9 @@ dependencies {
 	implementation 'io.rest-assured:xml-path:4.2.0'
 	implementation 'org.projectlombok:lombok:1.18.16'
 	implementation 'org.springframework.security:spring-security-crypto:5.4.2'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
