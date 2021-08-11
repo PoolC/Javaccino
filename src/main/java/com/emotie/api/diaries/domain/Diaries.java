@@ -1,14 +1,10 @@
 package com.emotie.api.diaries.domain;
 
 import com.emotie.api.common.domain.Postings;
-import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.diaries.repository.DiariesRepository;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.AttributeOverride;
-import javax.persistence.AttributeOverrides;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.util.*;
@@ -16,14 +12,6 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
-@AttributeOverrides(
-        {
-                @AttributeOverride(name = "owner_id", column = @Column(name = "member_id", nullable = false)),
-                @AttributeOverride(name = "createdAt", column = @Column(
-                        name = "issued_date", nullable = false, updatable = false
-                ))
-        }
-)
 public class Diaries extends Postings {
     @Column(name = "emotion_tag_id", nullable = false)
     private Integer emotionTagId;
@@ -36,7 +24,7 @@ public class Diaries extends Postings {
     public Diaries(
             Integer memberId, String content, Integer emotionTagId, Boolean isOpened, Integer reportCount
     ) {
-        this.ownerId = memberId;
+        this.writerId = memberId;
         this.content = content;
         this.emotionTagId = emotionTagId;
         this.isOpened = isOpened;
@@ -51,7 +39,7 @@ public class Diaries extends Postings {
     private Map<String, Object> toMap(){
         return Map.ofEntries(
                 Map.entry("id", this.id),
-                Map.entry("member_id", this.ownerId),
+                Map.entry("member_id", this.writerId),
                 Map.entry("content", this.content),
                 Map.entry("emotion_tag_id", this.emotionTagId),
                 Map.entry("is_opened", this.isOpened),
