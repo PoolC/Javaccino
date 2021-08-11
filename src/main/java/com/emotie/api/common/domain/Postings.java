@@ -34,13 +34,6 @@ public abstract class Postings extends TimestampEntity {
     public abstract Postings readPosting();
 
     /**
-     * 게시물 업데이트 -> 기존 게시물 반환
-     *
-     * @return 기존 게시물
-     */
-    public abstract Postings updatePosting();
-
-    /**
      * 게시물 삭제 -> 삭제한 게시물 반환
      *
      * @return 삭제한 게시물
