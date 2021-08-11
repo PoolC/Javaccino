@@ -17,8 +17,8 @@ public abstract class Postings extends TimestampEntity {
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
-    @Column(name = "owner_id", nullable = false)
-    protected Integer ownerId;
+    @Column(name = "writer_id", nullable = false)
+    protected Integer writerId;
 
     @Column(name = "content", nullable = false)
     protected String content;
