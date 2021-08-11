@@ -34,11 +34,11 @@ public abstract class Postings extends TimestampEntity {
     public abstract Postings readPosting();
 
     /**
-     * 게시물 삭제 -> 삭제한 게시물 반환
+     * 게시물 삭제 -> 삭제한 게시물의 정보 반환
      *
-     * @return 삭제한 게시물
+     * @return 삭제한 게시물의 정보
      */
-    public abstract Postings deletePosting();
+    public abstract Map<String, Object> deletePosting();
 
     /**
      * 게시물 신고 -> 신고된 게시물 반환
