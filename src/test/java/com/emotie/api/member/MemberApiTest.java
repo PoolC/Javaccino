@@ -27,10 +27,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 public class MemberApiTest extends AcceptanceTest {
 
+    /*
+        회원가입 테스트를 위한 상수
+     */
     private static final String emptySeq = "",
         createTestEmail = "randomhuman@gmail.com",
         createTestPassword = "creative!password";
 
+
+    /*
+        회원가입 테스트
+     */
     @Test
     @DisplayName("테스트 01: 회원가입 실패 [400]; 정보가 하나 이상 누락 됨.")
     public void 회원가입_실패_BAD_REQUEST_1() throws Exception {
@@ -151,6 +158,8 @@ public class MemberApiTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
+
+
 
     private static ExtractableResponse<Response> memberCreateRequest(MemberCreateRequest request) {
         return RestAssured
