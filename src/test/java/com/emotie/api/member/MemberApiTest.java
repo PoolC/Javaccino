@@ -380,7 +380,7 @@ public class MemberApiTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", false);
-        
+
         // 실제 언팔로우 했는지 확인하는 부분
         Member unfollowed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
         Member user = getByIdAssertingExistence(accessToken);
