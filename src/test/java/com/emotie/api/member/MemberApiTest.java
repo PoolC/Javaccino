@@ -257,7 +257,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 11: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
-    public void 회원정보_수정_성공_OK_1() {
+    public void 회원정보_수정_성공_OK_1() throws Exception {
         // given
         String now = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
         String accessToken = authorizedLogin();
@@ -275,13 +275,8 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 수정되었는지 확인
-        Optional<Member> optionalUser = memberRepository.findById(accessToken);
+        Member user = getByIdAssertingExistence(accessToken);
 
-        // 일단 사용자가 있고
-        assertThat(optionalUser.isPresent()).isTrue();
-
-        // 사용자의 정보가 잘 바뀜.
-        Member user = optionalUser.get();
         assertThat(user.getPassword()).isEqualTo(createTestPassword);
         assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
         assertThat(user.getDateOfBirth()).isEqualTo(now);
@@ -289,7 +284,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 12: 회원 정보 수정 성공 [200]; 일부 정보만 주었을 때")
-    public void 회원정보_수정_성공_OK_2() {
+    public void 회원정보_수정_성공_OK_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
@@ -304,13 +299,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 수정되었는지 확인
-        Optional<Member> optionalUser = memberRepository.findById(accessToken);
-
-        // 일단 사용자가 있고
-        assertThat(optionalUser.isPresent()).isTrue();
-
-        // 사용자의 정보가 잘 바뀜.
-        Member user = optionalUser.get();
+        Member user = getByIdAssertingExistence(accessToken);
         assertThat(user.getPassword()).isEqualTo(createTestPassword);
     }
 
@@ -337,7 +326,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 14: 회원 팔로우 실패 [404]; 해당 nickname의 회원이 존재하지 않음")
-    public void 회원_팔로우_실패_NOT_FOUND() {
+    public void 회원_팔로우_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = "";
         MemberFollowRequest request = MemberFollowRequest.builder()
@@ -353,7 +342,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 15: 회원 팔로우 실패 [409]; 이미 팔로우 하고 있는데 팔로우 true를 요청함")
-    public void 회원_팔로우_실패_CONFLICT_1() {
+    public void 회원_팔로우_실패_CONFLICT_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberFollowRequest request = MemberFollowRequest.builder()
@@ -371,7 +360,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 16: 회원 팔로우 실패 [409]; 팔로우 중이지 않은데 팔로우 false를 요청함")
-    public void 회원_팔로우_실패_CONFLICT_2() {
+    public void 회원_팔로우_실패_CONFLICT_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberFollowRequest request = MemberFollowRequest.builder()
@@ -387,7 +376,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 17: 회원 팔로우 성공 [200]; Unfollowed -> Following")
-    public void 회원_팔로우_성공_OK_1() {
+    public void 회원_팔로우_성공_OK_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberFollowRequest request = MemberFollowRequest.builder()
@@ -398,15 +387,12 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
 
         // then
+        // FIXME: 2021-08-16 현재 로직이 이상함; Followers와 Followees 테이블은 여러 개의 반환 값을 가질 수 있음.
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 팔로잉하고 있는지 확인하는 부분
-        Optional<Member> followedMember = memberRepository.findByEmail(MemberDataLoader.authorizedEmail);
-
-        // 일단 해당 사용자가 있고,
-        assertThat(followedMember.isPresent()).isTrue();
-        Member user = memberRepository.getById(accessToken);
-        Member followed = followedMember.get();
+        Member followed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
+        Member user = getByIdAssertingExistence(accessToken);
 
         // 팔로잉 관계에 있는 것이 도메인 단에서 확인 가능하고,
         assertThat(followed.isFollowedBy(user)).isTrue();
@@ -428,7 +414,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 18: 회원 언팔로우 성공 [200]; Followed -> Unfollowing")
-    public void 회원_팔로우_성공_OK_2() {
+    public void 회원_팔로우_성공_OK_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberFollowRequest request = MemberFollowRequest.builder()
@@ -446,29 +432,14 @@ public class MemberApiTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         // 실제 언팔로우 했는지 확인하는 부분
-        Optional<Member> unfollowedMember = memberRepository.findByEmail(MemberDataLoader.authorizedEmail);
-
-        // 일단 해당 사용자가 있고,
-        assertThat(unfollowedMember.isPresent()).isTrue();
-        Member user = memberRepository.getById(accessToken);
-        Member unfollowed = unfollowedMember.get();
+        Member unfollowed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
+        Member user = getByIdAssertingExistence(accessToken);
 
         // 팔로잉 관계에 있지 않는 것이 도메인 단에서 확인 가능하고,
         assertThat(unfollowed.isFollowedBy(user)).isFalse();
         assertThat(user.isFollowing(unfollowed)).isFalse();
 
         // 실제 repository 에서도 확실이 드랍 됨. -> logic?
-//        Optional<Member> unfollowedMemberInRepository = followersRepository.findById(user.getUUID());
-//        assertThat(unfollowedMemberInRepository.isPresent()).isTrue();
-//
-//        Member followedInRepository = followedMemberInRepository.get();
-//        assertThat(followedInRepository).isEqualTo(followed);
-//
-//        Optional<Member> followingMemberInRepository = followeesRepository.findById(followed.getUUID());
-//        assertThat(followingMemberInRepository.isPresent()).isTrue();
-//
-//        Member followingInRespoitory = followingMemberInRepository.get();
-//        assertThat(followingInRespoitory).isEqualTo(user);
     }
 
     /*
@@ -515,7 +486,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 22: 회원 탈퇴 성공 [200]; 본인일 때")
-    public void 회원_탈퇴_성공_OK_1() {
+    public void 회원_탈퇴_성공_OK_1() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
 
@@ -526,16 +497,13 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 Withdrawal 상태인지 확인
-        Optional<Member> optionalUser = memberRepository.findById(accessToken);
-        assertThat(optionalUser.isPresent()).isTrue();
-
-        Member user = optionalUser.get();
+        Member user = getByIdAssertingExistence(accessToken);
         assertThat(user.getRoles().hasRole(MemberRole.WITHDRAWAL)).isTrue();
     }
 
     @Test
     @DisplayName("테스트 23: 회원 탈퇴 성공 [200]; 관리자일 때")
-    public void 회원_탈퇴_성공_OK_2() {
+    public void 회원_탈퇴_성공_OK_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
 
@@ -546,10 +514,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제
-        Optional<Member> optionalExpelledMember = memberRepository.findByEmail(MemberDataLoader.unauthorizedEmail);
-        assertThat(optionalExpelledMember.isPresent()).isTrue();
-
-        Member expelledMember = optionalExpelledMember.get();
+        Member expelledMember = getByEmailAssertingExistence(MemberDataLoader.unauthorizedEmail);
         assertThat(expelledMember.getRoles().hasRole(MemberRole.EXPELLED)).isTrue();
     }
 
@@ -594,4 +559,19 @@ public class MemberApiTest extends AcceptanceTest {
                 .extract();
     }
 
+    private Member getByIdAssertingExistence(String id) throws Exception {
+        // id를 UUID로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
+        Optional<Member> optionalMember = memberRepository.findById(id);
+        assertThat(optionalMember.isPresent()).isTrue();
+
+        return optionalMember.get();
+    }
+
+    private Member getByEmailAssertingExistence(String email) throws Exception {
+        // id를 UUID로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
+        Optional<Member> optionalMember = memberRepository.findByEmail(email);
+        assertThat(optionalMember.isPresent()).isTrue();
+
+        return optionalMember.get();
+    }
 }
