@@ -19,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -340,7 +341,6 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
-        // FIXME: 2021-08-16 현재 로직이 이상함; Followers와 Followees 테이블은 여러 개의 반환 값을 가질 수 있음.
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", true);
 
@@ -353,17 +353,11 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(user.isFollowing(followed)).isTrue();
 
         // 실제 repository 에도 확실히 등록이 되어 있음.
-        Optional<Member> followedMemberInRepository = followersRepository.findById(user.getUUID());
-        assertThat(followedMemberInRepository.isPresent()).isTrue();
+        List<Member> userFollowers = followersRepository.findAllById(List.of(user.getUUID()));
+        assertThat(followed).isIn(userFollowers);
 
-        Member followedInRepository = followedMemberInRepository.get();
-        assertThat(followedInRepository).isEqualTo(followed);
-
-        Optional<Member> followingMemberInRepository = followeesRepository.findById(followed.getUUID());
-        assertThat(followingMemberInRepository.isPresent()).isTrue();
-
-        Member followingInRespoitory = followingMemberInRepository.get();
-        assertThat(followingInRespoitory).isEqualTo(user);
+        List<Member> followedFollowees = followeesRepository.findAllById(List.of(followed.getUUID()));
+        assertThat(user).isIn(followedFollowees);
     }
 
     @Test
@@ -389,8 +383,12 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(unfollowed.isFollowedBy(user)).isFalse();
         assertThat(user.isFollowing(unfollowed)).isFalse();
 
-        // 실제 repository 에서도 확실이 드랍 됨. -> logic?
-        // FIXME: 2021-08-16 logic
+        // 실제 repository 에서도 확실이 드랍 됨.
+        List<Member> userFollowers = followersRepository.findAllById(List.of(user.getUUID()));
+        assertThat(unfollowed).isNotIn(userFollowers);
+
+        List<Member> unfollowedFollowees = followeesRepository.findAllById(List.of(unfollowed.getUUID()));
+        assertThat(user).isNotIn(unfollowedFollowees);
     }
 
     /*
