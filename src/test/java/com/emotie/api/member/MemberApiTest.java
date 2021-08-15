@@ -5,7 +5,6 @@ import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.dto.MemberCreateRequest;
-import com.emotie.api.member.dto.MemberFollowRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.repository.FolloweesRepository;
 import com.emotie.api.member.repository.FollowersRepository;
@@ -20,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
@@ -309,12 +309,9 @@ public class MemberApiTest extends AcceptanceTest {
     public void 회원_팔로우_실패_UNAUTHORIZED() throws Exception {
         // given
         String accessToken = "";
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(true)
-                .build();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
@@ -324,50 +321,13 @@ public class MemberApiTest extends AcceptanceTest {
     @DisplayName("테스트 14: 회원 팔로우 실패 [404]; 해당 nickname의 회원이 존재하지 않음")
     public void 회원_팔로우_실패_NOT_FOUND() throws Exception {
         // given
-        String accessToken = "";
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(true)
-                .build();
+        String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, emptySeq);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-    }
-
-    @Test
-    @DisplayName("테스트 15: 회원 팔로우 실패 [409]; 이미 팔로우 하고 있는데 팔로우 true를 요청함")
-    public void 회원_팔로우_실패_CONFLICT_1() throws Exception {
-        // given
-        String accessToken = authorizedLogin();
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(true)
-                .build();
-        // 일단 정확한 팔로우 신청
-        memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
-
-        // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
-    }
-
-    @Test
-    @DisplayName("테스트 16: 회원 팔로우 실패 [409]; 팔로우 중이지 않은데 팔로우 false를 요청함")
-    public void 회원_팔로우_실패_CONFLICT_2() throws Exception {
-        // given
-        String accessToken = authorizedLogin();
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(false)
-                .build();
-
-        // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
@@ -375,16 +335,14 @@ public class MemberApiTest extends AcceptanceTest {
     public void 회원_팔로우_성공_OK_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(true)
-                .build();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         // FIXME: 2021-08-16 현재 로직이 이상함; Followers와 Followees 테이블은 여러 개의 반환 값을 가질 수 있음.
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", true);
 
         // 실제 팔로잉하고 있는지 확인하는 부분
         Member followed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
@@ -413,20 +371,16 @@ public class MemberApiTest extends AcceptanceTest {
     public void 회원_팔로우_성공_OK_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
-        MemberFollowRequest request = MemberFollowRequest.builder()
-                .isFollowing(true)
-                .build();
         // 팔로우 상태에서
-        memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
-        request = MemberFollowRequest.builder()
-                .isFollowing(false)
-                .build();
+        memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", false);
+        
         // 실제 언팔로우 했는지 확인하는 부분
         Member unfollowed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
         Member user = getByIdAssertingExistence(accessToken);
@@ -436,6 +390,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(user.isFollowing(unfollowed)).isFalse();
 
         // 실제 repository 에서도 확실이 드랍 됨. -> logic?
+        // FIXME: 2021-08-16 logic
     }
 
     /*
@@ -536,7 +491,7 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     private static ExtractableResponse<Response> memberFollowRequest(
-            String accessToken, MemberFollowRequest request, String nickname
+            String accessToken, String nickname
     ) {
         return RestAssured
                 .given().log().all()
