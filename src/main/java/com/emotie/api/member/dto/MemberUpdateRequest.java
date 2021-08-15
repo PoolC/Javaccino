@@ -5,9 +5,11 @@ import com.emotie.api.member.domain.Gender;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
+@Getter
 public class MemberUpdateRequest {
     private final String password;
     private final String passwordCheck;

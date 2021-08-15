@@ -164,6 +164,16 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
+    public boolean isFollowing(Member member){
+        // TODO: 2021-08-15 : 팔로잉 로직 구현
+        return true;
+    }
+
+    public boolean isFollowedBy(Member member){
+        // TODO: 2021-08-15 : 팔로잉 로직 구현
+        return true;
+    }
+
     private void checkAuthorizationToken(String authorizationToken) {
         checkTokenExpired(this.authorizationTokenValidUntil);
         checkTokenCorrect(this.authorizationToken, authorizationToken);
