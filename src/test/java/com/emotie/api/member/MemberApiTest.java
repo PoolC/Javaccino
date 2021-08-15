@@ -475,9 +475,82 @@ public class MemberApiTest extends AcceptanceTest {
         회원 탈퇴 테스트
      */
     @Test
-    @DisplayName("테스트 19: 회원 탈퇴 실패 [401]; 로그인하지 않음")
+    @DisplayName("테스트 19: 회원 탈퇴 실패 [401]; 로그인하지 않음.")
     public void 회원_탈퇴_실패_UNAUTHORIZED() throws Exception {
+        // given
+        String accessToken = "";
 
+        // when
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    @DisplayName("테스트 20: 회원 탈퇴 실패 [403]; 본인도 아니고, 관리자도 아님")
+    public void 회원_탈퇴_실패_FORBIDDEN() throws Exception {
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 21: 회원 탈퇴 실패 [404]; 해당하는 회원이 없음")
+    public void 회원_탈퇴_실패_NOT_FOUND() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, emptySeq);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 22: 회원 탈퇴 성공 [200]; 본인일 때")
+    public void 회원_탈퇴_성공_OK_1() {
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.unauthorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제 Withdrawal 상태인지 확인
+        Optional<Member> optionalUser = memberRepository.findById(accessToken);
+        assertThat(optionalUser.isPresent()).isTrue();
+
+        Member user = optionalUser.get();
+        assertThat(user.getRoles().hasRole(MemberRole.WITHDRAWAL)).isTrue();
+    }
+
+    @Test
+    @DisplayName("테스트 23: 회원 탈퇴 성공 [200]; 관리자일 때")
+    public void 회원_탈퇴_성공_OK_2() {
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.unauthorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제
+        Optional<Member> optionalExpelledMember = memberRepository.findByEmail(MemberDataLoader.unauthorizedEmail);
+        assertThat(optionalExpelledMember.isPresent()).isTrue();
+
+        Member expelledMember = optionalExpelledMember.get();
+        assertThat(expelledMember.getRoles().hasRole(MemberRole.EXPELLED)).isTrue();
     }
 
     private static ExtractableResponse<Response> memberCreateRequest(MemberCreateRequest request) {
@@ -508,6 +581,15 @@ public class MemberApiTest extends AcceptanceTest {
                 .given().log().all()
                 .auth().oauth2(accessToken)
                 .when().put("/members/{nickname}", nickname)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> memberWithdrawalRequest(String accessToken, String nickname) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().delete("/members/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
