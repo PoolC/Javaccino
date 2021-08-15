@@ -15,21 +15,17 @@ import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
-import org.springframework.context.ApplicationListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.as;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.assertj.core.api.Assertions.assertThat;
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.auth.AuthAcceptanceTest.unauthorizedLogin;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @ActiveProfiles("memberDataLoader")
 @TestMethodOrder(MethodOrderer.DisplayName.class)
