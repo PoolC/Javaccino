@@ -3,18 +3,22 @@ package com.emotie.api.member;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.dto.MemberCreateRequest;
+import com.emotie.api.member.dto.MemberFollowRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.repository.FolloweesRepository;
+import com.emotie.api.member.repository.FollowersRepository;
+import com.emotie.api.member.repository.MemberRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.*;
 import org.springframework.context.ApplicationListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,16 +33,28 @@ import static com.emotie.api.auth.AuthAcceptanceTest.unauthorizedLogin;
 
 @ActiveProfiles("memberDataLoader")
 @TestMethodOrder(MethodOrderer.DisplayName.class)
+@RequiredArgsConstructor
+// @Transactional 필요한가?
 public class MemberApiTest extends AcceptanceTest {
     // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname의 형식이 필요할 것으로 보임.
-    
+
+    private final MemberRepository memberRepository;
+    private final FollowersRepository followersRepository;
+    private final FolloweesRepository followeesRepository;
+
     /*
         회원가입 테스트를 위한 상수
      */
     private static final String emptySeq = "",
-        createTestEmail = "randomhuman@gmail.com",
-        createTestPassword = "creative!password";
+            createTestEmail = "randomhuman@gmail.com",
+            createTestPassword = "creative!password";
 
+    @BeforeEach
+    public void settingRepositories() {
+        memberRepository.deleteAll();
+        followeesRepository.deleteAll();
+        followersRepository.deleteAll();
+    }
 
     /*
         회원가입 테스트
@@ -237,8 +253,8 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 10: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
-    public void 회원정보_수정_성공_200_OK_1() {
+    @DisplayName("테스트 11: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
+    public void 회원정보_수정_성공_OK_1() {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
@@ -256,8 +272,8 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 11: 회원 정보 수정 성공 [200]; 일부 정보만 주었을 때")
-    public void 회원정보_수정_성공_200_OK_2() {
+    @DisplayName("테스트 12: 회원 정보 수정 성공 [200]; 일부 정보만 주었을 때")
+    public void 회원정보_수정_성공_OK_2() {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
@@ -274,7 +290,160 @@ public class MemberApiTest extends AcceptanceTest {
 
     // TODO: 2021-08-13 아무런 정보 수정이 없을 때에도 200 OK가 반환되는지 여부?
 
+    /*
+        회원 팔로우/언팔로우 테스트
+     */
+    @Test
+    @DisplayName("테스트 13: 회원 팔로우 실패 [401]; 로그인하지 않음")
+    public void 회원_팔로우_실패_UNAUTHORIZED() throws Exception {
+        // given
+        String accessToken = "";
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(true)
+                .build();
 
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    @Test
+    @DisplayName("테스트 14: 회원 팔로우 실패 [404]; 해당 nickname의 회원이 존재하지 않음")
+    public void 회원_팔로우_실패_NOT_FOUND() {
+        // given
+        String accessToken = "";
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(true)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 15: 회원 팔로우 실패 [409]; 이미 팔로우 하고 있는데 팔로우 true를 요청함")
+    public void 회원_팔로우_실패_CONFLICT_1() {
+        // given
+        String accessToken = authorizedLogin();
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(true)
+                .build();
+        // 일단 정확한 팔로우 신청
+        memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+    }
+
+    @Test
+    @DisplayName("테스트 16: 회원 팔로우 실패 [409]; 팔로우 중이지 않은데 팔로우 false를 요청함")
+    public void 회원_팔로우_실패_CONFLICT_2() {
+        // given
+        String accessToken = authorizedLogin();
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(false)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+    }
+
+    @Test
+    @DisplayName("테스트 17: 회원 팔로우 성공 [200]; Unfollowed -> Following")
+    public void 회원_팔로우_성공_OK_1() {
+        // given
+        String accessToken = authorizedLogin();
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(true)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제 팔로잉하고 있는지 확인하는 부분
+        Optional<Member> followedMember = memberRepository.findByEmail(MemberDataLoader.authorizedEmail);
+
+        // 일단 해당 사용자가 있고,
+        assertThat(followedMember.isPresent()).isTrue();
+        Member user = memberRepository.getById(accessToken);
+        Member followed = followedMember.get();
+
+        // 팔로잉 관계에 있는 것이 도메인 단에서 확인 가능하고,
+        assertThat(followed.isFollowedBy(user)).isTrue();
+        assertThat(user.isFollowing(followed)).isTrue();
+
+        // 실제 repository 에도 확실히 등록이 되어 있음.
+        Optional<Member> followedMemberInRepository = followersRepository.findById(user.getUUID());
+        assertThat(followedMemberInRepository.isPresent()).isTrue();
+
+        Member followedInRepository = followedMemberInRepository.get();
+        assertThat(followedInRepository).isEqualTo(followed);
+
+        Optional<Member> followingMemberInRepository = followeesRepository.findById(followed.getUUID());
+        assertThat(followingMemberInRepository.isPresent()).isTrue();
+
+        Member followingInRespoitory = followingMemberInRepository.get();
+        assertThat(followingInRespoitory).isEqualTo(user);
+    }
+
+    @Test
+    @DisplayName("테스트 18: 회원 언팔로우 성공 [200]; Followed -> Unfollowing")
+    public void 회원_팔로우_성공_OK_2() {
+        // given
+        String accessToken = authorizedLogin();
+        MemberFollowRequest request = MemberFollowRequest.builder()
+                .isFollowing(true)
+                .build();
+        // 팔로우 상태에서
+        memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+        request = MemberFollowRequest.builder()
+                .isFollowing(false)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, request, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        // 실제 언팔로우 했는지 확인하는 부분
+        Optional<Member> unfollowedMember = memberRepository.findByEmail(MemberDataLoader.authorizedEmail);
+
+        // 일단 해당 사용자가 있고,
+        assertThat(unfollowedMember.isPresent()).isTrue();
+        Member user = memberRepository.getById(accessToken);
+        Member unfollowed = unfollowedMember.get();
+
+        // 팔로잉 관계에 있지 않는 것이 도메인 단에서 확인 가능하고,
+        assertThat(unfollowed.isFollowedBy(user)).isFalse();
+        assertThat(user.isFollowing(unfollowed)).isFalse();
+
+        // 실제 repository 에서도 확실이 드랍 됨. -> logic?
+//        Optional<Member> unfollowedMemberInRepository = followersRepository.findById(user.getUUID());
+//        assertThat(unfollowedMemberInRepository.isPresent()).isTrue();
+//
+//        Member followedInRepository = followedMemberInRepository.get();
+//        assertThat(followedInRepository).isEqualTo(followed);
+//
+//        Optional<Member> followingMemberInRepository = followeesRepository.findById(followed.getUUID());
+//        assertThat(followingMemberInRepository.isPresent()).isTrue();
+//
+//        Member followingInRespoitory = followingMemberInRepository.get();
+//        assertThat(followingInRespoitory).isEqualTo(user);
+    }
 
     private static ExtractableResponse<Response> memberCreateRequest(MemberCreateRequest request) {
         return RestAssured
@@ -293,6 +462,17 @@ public class MemberApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().put("/members")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> memberFollowRequest(
+            String accessToken, MemberFollowRequest request, String nickname
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().put("/members/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
