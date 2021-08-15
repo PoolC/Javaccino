@@ -197,6 +197,9 @@ public class MemberApiTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제 Repository에 등록되었는지 확인
+        assertThat(memberRepository.findByEmail(createTestEmail).isPresent()).isTrue();
     }
 
     /*
@@ -256,12 +259,13 @@ public class MemberApiTest extends AcceptanceTest {
     @DisplayName("테스트 11: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
     public void 회원정보_수정_성공_OK_1() {
         // given
+        String now = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
                 .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .dateOfBirth(now)
                 .build();
 
         // when
@@ -269,6 +273,18 @@ public class MemberApiTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제 수정되었는지 확인
+        Optional<Member> optionalUser = memberRepository.findById(accessToken);
+
+        // 일단 사용자가 있고
+        assertThat(optionalUser.isPresent()).isTrue();
+
+        // 사용자의 정보가 잘 바뀜.
+        Member user = optionalUser.get();
+        assertThat(user.getPassword()).isEqualTo(createTestPassword);
+        assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
+        assertThat(user.getDateOfBirth()).isEqualTo(now);
     }
 
     @Test
@@ -286,6 +302,16 @@ public class MemberApiTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        // 실제 수정되었는지 확인
+        Optional<Member> optionalUser = memberRepository.findById(accessToken);
+
+        // 일단 사용자가 있고
+        assertThat(optionalUser.isPresent()).isTrue();
+
+        // 사용자의 정보가 잘 바뀜.
+        Member user = optionalUser.get();
+        assertThat(user.getPassword()).isEqualTo(createTestPassword);
     }
 
     // TODO: 2021-08-13 아무런 정보 수정이 없을 때에도 200 OK가 반환되는지 여부?
@@ -443,6 +469,15 @@ public class MemberApiTest extends AcceptanceTest {
 //
 //        Member followingInRespoitory = followingMemberInRepository.get();
 //        assertThat(followingInRespoitory).isEqualTo(user);
+    }
+
+    /*
+        회원 탈퇴 테스트
+     */
+    @Test
+    @DisplayName("테스트 19: 회원 탈퇴 실패 [401]; 로그인하지 않음")
+    public void 회원_탈퇴_실패_UNAUTHORIZED() throws Exception {
+
     }
 
     private static ExtractableResponse<Response> memberCreateRequest(MemberCreateRequest request) {
