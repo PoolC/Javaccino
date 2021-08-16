@@ -1,6 +1,7 @@
 package com.emotie.api.member;
 
 import com.emotie.api.AcceptanceTest;
+import com.emotie.api.auth.infra.JwtTokenProvider;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
@@ -20,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
@@ -38,6 +38,7 @@ public class MemberApiTest extends AcceptanceTest {
     private final MemberRepository memberRepository;
     private final FollowersRepository followersRepository;
     private final FolloweesRepository followeesRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /*
         회원가입 테스트를 위한 상수
@@ -178,7 +179,7 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 07: 회원가입 성공 [200]")
-    public void 회원가입_성공_OK() {
+    public void 회원가입_성공_OK() throws Exception {
         // given
         MemberCreateRequest request = MemberCreateRequest.builder()
                 .nickname(createTestEmail)
@@ -272,7 +273,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 수정되었는지 확인
-        Member user = getByIdAssertingExistence(accessToken);
+        Member user = getByAccessTokenAssertingExistence(accessToken);
 
         assertThat(user.getPassword()).isEqualTo(createTestPassword);
         assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
@@ -296,7 +297,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 수정되었는지 확인
-        Member user = getByIdAssertingExistence(accessToken);
+        Member user = getByAccessTokenAssertingExistence(accessToken);
         assertThat(user.getPassword()).isEqualTo(createTestPassword);
     }
 
@@ -346,7 +347,7 @@ public class MemberApiTest extends AcceptanceTest {
 
         // 실제 팔로잉하고 있는지 확인하는 부분
         Member followed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
-        Member user = getByIdAssertingExistence(accessToken);
+        Member user = getByAccessTokenAssertingExistence(accessToken);
 
         // 팔로잉 관계에 있는 것이 도메인 단에서 확인 가능하고,
         assertThat(followed.isFollowedBy(user)).isTrue();
@@ -377,7 +378,7 @@ public class MemberApiTest extends AcceptanceTest {
 
         // 실제 언팔로우 했는지 확인하는 부분
         Member unfollowed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
-        Member user = getByIdAssertingExistence(accessToken);
+        Member user = getByAccessTokenAssertingExistence(accessToken);
 
         // 팔로잉 관계에 있지 않는 것이 도메인 단에서 확인 가능하고,
         assertThat(unfollowed.isFollowedBy(user)).isFalse();
@@ -446,7 +447,7 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         // 실제 Withdrawal 상태인지 확인
-        Member user = getByIdAssertingExistence(accessToken);
+        Member user = getByAccessTokenAssertingExistence(accessToken);
         assertThat(user.getRoles().hasRole(MemberRole.WITHDRAWAL)).isTrue();
     }
 
@@ -508,9 +509,10 @@ public class MemberApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private Member getByIdAssertingExistence(String id) throws Exception {
+    private Member getByAccessTokenAssertingExistence(String accessToken) throws Exception {
+        String id = jwtTokenProvider.getSubject(accessToken);
         // id를 UUID로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
-        Optional<Member> optionalMember = memberRepository.findById(id);
+        Optional<Member> optionalMember = memberRepository.findById(accessToken);
         assertThat(optionalMember.isPresent()).isTrue();
 
         return optionalMember.get();
