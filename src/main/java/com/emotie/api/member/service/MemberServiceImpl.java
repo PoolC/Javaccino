@@ -1,6 +1,7 @@
 package com.emotie.api.member.service;
 
 import com.emotie.api.auth.exception.UnauthenticatedException;
+import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.NotSameException;
@@ -159,7 +160,7 @@ public class MemberServiceImpl implements MemberService {
 
         // 관리자가 아닐 때는 본인이어야 함.
         if (!executor.getRoles().isAdmin() && !executor.equals(user)) {
-            throw new UnauthenticatedException("계정을 삭제할 권한이 없습니다.");
+            throw new UnauthorizedException("계정을 삭제할 권한이 없습니다.");
         }
     }
 
