@@ -4,8 +4,10 @@ import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberFollowResponse;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.exception.DuplicatedMemberException;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,8 +24,14 @@ public class MemberControllerImpl implements MemberController{
     @Override
     @PostMapping
     public ResponseEntity<Void> register(@RequestBody MemberCreateRequest request) throws Exception {
-        memberService.create(request);
-        return ResponseEntity.ok().build();
+        try {
+            memberService.create(request);
+            return ResponseEntity.ok().build();
+        } catch (DuplicatedMemberException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (NullPointerException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @Override

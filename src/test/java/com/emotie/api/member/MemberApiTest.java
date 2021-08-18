@@ -118,25 +118,26 @@ public class MemberApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
-    @Test
-    @DisplayName("테스트 04: 회원가입 실패 [400]; 잘못된 이메일 형식 혹은 잘못된 이메일")
-    public void 회원가입_실패_BAD_REQUEST_4() throws Exception {
-        // given
-        MemberCreateRequest request = MemberCreateRequest.builder()
-                .nickname(createTestEmail)
-                .password(createTestPassword)
-                .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
-                .email("human@earth.com")
-                .build();
-
-        // when
-        ExtractableResponse<Response> response = memberCreateRequest(request);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-    }
+    // 이메일을 보내서 검증하는 로직이 구현된 이후 확인 가능; 구현된다고 해도, 이제는 검증된 이메일도 필요하게 됨.
+//    @Test
+//    @DisplayName("테스트 04: 회원가입 실패 [400]; 잘못된 이메일 형식 혹은 잘못된 이메일")
+//    public void 회원가입_실패_BAD_REQUEST_4() throws Exception {
+//        // given
+//        MemberCreateRequest request = MemberCreateRequest.builder()
+//                .nickname(createTestEmail)
+//                .password(createTestPassword)
+//                .passwordCheck(createTestPassword)
+//                .gender(Gender.HIDDEN.toString())
+//                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+//                .email("human@earth.com")
+//                .build();
+//
+//        // when
+//        ExtractableResponse<Response> response = memberCreateRequest(request);
+//
+//        // then
+//        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+//    }
 
     @Test
     @DisplayName("테스트 05: 회원 가입 실패 [400]; 비밀번호가 비밀번호 확인 문자열과 다름")
