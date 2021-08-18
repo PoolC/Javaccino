@@ -11,16 +11,14 @@ import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.DuplicatedMemberException;
-import com.emotie.api.member.exception.InvalidNicknameException;
 import com.emotie.api.member.repository.FolloweesRepository;
 import com.emotie.api.member.repository.FollowersRepository;
 import com.emotie.api.member.repository.MemberRepository;
-import com.sun.xml.bind.v2.TODO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.lang.management.OperatingSystemMXBean;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,11 +62,12 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(
                 Member.builder()
                         .UUID(UUID.randomUUID().toString())
-                        .passwordHash(passwordHashProvider.encodePassword(request.getPassword()))
-                        .nickname(request.getNickname())
-                        .gender(request.getGender())
-                        .dateOfBirth(request.getDateOfBirth())
                         .email(request.getEmail())
+                        .nickname(request.getNickname())
+                        .passwordHash(passwordHashProvider.encodePassword(request.getPassword()))
+                        .gender(Gender.valueOf(request.getGender()))
+                        .dateOfBirth(LocalDate.parse(request.getDateOfBirth()))
+                        .introduction("자기 소개를 작성해서 사람들에게 당신을 알려주세요!")
                         .passwordResetToken(null)
                         .passwordResetTokenValidUntil(null)
                         .authorizationToken(null)
@@ -130,11 +129,15 @@ public class MemberServiceImpl implements MemberService {
     private void checkCreateRequestValidity(MemberCreateRequest request) {
         checkNicknameValidity(request.getNickname());
         checkEmailValidity(request.getEmail());
+        checkGenderValidity(request.getGender());
+        checkDateOfBirthValidity(request.getDateOfBirth());
         request.checkPasswordMatches();
     }
 
     private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
         checkLogin(member);
+        checkGenderValidity(request.getGender());
+        checkDateOfBirthValidity(request.getDateOfBirth());
         request.checkPasswordMatches();
     }
 
@@ -158,7 +161,7 @@ public class MemberServiceImpl implements MemberService {
 
     private void checkNicknameValidity(String nickname) {
         if (!isNicknameValid(nickname)) {
-            throw new InvalidNicknameException("잘못 된 닉네임 형식입니다.");
+            throw new IllegalArgumentException("잘못된 닉네임 형식입니다.");
         }
 
         if (isNicknameExists(nickname)) {
@@ -169,6 +172,23 @@ public class MemberServiceImpl implements MemberService {
     private void checkEmailValidity(String email) {
         if (isEmailExists(email)) {
             throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
+        }
+    }
+
+    private void checkDateOfBirthValidity(String dateOfBirth) {
+        try {
+            // 파싱이 안 되면 오류가 발생할 것.
+            LocalDate.parse(dateOfBirth);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("잘못된 생년월일 형식입니다.");
+        }
+    }
+
+    private void checkGenderValidity(String gender) {
+        try {
+            Gender.valueOf(gender);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("선택할 수 없는 젠더 형식입니다.");
         }
     }
 

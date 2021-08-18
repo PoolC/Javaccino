@@ -209,7 +209,7 @@ public class Member extends TimestampEntity implements UserDetails {
             MemberUpdateRequest request, String passwordHash
     ) {
         this.passwordHash = passwordHash;
-        this.gender = request.getGender();
-        this.dateOfBirth = request.getDateOfBirth();
+        this.gender = Gender.valueOf(request.getGender());
+        this.dateOfBirth = LocalDate.parse(request.getDateOfBirth());
     }
 }

@@ -15,8 +15,8 @@ public class MemberCreateRequest {
     private final String nickname;
     private final String password;
     private final String passwordCheck;
-    private final Gender gender;
-    private final LocalDate dateOfBirth;
+    private final String gender;
+    private final String dateOfBirth;
     private final String email;
 
     @JsonCreator
@@ -32,8 +32,8 @@ public class MemberCreateRequest {
         this.nickname = nickname;
         this.password = password;
         this.passwordCheck = passwordCheck;
-        this.gender = Gender.valueOf(gender);
-        this.dateOfBirth = LocalDate.parse(dateOfBirth);
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
         this.email = email;
     }
 

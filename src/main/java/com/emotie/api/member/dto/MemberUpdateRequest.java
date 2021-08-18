@@ -13,8 +13,8 @@ import java.time.LocalDate;
 public class MemberUpdateRequest {
     private final String password;
     private final String passwordCheck;
-    private final Gender gender;
-    private final LocalDate dateOfBirth;
+    private final String gender;
+    private final String dateOfBirth;
 
     @JsonCreator
     @Builder
@@ -26,8 +26,8 @@ public class MemberUpdateRequest {
     ) {
         this.password = password;
         this.passwordCheck = passwordCheck;
-        this.gender = Gender.valueOf(gender);
-        this.dateOfBirth = LocalDate.parse(dateOfBirth);
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
     }
 
     public void checkPasswordMatches() {
