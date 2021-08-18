@@ -2,6 +2,7 @@ package com.emotie.api.auth.dto;
 
 import com.emotie.api.common.exception.NotSameException;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -15,7 +16,11 @@ public class PasswordResetRequest {
 
     @JsonCreator
     @Builder
-    public PasswordResetRequest(String email, String password, String passwordCheck) {
+    public PasswordResetRequest(
+            @JsonProperty("email") String email,
+            @JsonProperty("password") String password,
+            @JsonProperty("passwordCheck") String passwordCheck
+    ) {
         this.email = email;
         this.password = password;
         this.passwordCheck = passwordCheck;

@@ -1,6 +1,7 @@
 package com.emotie.api.auth.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,7 +12,9 @@ public class LoginRequest {
 
     @JsonCreator
     @Builder
-    public LoginRequest(String email, String password) {
+    public LoginRequest(
+            @JsonProperty("email") String email,
+            @JsonProperty("password") String password) {
         this.email = email;
         this.password = password;
     }
