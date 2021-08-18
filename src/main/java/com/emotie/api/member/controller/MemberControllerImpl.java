@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -23,7 +24,7 @@ public class MemberControllerImpl implements MemberController{
 
     @Override
     @PostMapping
-    public ResponseEntity<Void> register(@RequestBody MemberCreateRequest request) throws Exception {
+    public ResponseEntity<Void> register(@RequestBody @Valid MemberCreateRequest request) throws Exception {
         memberService.create(request);
         return ResponseEntity.ok().build();
     }

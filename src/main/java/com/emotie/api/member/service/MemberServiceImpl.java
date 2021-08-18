@@ -3,6 +3,7 @@ package com.emotie.api.member.service;
 import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.common.exception.NotSameException;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
@@ -81,6 +82,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void update(Member member, MemberUpdateRequest request) {
+        // TODO: 2021-08-18 update 로직 꼬임.
         checkUpdateRequestValidity(member, request);
         String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
         member.updateUserInfo(request, passwordHash);
@@ -137,9 +139,10 @@ public class MemberServiceImpl implements MemberService {
 
     private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
         checkLogin(member);
-        checkGenderValidity(request.getGender());
-        checkDateOfBirthValidity(request.getDateOfBirth());
-        request.checkPasswordMatches();
+        if (!request.getGender().isEmpty()) checkGenderValidity(request.getGender());
+        if (!request.getDateOfBirth().isEmpty()) checkDateOfBirthValidity(request.getDateOfBirth());
+        if (!request.getPassword().isEmpty()) request.checkPasswordMatches();
+        else if (!request.getPasswordCheck().isEmpty()) throw new NotSameException("비밀번호와 비밀번호 확인 문자열이 다릅니다.");
     }
 
     private void checkFollowToggleRequestValidity(Member member, String nickname) {
