@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 
 @Getter
 public class MemberCreateRequest {
-
     private final String nickname;
     private final String password;
     private final String passwordCheck;

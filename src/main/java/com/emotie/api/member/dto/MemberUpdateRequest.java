@@ -30,7 +30,7 @@ public class MemberUpdateRequest {
         this.dateOfBirth = LocalDate.parse(dateOfBirth);
     }
 
-    private void checkPasswordMatches() {
+    public void checkPasswordMatches() {
         if (!this.password.equals(this.passwordCheck)) {
             throw new NotSameException("비밀번호와 비밀번호 확인 문자열이 다릅니다.");
         }
