@@ -46,7 +46,8 @@ public class MemberApiTest extends AcceptanceTest {
      */
     private static final String emptySeq = "",
             createTestEmail = "randomhuman@gmail.com",
-            createTestPassword = "creative!password";
+            createTestPassword = "creative!password",
+            notExistNickname = "공릉동익룡";
 
 //    @BeforeEach
 //    public void settingRepositories() {
@@ -347,7 +348,7 @@ public class MemberApiTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, emptySeq);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -516,7 +517,7 @@ public class MemberApiTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().put("/members/{nickname}", nickname)
+                .when().post("/members/follow/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
