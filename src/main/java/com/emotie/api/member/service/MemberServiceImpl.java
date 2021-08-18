@@ -17,6 +17,7 @@ import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;
@@ -195,7 +196,7 @@ public class MemberServiceImpl implements MemberService {
     private void checkLogin(Member member) {
         Optional.ofNullable(member)
                 .orElseThrow(() -> {
-                    throw new NoSuchElementException("로그인하지 않았습니다.");
+                    throw new UnauthenticatedException("로그인하지 않았습니다.");
                 });
     }
 

@@ -24,14 +24,8 @@ public class MemberControllerImpl implements MemberController{
     @Override
     @PostMapping
     public ResponseEntity<Void> register(@RequestBody MemberCreateRequest request) throws Exception {
-        try {
-            memberService.create(request);
-            return ResponseEntity.ok().build();
-        } catch (DuplicatedMemberException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        } catch (NullPointerException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        memberService.create(request);
+        return ResponseEntity.ok().build();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.emotie.api.common.exceptionHandler;
 
 import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.member.exception.DuplicatedMemberException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -13,7 +14,9 @@ import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class CommonExceptionHandlers {
-    @ExceptionHandler({IllegalArgumentException.class, NotSameException.class})
+    @ExceptionHandler({
+            IllegalArgumentException.class, NotSameException.class, NullPointerException.class
+    })
     public ResponseEntity<Map<String, String>> BadRequestHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Collections.singletonMap("message", e.getMessage()));
@@ -37,7 +40,9 @@ public class CommonExceptionHandlers {
                 .body(Collections.singletonMap("message", e.getMessage()));
     }
 
-    @ExceptionHandler({ExpiredTokenException.class, WrongTokenException.class})
+    @ExceptionHandler({
+            ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class
+    })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Collections.singletonMap("message", e.getMessage()));
