@@ -6,6 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -164,12 +165,12 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
-    public boolean isFollowing(Member member){
+    public boolean isFollowing(Member member) {
         // TODO: 2021-08-15 : 팔로잉 로직 구현
         return true;
     }
 
-    public boolean isFollowedBy(Member member){
+    public boolean isFollowedBy(Member member) {
         // TODO: 2021-08-15 : 팔로잉 로직 구현
         return true;
     }
@@ -202,5 +203,13 @@ public class Member extends TimestampEntity implements UserDetails {
 
     private void updatePassword(PasswordResetRequest request) {
         this.passwordHash = request.getPassword();
+    }
+
+    public void updateUserInfo(
+            MemberUpdateRequest request, String passwordHash
+    ) {
+        this.passwordHash = passwordHash;
+        this.gender = request.getGender();
+        this.dateOfBirth = request.getDateOfBirth();
     }
 }
