@@ -82,9 +82,10 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public void update(Member member, MemberUpdateRequest request) {
-        // TODO: 2021-08-18 update 로직 꼬임.
+        // TODO: 2021-08-18 update 로직 꼬임. null null null
         checkUpdateRequestValidity(member, request);
-        String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
+        String passwordHash = null;
+        if (request.getPassword() != null) passwordHash = passwordHashProvider.encodePassword(request.getPassword());
         member.updateUserInfo(request, passwordHash);
         memberRepository.saveAndFlush(member);
     }
@@ -139,10 +140,9 @@ public class MemberServiceImpl implements MemberService {
 
     private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
         checkLogin(member);
-        if (!request.getGender().isEmpty()) checkGenderValidity(request.getGender());
-        if (!request.getDateOfBirth().isEmpty()) checkDateOfBirthValidity(request.getDateOfBirth());
-        if (!request.getPassword().isEmpty()) request.checkPasswordMatches();
-        else if (!request.getPasswordCheck().isEmpty()) throw new NotSameException("비밀번호와 비밀번호 확인 문자열이 다릅니다.");
+        if (request.getGender() != null) checkGenderValidity(request.getGender());
+        if (request.getDateOfBirth() != null) checkDateOfBirthValidity(request.getDateOfBirth());
+        request.checkPasswordValidity();
     }
 
     private void checkFollowToggleRequestValidity(Member member, String nickname) {
@@ -182,7 +182,10 @@ public class MemberServiceImpl implements MemberService {
     private void checkDateOfBirthValidity(String dateOfBirth) {
         try {
             // 파싱이 안 되면 오류가 발생할 것.
-            LocalDate.parse(dateOfBirth);
+            LocalDate date = LocalDate.parse(dateOfBirth);
+            if (date.isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("시간 여행자는 받아주지 않습니다.");
+            }
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("잘못된 생년월일 형식입니다.");
         }

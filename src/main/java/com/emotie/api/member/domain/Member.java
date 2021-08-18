@@ -17,6 +17,7 @@ import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.validation.constraints.Past;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -208,8 +209,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public void updateUserInfo(
             MemberUpdateRequest request, String passwordHash
     ) {
-        this.passwordHash = passwordHash;
-        this.gender = Gender.valueOf(request.getGender());
-        this.dateOfBirth = LocalDate.parse(request.getDateOfBirth());
+        if (passwordHash != null) this.passwordHash = passwordHash;
+        if (request.getGender() != null) this.gender = Gender.valueOf(request.getGender());
+        if (request.getDateOfBirth() != null) this.dateOfBirth = LocalDate.parse(request.getDateOfBirth());
     }
 }

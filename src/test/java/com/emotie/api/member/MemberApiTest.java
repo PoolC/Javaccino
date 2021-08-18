@@ -87,7 +87,7 @@ public class MemberApiTest extends AcceptanceTest {
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
                 .gender(Gender.HIDDEN.toString())
-                .dateOfBirth("Random date")
+                .dateOfBirth("2100-08-29")
                 .email(createTestEmail)
                 .build();
 

@@ -31,9 +31,25 @@ public class MemberUpdateRequest {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public void checkPasswordMatches() {
+    private void checkPasswordMatches() {
         if (!this.password.equals(this.passwordCheck)) {
             throw new NotSameException("비밀번호와 비밀번호 확인 문자열이 다릅니다.");
+        }
+    }
+
+    private void checkPasswordIsEmptyNotNull() {
+        // null이 아닌데도 불구하고, 빈 문자열
+        if ((this.password != null) && (this.password.isBlank())){
+            throw new IllegalArgumentException("비밀번호는 공백으로만 이루어질 수 없습니다.");
+        }
+    }
+
+    public void checkPasswordValidity() {
+        if (this.password != null) {
+            checkPasswordIsEmptyNotNull();
+            checkPasswordMatches();
+        } else if (passwordCheck != null) {
+            throw new IllegalArgumentException("비밀번호 없이 비밀번호 확인 문자열만 제공되었습니다.");
         }
     }
 }
