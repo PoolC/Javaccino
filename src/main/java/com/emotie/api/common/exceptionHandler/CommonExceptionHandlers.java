@@ -2,6 +2,7 @@ package com.emotie.api.common.exceptionHandler;
 
 import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.DuplicatedMemberException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,8 @@ public class CommonExceptionHandlers {
     }
 
     @ExceptionHandler({
-            ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class
+            ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
+            CannotFollowException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
