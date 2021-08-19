@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +29,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @ActiveProfiles("memberDataLoader")
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @RequiredArgsConstructor
-@Transactional
 public class MemberApiTest extends AcceptanceTest {
     // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname의 형식이 필요할 것으로 보임.
 
@@ -429,8 +427,6 @@ public class MemberApiTest extends AcceptanceTest {
     public void 회원_팔로우_성공_OK_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
-        // 팔로우 상태에서
-        memberFollowRequest(accessToken, MemberDataLoader.followerEmail);
 
         // when
         ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.followerEmail);

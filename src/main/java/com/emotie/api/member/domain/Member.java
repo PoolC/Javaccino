@@ -66,10 +66,10 @@ public class Member extends TimestampEntity implements UserDetails {
     @Embedded
     private MemberRoles roles;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Member> followers = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<Member> followees = new ArrayList<>();
 
     protected Member() {
