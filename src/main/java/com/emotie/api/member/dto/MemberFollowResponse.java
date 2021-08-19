@@ -7,12 +7,12 @@ import lombok.Getter;
 
 @Getter
 public class MemberFollowResponse {
-    private boolean isFollowing;
+    private Boolean isFollowing;
 
     @JsonCreator
     @Builder
     public MemberFollowResponse(
-            @JsonProperty("isFollowing") boolean isFollowing) {
+            @JsonProperty("isFollowing") Boolean isFollowing) {
         this.isFollowing = isFollowing;
     }
 }
