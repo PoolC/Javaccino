@@ -23,8 +23,8 @@ public class MemberController {
     }
 
     @PutMapping
-    public ResponseEntity<Void> memberUpdate(@RequestBody MemberUpdateRequest request){
-        memberService.memberUpdate(request);
+    public ResponseEntity<Void> memberUpdate(@AuthenticationPrincipal Member member, @RequestBody MemberUpdateRequest request){
+        memberService.memberUpdate(member, request);
         return ResponseEntity.ok().build();
     }
 
