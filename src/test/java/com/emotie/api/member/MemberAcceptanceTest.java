@@ -1,8 +1,8 @@
 package com.emotie.api.member;
 
-import com.emotie.api.AcceptanceTest;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.dto.MemberCreateRequest;
+import com.emotie.api.AcceptanceTest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -29,14 +29,13 @@ public class MemberAcceptanceTest extends AcceptanceTest {
             createDateOfBirth = "2021-07-17",
             createEmail = "powerkim417@naver.com", wrongEmail = "wrong.com.asdf",
 
-    updatePassword = "password456$%^", tooLongPassword = "111111111111111111111111111111111111111111111",
+            updatePassword = "password456$%^", tooLongPassword = "111111111111111111111111111111111111111111111",
             updatePasswordCheck = "password456$%^",
             updateGender = Gender.MALE.toString(),
             updateDateOfBirth = "2021-08-17",
 
-    withdrawalNickname = MemberDataLoader.authorizedEmail,
             notExistNickname = "not exist nickname"
-                    ;
+            ;
 
     //// 1. 회원가입
 
@@ -284,73 +283,97 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     //// 3. 팔로우 토글
-
     @Test
     @Order(13)
     @DisplayName("팔로우 토글 실패 401 (선행 조건: 로그인 X)")
     public void 팔로우_토글_실패_UNAUTHORIZED_1(){
         // given
         String accessToken = ""; ///
-        MemberUpdateRequest request = MemberUpdateRequest.builder()
-                .password(createPassword)
-                .passwordCheck(createPasswordCheck)
-                .gender(createGender)
-                .dateOfBirth(createDateOfBirth)
-                .build();
 
         // when
-        ExtractableResponse<Response> response = memberUpdateRequest(accessToken, request);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
     }
 
     @Test
-    @Order(13)
+    @Order(14)
     @DisplayName("팔로우 토글 실패 404 (nickname 없는 경우)")
-    public void 팔로우_토글_실패_NOT_FOUND_1){
+    public void 팔로우_토글_실패_NOT_FOUND_1(){
+        // given
+        String accessToken = authorizedLogin();
 
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistNickname); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
     }
 
     @Test
-    @Order(14)
-    @DisplayName("팔로우 토글 성공 200")
-    public void 팔로우_토글_성공_OK_1(){
+    @Order(15)
+    @DisplayName("팔로우 성공 200")
+    public void 팔로우_성공_OK_1(){
+        // given
+        String accessToken = authorizedLogin();
 
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(OK.value());
+        assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", true);
+    }
+
+    @Test
+    @Order(16)
+    @DisplayName("언팔로우 성공 200")
+    public void 언팔로우_성공_OK_1(){
+        // given
+        String accessToken = authorizedLogin();
+        memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail); // 팔로우한 상태 부여
+
+        // when
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(OK.value());
+        assertThat(response.body()).hasFieldOrPropertyWithValue("isFollowing", false);
     }
 
     //// 4. 회원 탈퇴
 
     @Test
-    @Order(13)
+    @Order(17)
     @DisplayName("회원 탈퇴 실패 401 (선행 조건: 로그인 X)")
     public void 회원_탈퇴_실패_UNAUTHORIZED_1(){
         // given
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, withdrawalNickname);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
     }
 
     @Test
-    @Order(15)
+    @Order(18)
     @DisplayName("회원 탈퇴 실패 403 (본인 또는 관리자가 아닐 때)")
     public void 회원_탈퇴_실패_FORBIDDEN_1(){
         // given
         String accessToken = unauthorizedLogin(); // withdrawalNickname이 아닌 사용자의 토큰 정보
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, withdrawalNickname);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
         assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
     }
 
     @Test
-    @Order(15)
+    @Order(19)
     @DisplayName("회원 탈퇴 실패 404 (해당 회원이 없을 때)")
     public void 회원_탈퇴_실패_NOT_FOUND_1(){
         // given
@@ -364,7 +387,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(16)
+    @Order(20)
     @DisplayName("회원 탈퇴 성공 200 (회원 본인)")
     public void 회원_탈퇴_성공_OK_1(){
         // given
@@ -378,7 +401,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(16)
+    @Order(21)
     @DisplayName("회원 탈퇴 성공 200 (관리자)")
     public void 회원_탈퇴_성공_OK_2(){
         // given
@@ -406,6 +429,15 @@ public class MemberAcceptanceTest extends AcceptanceTest {
                 .auth().oauth2(accessToken)
                 .body(request).contentType(APPLICATION_JSON_VALUE)
                 .when().put("/members")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> memberFollowRequest(String accessToken, String nickname) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().post("/members/follow/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
