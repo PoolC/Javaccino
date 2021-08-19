@@ -359,7 +359,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .getAccessToken();
     }
 
-    private static ExtractableResponse<Response> loginRequest(LoginRequest request) {
+    public static ExtractableResponse<Response> loginRequest(LoginRequest request) {
         return RestAssured
                 .given().log().all()
                 .body(request)
