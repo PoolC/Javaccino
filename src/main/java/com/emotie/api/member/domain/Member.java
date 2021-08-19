@@ -13,14 +13,13 @@ import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "members")
@@ -66,6 +65,12 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @Embedded
     private MemberRoles roles;
+
+    @ElementCollection
+    private List<Member> followers = new ArrayList<>();
+
+    @ElementCollection
+    private List<Member> followees = new ArrayList<>();
 
     protected Member() {
     }
@@ -167,13 +172,25 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     public boolean isFollowing(Member member) {
-        // TODO: 2021-08-15 : 팔로잉 로직 구현
-        return true;
+        return this.followers.contains(member);
     }
 
     public boolean isFollowedBy(Member member) {
-        // TODO: 2021-08-15 : 팔로잉 로직 구현
-        return true;
+        return this.followees.contains(member);
+    }
+
+    // 사용자가 누군가를 팔로우한다는 것은
+    public void follow(Member member) {
+        // 사용자의 팔로워에 그 사람이 추가 되고
+        this.followers.add(member);
+
+        // 그 사람의 팔로이에 사용자가 추가되는 것이다.
+        member.followees.add(this);
+    }
+
+    public void unfollow(Member member) {
+        this.followers.remove(member);
+        member.followers.remove(member);
     }
 
     private void checkAuthorizationToken(String authorizationToken) {
@@ -200,6 +217,14 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles.changeRole(MemberRole.MEMBER);
         this.authorizationToken = null;
         this.authorizationTokenValidUntil = null;
+    }
+
+    public void withdraw() {
+        this.roles.changeRole(MemberRole.WITHDRAWAL);
+    }
+
+    public void expel() {
+        this.roles.changeRole(MemberRole.EXPELLED);
     }
 
     private void updatePassword(PasswordResetRequest request) {

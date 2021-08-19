@@ -97,10 +97,14 @@ public class MemberServiceImpl implements MemberService {
         Member follower = getMemberByNickname(followerNickname);
 
         if (user.isFollowing(follower)) {
-            follow(user, follower);
+            unfollow(user, follower);
+            memberRepository.saveAndFlush(user);
+            memberRepository.saveAndFlush(follower);
             return false;
         } else {
-            unfollow(user, follower);
+            follow(user, follower);
+            memberRepository.saveAndFlush(user);
+            memberRepository.saveAndFlush(follower);
             return true;
         }
     }
@@ -148,8 +152,8 @@ public class MemberServiceImpl implements MemberService {
 
     private void checkFollowToggleRequestValidity(Member member, String nickname) {
         checkLogin(member);
-        checkNicknameIsFollowable(nickname);
-
+        checkAuthorized(member);
+        checkNicknameIsFollowable(member, nickname);
     }
 
     private void checkDeleteRequestValidity(Member executor, String nickname) {
@@ -207,9 +211,18 @@ public class MemberServiceImpl implements MemberService {
                 });
     }
 
-    private void checkNicknameIsFollowable(String nickname){
+    private void checkAuthorized(Member member) {
+        if (!member.getRoles().isAcceptedMember()) throw new UnauthorizedException("인증된 회원만 이용할 수 있는 서비스입니다.");
+    }
+
+    private void checkDifferent(Member member1, Member member2) {
+        if (member1.equals(member2)) throw new CannotFollowException("자기 자신을 팔로우할 수는 없습니다.");
+    }
+
+    private void checkNicknameIsFollowable(Member user, String nickname){
         Member follower = getMemberByNickname(nickname);
         MemberRoles roles = follower.getRoles();
+        checkDifferent(user, follower);
         if (!roles.isAcceptedMember()) {
             throw new CannotFollowException("해당 사용자는 아직 인증되지 않아, 팔로우 신청할 수 없습니다.");
         }
@@ -224,18 +237,20 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private void follow(Member user, Member follower) {
-        // TODO: 2021-08-18 ???? 
+        user.follow(follower);
     }
 
     private void unfollow(Member user, Member follower) {
-        // TODO: 2021-08-18 ????
+        user.unfollow(follower);
     }
 
     private void withdrawal(Member user) {
-        // TODO: 2021-08-18
+        user.withdraw();
+        memberRepository.saveAndFlush(user);
     }
 
     private void expel(Member user) {
-
+        user.expel();
+        memberRepository.saveAndFlush(user);
     }
 }
