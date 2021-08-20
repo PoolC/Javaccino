@@ -4,7 +4,6 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
-import com.emotie.api.common.exception.NotSameException;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
@@ -13,13 +12,10 @@ import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.DuplicatedMemberException;
-import com.emotie.api.member.repository.FolloweesRepository;
-import com.emotie.api.member.repository.FollowersRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.NoSuchElementException;
@@ -30,8 +26,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
-    private final FolloweesRepository followeesRepository;
-    private final FollowersRepository followersRepository;
 
     private final PasswordHashProvider passwordHashProvider;
 
