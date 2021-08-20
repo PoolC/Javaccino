@@ -6,19 +6,19 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "members")
@@ -64,6 +64,12 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @Embedded
     private MemberRoles roles;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Member> followers = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<Member> followees = new ArrayList<>();
 
     protected Member() {
     }
@@ -192,5 +198,32 @@ public class Member extends TimestampEntity implements UserDetails {
 
     private void updatePassword(PasswordResetRequest request) {
         this.passwordHash = request.getPassword();
+    }
+
+    public void updateInfo(MemberUpdateRequest request, String encodedPassword) {
+        this.passwordHash = encodedPassword;
+        this.gender = Gender.valueOf(request.getGender());
+        this.dateOfBirth = request.getDateOfBirth();
+    }
+
+    public Boolean isFollowing(Member followee) {
+        return this.followees.contains(followee);
+    }
+
+    public void follow(Member followee) {
+        this.followees.add(followee);
+        followee.followers.add(this);
+    }
+
+    public void unfollow(Member followee) {
+        this.followees.remove(followee);
+        followee.followers.remove(this);
+    }
+
+    public void withdrawal() {
+        this.roles.changeRole(MemberRole.WITHDRAWAL);
+    }
+    public void expel() {
+        this.roles.changeRole(MemberRole.EXPELLED);
     }
 }
