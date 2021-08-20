@@ -51,6 +51,6 @@ public class MemberControllerImpl implements MemberController{
     @DeleteMapping("/{nickname}")
     public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal Member executor, @PathVariable String nickname) throws Exception {
         memberService.delete(executor, nickname);
-        return null;
+        return ResponseEntity.ok().build();
     }
 }
