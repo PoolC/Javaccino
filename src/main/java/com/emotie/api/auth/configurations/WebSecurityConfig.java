@@ -2,6 +2,7 @@ package com.emotie.api.auth.configurations;
 
 import com.emotie.api.auth.domain.JwtAuthenticationFilter;
 import com.emotie.api.auth.infra.JwtTokenProvider;
+import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -64,9 +65,26 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/auth/authorization").not().hasAuthority(MemberRole.EXPELLED.name()) //TODO: 동작은 되지만 논리상 맞는지 모르겠다.
                 .antMatchers(HttpMethod.PUT, "/auth/authorization").not().hasAuthority(MemberRole.EXPELLED.name())
 
+                .antMatchers(HttpMethod.POST, "/members").permitAll()
+                .antMatchers(HttpMethod.PUT, "/members").hasAnyAuthority(
+                        MemberRole.MEMBER.name(),
+                        MemberRole.ADMIN.name(),
+                        MemberRole.WITHDRAWAL.name(),
+                        MemberRole.UNACCEPTED.name()
+                )
+                .antMatchers(HttpMethod.POST, "/members/follow/{nickname}").hasAnyAuthority(
+                        MemberRole.MEMBER.name(),
+                        MemberRole.ADMIN.name()
+                )
+                .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(
+                        MemberRole.MEMBER.name(),
+                        MemberRole.ADMIN.name()
+                )
+
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                         UsernamePasswordAuthenticationFilter.class);
+        http.headers().frameOptions().disable();
     }
 }
