@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.boot.test.json.JsonContent;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
@@ -156,6 +157,21 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberCreateRequest(request);
 
         // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @DisplayName("테스트 06: 회원 가입 실패 [400]; 잘못된 형식의 Req")
+    public void 회원가입_실패_BAD_REQUEST_6() throws Exception {
+        ExtractableResponse<Response> response = RestAssured
+                .given().log().all()
+                .body("{\"nickname\":\"wow\", \"password\":\"wow\", \"passwordCheck\":\"wow\", \"gender\": \"RANDOM\", " +
+                        "\"dateOfBirth\": \"1999-09-09\", \"email\": \"sos@sos\"}")
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/members")
+                .then().log().all()
+                .extract();
+
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
