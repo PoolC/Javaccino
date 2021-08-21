@@ -36,7 +36,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
-	implementation 'org.unbroken-dome.jackson-bean-validation:jackson-bean-validation:0.6.0'
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'

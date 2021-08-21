@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
-import org.unbrokendome.jackson.beanvalidation.JsonValidInput;
-import org.unbrokendome.jackson.beanvalidation.JsonValidated;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -15,7 +13,6 @@ import javax.validation.constraints.PastOrPresent;
 import java.time.LocalDate;
 
 @Getter
-@JsonValidated
 public class MemberCreateRequest {
     @NotBlank(message = "닉네임을 입력해주세요.")
     private final String nickname;
@@ -27,7 +24,6 @@ public class MemberCreateRequest {
     private final String passwordCheck;
 
     @NotNull(message = "성별을 선택해주세요.")
-    @JsonValidInput(message = "유효하지 않은 성별값입니다.")
     private final Gender gender;
 
     @NotNull(message = "생년월일을 입력해주세요.")
