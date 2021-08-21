@@ -16,6 +16,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
@@ -106,7 +107,7 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.valueOf("Random"))
+                .gender(null)
                 .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(createTestEmail)
                 .build();
@@ -127,7 +128,7 @@ public class MemberApiTest extends AcceptanceTest {
 //                .nickname(createTestEmail)
 //                .password(createTestPassword)
 //                .passwordCheck(createTestPassword)
-//                .gender(Gender.HIDDEN.toString())
+//                .gender(Gender.HIDDEN)
 //                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
 //                .email("human@earth.com")
 //                .build();
@@ -230,7 +231,7 @@ public class MemberApiTest extends AcceptanceTest {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
-                .gender(Gender.valueOf("Random Gender"))
+                .gender(null)
                 .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .password(changedPassword)
                 .passwordCheck(changedPassword)
@@ -266,7 +267,7 @@ public class MemberApiTest extends AcceptanceTest {
     @DisplayName("테스트 11: 회원 정보 수정 실패 [400]; 일부 정보만 주었을 때")
     public void 회원정보_수정_성공_BAD_REQUEST_3() throws Exception {
         // given
-        String accessToken = changedAuthorizedLogin();
+        String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
                 .password(MemberDataLoader.password)
                 .passwordCheck(MemberDataLoader.password)
@@ -289,8 +290,10 @@ public class MemberApiTest extends AcceptanceTest {
         // given
         String accessToken = "";
         MemberUpdateRequest request = MemberUpdateRequest.builder()
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .password(changedPassword)
                 .passwordCheck(changedPassword)
+                .gender(Gender.HIDDEN)
                 .build();
 
         // when
@@ -302,7 +305,8 @@ public class MemberApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 13: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
-    public void 회원정보_수정_성공_OK_1() throws Exception {
+    @Rollback
+    public void 회원정보_수정_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
@@ -324,6 +328,17 @@ public class MemberApiTest extends AcceptanceTest {
 //        assertThat(user.getPassword()).isEqualTo(createTestPassword);
 //        assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
 //        assertThat(user.getDateOfBirth()).isEqualTo(now);
+
+        // rollback
+        String rollbackAccessToken = changedAuthorizedLogin();
+        MemberUpdateRequest rollbackRequest = MemberUpdateRequest.builder()
+                .password(MemberDataLoader.password)
+                .passwordCheck(MemberDataLoader.password)
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
+                .build();
+
+        memberUpdateRequest(rollbackAccessToken, rollbackRequest);
     }
 
     /*

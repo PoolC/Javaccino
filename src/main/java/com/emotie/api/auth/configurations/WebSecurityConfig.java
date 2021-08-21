@@ -77,6 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         MemberRole.ADMIN.name()
                 )
                 .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(
+                        MemberRole.UNACCEPTED.name(),
                         MemberRole.MEMBER.name(),
                         MemberRole.ADMIN.name()
                 )

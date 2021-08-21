@@ -125,8 +125,8 @@ public class MemberService {
     }
 
     private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
-        checkLogin(member);
         request.checkPasswordMatches();
+        checkLogin(member);
     }
 
     private void checkFollowToggleRequestValidity(Member member, String nickname) {

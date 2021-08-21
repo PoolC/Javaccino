@@ -1,5 +1,6 @@
 package com.emotie.api.member.controller;
 
+import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberFollowResponse;
@@ -12,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Arrays;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 @RestController
