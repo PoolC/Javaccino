@@ -10,11 +10,11 @@ import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.Past;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -67,10 +67,14 @@ public class Member extends TimestampEntity implements UserDetails {
     private MemberRoles roles;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private List<Member> followers = new ArrayList<>();
+    private final List<Member> followers = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private List<Member> followees = new ArrayList<>();
+    private final List<Member> followees = new ArrayList<>();
+
+    @Column(name = "withdrawal_date")
+    @Nullable
+    private LocalDateTime withdrawalDate = null;
 
     protected Member() {
     }
@@ -142,7 +146,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updateAuthorizationToken(String authorizationToken) {
         this.authorizationToken = authorizationToken;
-        this.authorizationTokenValidUntil = LocalDateTime.now().plusDays(1l);
+        this.authorizationTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
 
     public void checkAuthorizationTokenAndChangeMemberRole(String authorizationToken) {
@@ -152,7 +156,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updatePasswordResetToken(String passwordResetToken) {
         this.passwordResetToken = passwordResetToken;
-        this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1l);
+        this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
 
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
@@ -172,24 +176,23 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     public boolean isFollowing(Member member) {
-        return this.followers.contains(member);
-    }
-
-    public boolean isFollowedBy(Member member) {
         return this.followees.contains(member);
     }
+
+    @SuppressWarnings("unused")
+    public boolean isFollowedBy(Member member) { return this.followers.contains(member); }
 
     // 사용자가 누군가를 팔로우한다는 것은
     public void follow(Member member) {
         // 사용자의 팔로워에 그 사람이 추가 되고
-        this.followers.add(member);
+        this.followees.add(member);
 
         // 그 사람의 팔로이에 사용자가 추가되는 것이다.
-        member.followees.add(this);
+        member.followers.add(this);
     }
 
     public void unfollow(Member member) {
-        this.followers.remove(member);
+        this.followees.remove(member);
         member.followers.remove(member);
     }
 
@@ -221,6 +224,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void withdraw() {
         this.roles.changeRole(MemberRole.WITHDRAWAL);
+        this.withdrawalDate = LocalDateTime.now();
     }
 
     public void expel() {
@@ -234,8 +238,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public void updateUserInfo(
             MemberUpdateRequest request, String passwordHash
     ) {
-        if (passwordHash != null) this.passwordHash = passwordHash;
-        if (request.getGender() != null) this.gender = Gender.valueOf(request.getGender());
-        if (request.getDateOfBirth() != null) this.dateOfBirth = LocalDate.parse(request.getDateOfBirth());
+        this.passwordHash = passwordHash;
+        this.gender = request.getGender();
+        this.dateOfBirth = request.getDateOfBirth();
     }
 }

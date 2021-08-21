@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class MemberFollowResponse {
-    private Boolean isFollowing;
+    private final Boolean isFollowing;
 
     @JsonCreator
     public MemberFollowResponse(

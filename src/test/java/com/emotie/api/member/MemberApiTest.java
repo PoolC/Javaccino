@@ -18,19 +18,19 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.not;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+@SuppressWarnings({"NonAsciiCharacters", "RedundantThrows", "CommentedOutCode"})
 @ActiveProfiles("memberDataLoader")
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @RequiredArgsConstructor
 public class MemberApiTest extends AcceptanceTest {
-    // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname의 형식이 필요할 것으로 보임.
+    // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname 의 형식이 필요할 것으로 보임.
 
 //    // 나중에 실제 구현할 때 추가해야할 테스트 코드
 //    private final MemberRepository memberRepository;
@@ -42,7 +42,7 @@ public class MemberApiTest extends AcceptanceTest {
     /*
         회원가입 테스트를 위한 상수
      */
-    private static final String emptySeq = "",
+    private static final String
             createTestEmail = "randomhuman@gmail.com",
             createTestPassword = "creative!password",
             changedPassword = "better_password?",
@@ -67,7 +67,7 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
+                .gender(Gender.HIDDEN)
                 .email(createTestEmail)
                 .build();
 
@@ -86,8 +86,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth("2100-08-29")
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDate.of(2100, 2,3))
                 .email(createTestEmail)
                 .build();
 
@@ -106,8 +106,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender("Random Gender")
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .gender(Gender.valueOf("Random"))
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(createTestEmail)
                 .build();
 
@@ -146,8 +146,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(MemberDataLoader.wrongPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(createTestEmail)
                 .build();
 
@@ -166,8 +166,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(MemberDataLoader.authorizedEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(createTestEmail)
                 .build();
 
@@ -186,8 +186,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(MemberDataLoader.authorizedEmail)
                 .build();
 
@@ -206,8 +206,8 @@ public class MemberApiTest extends AcceptanceTest {
                 .nickname(createTestEmail)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .email(createTestEmail)
                 .build();
 
@@ -217,7 +217,7 @@ public class MemberApiTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
-//        // 실제 Repository에 등록되었는지 확인
+//        // 실제 Repository 에 등록되었는지 확인
 //        assertThat(memberRepository.findByEmail(createTestEmail).isPresent()).isTrue();
     }
 
@@ -230,7 +230,10 @@ public class MemberApiTest extends AcceptanceTest {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
-                .gender("Random Gender")
+                .gender(Gender.valueOf("Random Gender"))
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
+                .password(changedPassword)
+                .passwordCheck(changedPassword)
                 .build();
 
         // when
@@ -246,8 +249,10 @@ public class MemberApiTest extends AcceptanceTest {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
+                .gender(Gender.HIDDEN)
                 .password(changedPassword)
                 .passwordCheck(MemberDataLoader.wrongPassword)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .build();
 
         // when
@@ -258,7 +263,28 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 11: 회원 정보 수정 실패 [401]; 로그인하지 않았을 때")
+    @DisplayName("테스트 11: 회원 정보 수정 실패 [400]; 일부 정보만 주었을 때")
+    public void 회원정보_수정_성공_BAD_REQUEST_3() throws Exception {
+        // given
+        String accessToken = changedAuthorizedLogin();
+        MemberUpdateRequest request = MemberUpdateRequest.builder()
+                .password(MemberDataLoader.password)
+                .passwordCheck(MemberDataLoader.password)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = memberUpdateRequest(accessToken, request);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+
+//        // 실제 수정되었는지 확인
+//        Member user = getByAccessTokenAssertingExistence(accessToken);
+//        assertThat(user.getPassword()).isEqualTo(createTestPassword);
+    }
+
+    @Test
+    @DisplayName("테스트 12: 회원 정보 수정 실패 [401]; 로그인하지 않았을 때")
     public void 회원정보_수정_실패_UNAUTHORIZED() throws Exception {
         // given
         String accessToken = "";
@@ -275,16 +301,15 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 12: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
+    @DisplayName("테스트 13: 회원 정보 수정 성공 [200]; 모든 정보를 주었을 때")
     public void 회원정보_수정_성공_OK_1() throws Exception {
         // given
-        String now = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE);
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
                 .password(changedPassword)
                 .passwordCheck(changedPassword)
-                .gender(Gender.HIDDEN.toString())
-                .dateOfBirth(now)
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .build();
 
         // when
@@ -300,29 +325,6 @@ public class MemberApiTest extends AcceptanceTest {
 //        assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
 //        assertThat(user.getDateOfBirth()).isEqualTo(now);
     }
-
-    @Test
-    @DisplayName("테스트 13: 회원 정보 수정 성공 [200]; 일부 정보만 주었을 때")
-    public void 회원정보_수정_성공_OK_2() throws Exception {
-        // given
-        String accessToken = changedAuthorizedLogin();
-        MemberUpdateRequest request = MemberUpdateRequest.builder()
-                .password(MemberDataLoader.password)
-                .passwordCheck(MemberDataLoader.password)
-                .build();
-
-        // when
-        ExtractableResponse<Response> response = memberUpdateRequest(accessToken, request);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-//        // 실제 수정되었는지 확인
-//        Member user = getByAccessTokenAssertingExistence(accessToken);
-//        assertThat(user.getPassword()).isEqualTo(createTestPassword);
-    }
-
-    // TODO: 2021-08-13 아무런 정보 수정이 없을 때에도 200 OK가 반환되는지 여부?
 
     /*
         회원 팔로우/언팔로우 테스트
@@ -354,7 +356,7 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 16: 회원 팔로우 실패 [404]; 해당 nickname의 회원이 존재하지 않음")
+    @DisplayName("테스트 16: 회원 팔로우 실패 [404]; 해당 nickname 의 회원이 존재하지 않음")
     public void 회원_팔로우_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -367,7 +369,7 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 17: 회원 팔로우 실패 [409]; 해당 nickname의 회원이 팔로우 신청할 수 없는 대상일 때")
+    @DisplayName("테스트 17: 회원 팔로우 실패 [409]; 해당 nickname 의 회원이 팔로우 신청할 수 없는 대상일 때")
     public void 회원_팔로우_실패_CONFLICT_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -380,7 +382,7 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 18: 회원 팔로우 실패 [409]; 해당 nickname의 회원이 자신일 때")
+    @DisplayName("테스트 18: 회원 팔로우 실패 [409]; 해당 nickname 의 회원이 자신일 때")
     public void 회원_팔로우_실패_CONFLICT_2() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -593,7 +595,7 @@ public class MemberApiTest extends AcceptanceTest {
 
 //    private Member getByAccessTokenAssertingExistence(String accessToken) throws Exception {
 //        String id = jwtTokenProvider.getSubject(accessToken);
-//        // id를 UUID로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
+//        // id를 UUID 로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
 //        Optional<Member> optionalMember = memberRepository.findById(accessToken);
 //        assertThat(optionalMember.isPresent()).isTrue();
 //
@@ -601,7 +603,7 @@ public class MemberApiTest extends AcceptanceTest {
 //    }
 
 //    private Member getByEmailAssertingExistence(String email) throws Exception {
-//        // id를 UUID로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
+//        // id를 UUID 로 갖는 멤버가 존재하는지 확인하고, 존재한다면 그 멤버를 반환 / 아니면 Exception
 //        Optional<Member> optionalMember = memberRepository.findByEmail(email);
 //        assertThat(optionalMember.isPresent()).isTrue();
 //

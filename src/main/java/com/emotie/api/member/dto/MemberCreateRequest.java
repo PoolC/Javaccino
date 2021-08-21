@@ -8,8 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 public class MemberCreateRequest {
@@ -23,10 +23,11 @@ public class MemberCreateRequest {
     private final String passwordCheck;
 
     @NotBlank(message = "성별을 선택해주세요.")
-    private final String gender;
+    private final Gender gender;
 
     @NotBlank(message = "생년월일을 입력해주세요.")
-    private final String dateOfBirth;
+    @Past(message = "시간 여행자는 받아주지 않습니다.")
+    private final LocalDate dateOfBirth;
 
     @NotBlank(message = "이메일을 입력해주세요.")
     private final String email;
@@ -37,8 +38,8 @@ public class MemberCreateRequest {
             @JsonProperty("nickname") String nickname,
             @JsonProperty("password") String password,
             @JsonProperty("passwordCheck") String passwordCheck,
-            @JsonProperty("gender") String gender,
-            @JsonProperty("dateOfBirth") String dateOfBirth,
+            @JsonProperty("gender") Gender gender,
+            @JsonProperty("dateOfBirth") LocalDate dateOfBirth,
             @JsonProperty("email") String email
     ) {
         this.nickname = nickname;
