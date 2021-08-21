@@ -104,12 +104,6 @@ public class MemberService {
         }
     }
 
-    @SuppressWarnings("unused")
-    private Boolean isNicknameValid(String nickname) {
-        // TODO: 2021-08-18 기준? 
-        return true;
-    }
-
     private Boolean isNicknameExists(String nickname) {
         return memberRepository.existsByNickname(nickname);
     }
@@ -119,8 +113,8 @@ public class MemberService {
     }
 
     private void checkCreateRequestValidity(MemberCreateRequest request) {
-        checkNicknameValidity(request.getNickname());
-        checkEmailValidity(request.getEmail());
+        checkNicknameUnique(request.getNickname());
+        checkEmailUnique(request.getEmail());
         request.checkPasswordMatches();
     }
 
@@ -147,17 +141,13 @@ public class MemberService {
         }
     }
 
-    private void checkNicknameValidity(String nickname) {
-        if (!isNicknameValid(nickname)) {
-            throw new IllegalArgumentException("잘못된 닉네임 형식입니다.");
-        }
-
+    private void checkNicknameUnique(String nickname) {
         if (isNicknameExists(nickname)) {
             throw new DuplicatedMemberException("이미 가입한 닉네임입니다.");
         }
     }
 
-    private void checkEmailValidity(String email) {
+    private void checkEmailUnique(String email) {
         if (isEmailExists(email)) {
             throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
         }

@@ -7,14 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Getter
 public class MemberCreateRequest {
     @NotBlank(message = "닉네임을 입력해주세요.")
+    @Size(message = "닉네임은 32글자보다 짧고, 적어도 1글자 이상이어야 합니다.", max = 32)
     private final String nickname;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")
@@ -31,6 +30,7 @@ public class MemberCreateRequest {
     private final LocalDate dateOfBirth;
 
     @NotBlank(message = "이메일을 입력해주세요.")
+    @Email(message = "이메일 형식을 확인해 주세요.")
     private final String email;
 
     @JsonCreator
