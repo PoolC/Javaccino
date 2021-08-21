@@ -88,7 +88,7 @@ public class MemberApiTest extends AcceptanceTest {
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
                 .gender(Gender.HIDDEN)
-                .dateOfBirth(LocalDate.of(2100, 2,3))
+                .dateOfBirth(LocalDate.of(2100, 2, 3))
                 .email(createTestEmail)
                 .build();
 
@@ -300,7 +300,7 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberUpdateRequest(accessToken, request);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -345,8 +345,8 @@ public class MemberApiTest extends AcceptanceTest {
         회원 팔로우/언팔로우 테스트
      */
     @Test
-    @DisplayName("테스트 14: 회원 팔로우 실패 [401]; 로그인하지 않음")
-    public void 회원_팔로우_실패_UNAUTHORIZED() throws Exception {
+    @DisplayName("테스트 14: 회원 팔로우 실패 [403]; 로그인하지 않음")
+    public void 회원_팔로우_실패_FORBIDDEN_1() throws Exception {
         // given
         String accessToken = "";
 
@@ -354,7 +354,7 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -473,8 +473,8 @@ public class MemberApiTest extends AcceptanceTest {
         회원 탈퇴 테스트
      */
     @Test
-    @DisplayName("테스트 21: 회원 탈퇴 실패 [401]; 로그인하지 않음.")
-    public void 회원_탈퇴_실패_UNAUTHORIZED() throws Exception {
+    @DisplayName("테스트 21: 회원 탈퇴 실패 [403]; 로그인하지 않음.")
+    public void 회원_탈퇴_실패_FORBIDDEN_1() throws Exception {
         // given
         String accessToken = "";
 
@@ -482,12 +482,12 @@ public class MemberApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     @DisplayName("테스트 22: 회원 탈퇴 실패 [403]; 본인도 아니고, 관리자도 아님")
-    public void 회원_탈퇴_실패_FORBIDDEN() throws Exception {
+    public void 회원_탈퇴_실패_FORBIDDEN_2() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
 

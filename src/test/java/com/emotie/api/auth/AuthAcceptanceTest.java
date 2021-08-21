@@ -12,7 +12,6 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import static com.emotie.api.member.MemberDataLoader.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,21 +89,21 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 401 (로그인하지 않았을 때)")
-    public void 이메일_인증코드_보내기_실패_UNAUTHORIZATION() {
+    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 403 (로그인하지 않았을 때)")
+    public void 이메일_인증코드_보내기_실패_FORBIDDEN_1() {
         //given
 
         //when
         ExtractableResponse<Response> response = sendAuthorizationTokenRequest("");
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
 
     }
 
     @Test
     @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN() {
+    public void 이메일_인증코드_보내기_실패_FORBIDDEN_2() {
         //given
         String accessToken = authorizedLogin();
 
@@ -131,8 +130,8 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 08: 이메일 인증코드 확인 실패 401 (로그인하지 않았을 때)")
-    public void 이메일_인증코드_확인_실패_UNAUTHORIZED() {
+    @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (로그인하지 않았을 때)")
+    public void 이메일_인증코드_확인_실패_FORBIDDEN_1() {
         //given
         String request = authorizationToken;
 
@@ -140,13 +139,13 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = checkAuthorizationTokenRequest("", request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
 
     }
 
     @Test
     @DisplayName("테스트 09: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
-    public void 이메일_인증코드_확인_실패_FORBIDDEN() {
+    public void 이메일_인증코드_확인_실패_FORBIDDEN_2() {
         //given
         String accessToken = authorizedLogin();
         String request = authorizationToken;
