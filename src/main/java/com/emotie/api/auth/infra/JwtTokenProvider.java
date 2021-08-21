@@ -25,7 +25,7 @@ public class JwtTokenProvider {
         Date now = new Date();
         return Jwts.builder()
                 .setIssuedAt(now)
-                .setIssuer("MoviePicker/Hawapi")
+                .setIssuer("Emotie/Javaccino")
                 .setSubject(member.getUUID())
                 .setExpiration(new Date(now.getTime() + expireTimeInMS))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
