@@ -3,6 +3,7 @@ package com.emotie.api.member.domain;
 import java.util.Collections;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public interface Role {
     default boolean isAdmin() {
         return false;

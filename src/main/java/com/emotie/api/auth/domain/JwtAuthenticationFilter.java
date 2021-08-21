@@ -1,6 +1,9 @@
 package com.emotie.api.auth.domain;
 
 import com.emotie.api.auth.infra.JwtTokenProvider;
+import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.domain.MemberRole;
+import com.emotie.api.member.domain.MemberRoles;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,7 +32,11 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                 .map(userDetails -> new UsernamePasswordAuthenticationToken(userDetails,
                         "",
                         userDetails.getAuthorities()))
-                .ifPresent(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication));
+                .ifPresentOrElse(authentication -> SecurityContextHolder.getContext().setAuthentication(authentication), () -> {
+                    Member publicMember = new Member(MemberRoles.getDefaultFor(MemberRole.PUBLIC));
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(publicMember, "", publicMember.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                });
 
         chain.doFilter(request, response);
     }
