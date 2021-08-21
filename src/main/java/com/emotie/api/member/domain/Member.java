@@ -96,6 +96,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles = roles;
     }
 
+    public Member(MemberRoles roles) {
+        this.roles = roles;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.getAuthorities();
@@ -180,7 +184,9 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     @SuppressWarnings("unused")
-    public boolean isFollowedBy(Member member) { return this.followers.contains(member); }
+    public boolean isFollowedBy(Member member) {
+        return this.followers.contains(member);
+    }
 
     // 사용자가 누군가를 팔로우한다는 것은
     public void follow(Member member) {
