@@ -1,7 +1,6 @@
 package com.emotie.api.auth.service;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
-import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.infra.JwtTokenProvider;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
@@ -34,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Transactional
     public void checkAuthorizationTokenRequestAndChangeMemberRole(Member loginMember, Optional<String> authorizationToken) {
-        checkMemberAuthorized(loginMember);
+        loginMember.checkAuthorized();
         String validAuthorizationToken = checkRequestValid(authorizationToken);
         loginMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
     }
@@ -52,20 +51,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String checkMemberAuthorizedAndCreateAuthorizationToken(Member loginMember) {
-        checkMemberAuthorized(loginMember);
-        return createAuthorizationToken(loginMember);
-    }
-
-    private void checkMemberAuthorized(Member loginMember) {
-        checkLogin(loginMember);
         loginMember.checkAuthorized();
-    }
-
-    private void checkLogin(Member loginMember) {
-        Optional.ofNullable(loginMember)
-                .orElseThrow(() -> {
-                    throw new UnauthenticatedException("로그인하지 않았습니다.");
-                });
+        return createAuthorizationToken(loginMember);
     }
 
     private String createAuthorizationToken(Member member) {

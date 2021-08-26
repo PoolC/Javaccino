@@ -25,6 +25,8 @@ public class MemberDataLoader implements CommandLineRunner {
     public static String authorizedEmail = "jasotn12@naver.com",
             unauthorizedEmail = "anfro2520@gmail.com",
             expelledEmail = "expelled@gmail.com",
+            adminEmail = "admin@gmail.com",
+            followerEmail = "follower@gmail.com",
             getAuthorizationTokenEmail = "authorizationToken@gmail.com",
             expiredAuthorizationTokenEmail = "expiredAuthorizationToken@gmail.com",
             getPasswordResetTokenEmail = "passwordResetToken@gmail.com",
@@ -70,6 +72,38 @@ public class MemberDataLoader implements CommandLineRunner {
                         .authorizationTokenValidUntil(null)
                         .reportCount(0)
                         .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
+                        .build());
+        memberRepository.save(
+                Member.builder()
+                        .UUID(UUID.randomUUID().toString())
+                        .email(adminEmail)
+                        .nickname(adminEmail)
+                        .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
+                        .passwordResetToken(null)
+                        .passwordResetTokenValidUntil(LocalDateTime.now().minusDays(1))
+                        .authorizationToken(null)
+                        .authorizationTokenValidUntil(null)
+                        .reportCount(0)
+                        .roles(MemberRoles.getDefaultFor(MemberRole.ADMIN))
+                        .build());
+        memberRepository.save(
+                Member.builder()
+                        .UUID(UUID.randomUUID().toString())
+                        .email(followerEmail)
+                        .nickname(followerEmail)
+                        .passwordHash(passwordHashProvider.encodePassword(password))
+                        .gender(Gender.HIDDEN)
+                        .dateOfBirth(LocalDate.now())
+                        .introduction(introduction)
+                        .passwordResetToken(null)
+                        .passwordResetTokenValidUntil(LocalDateTime.now().minusDays(1))
+                        .authorizationToken(null)
+                        .authorizationTokenValidUntil(null)
+                        .reportCount(0)
+                        .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
                         .build());
         memberRepository.save(
                 Member.builder()
