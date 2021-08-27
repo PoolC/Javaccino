@@ -300,8 +300,8 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 12: 회원 정보 수정 실패 [401]; 로그인하지 않았을 때")
-    public void 회원정보_수정_실패_UNAUTHORIZED() throws Exception {
+    @DisplayName("테스트 12: 회원 정보 수정 실패 [403]; 로그인하지 않았을 때")
+    public void 회원정보_수정_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = "";
         MemberUpdateRequest request = MemberUpdateRequest.builder()
@@ -373,8 +373,8 @@ public class MemberApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 15: 회원 팔로우 실패 [403]; 이메일 인증하지  않음")
-    public void 회원_팔로우_실패_FORBIDDEN() throws Exception {
+    @DisplayName("테스트 15: 회원 팔로우 실패 [403]; 이메일 인증하지 않음")
+    public void 회원_팔로우_실패_FORBIDDEN_2() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
 

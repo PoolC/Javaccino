@@ -239,7 +239,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(BAD_REQUEST.value());
@@ -257,7 +257,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(BAD_REQUEST.value());
@@ -275,7 +275,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
@@ -293,7 +293,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest("", request);
+        ExtractableResponse<Response> response = passwordResetRequest("", request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -311,7 +311,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -329,7 +329,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(OK.value());
@@ -418,7 +418,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private ExtractableResponse<Response> passwordRestRequest(String passwordResetToken, PasswordResetRequest request) {
+    private ExtractableResponse<Response> passwordResetRequest(String passwordResetToken, PasswordResetRequest request) {
         return RestAssured
                 .given().log().all()
                 .body(request)
