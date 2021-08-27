@@ -1,42 +1,108 @@
 package com.emotie.api.diaries;
 
+import com.emotie.api.AcceptanceTest;
+import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import io.restassured.RestAssured;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
+import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.assertj.core.api.Assertions.assertThat;
+
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
-@SpringBootTest
-@Transactional
 @TestMethodOrder(MethodOrderer.DisplayName.class)
-public class DiariesTest {
+@RequiredArgsConstructor
+public class DiaryApiTest extends AcceptanceTest {
+
+    private final String content = "오늘 잠을 잘 잤다. 좋았다.";
+    private final Integer emotionTagId = 1;
 
     /* Create: 다이어리 작성 */
     @Test
     @DisplayName("테스트 01: 다이어리 작성 시 (400): 감정이 정해지지 않았을 경우")
     public void 작성_실패_감정_없음() {
         //given
+        String accessToken = authorizedLogin();
+        DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
+                .issuedDate(LocalDate.now())
+                .emotionTagId(null)
+                .content(content)
+                .isOpened(false)
+                .build();
 
+        //when
+        ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     @DisplayName("테스트 02: 다이어리 작성 시 (400): 내용이 null일 경우")
     public void 작성_실패_내용_없음() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
+                .issuedDate(LocalDate.now())
+                .emotionTagId(emotionTagId)
+                .content(" ")
+                .isOpened(false)
+                .build();
 
+        //when
+        ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     @DisplayName("테스트 03: 다이어리 작성 시 (401): 로그인하지 않았을 경우")
     public void 작성_실패_비로그인() {
+        //given
+        String accessToken = "";
+        DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
+                .issuedDate(LocalDate.now())
+                .emotionTagId(emotionTagId)
+                .content(content)
+                .isOpened(false)
+                .build();
 
+        //when
+        ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
     }
 
     @Test
     @DisplayName("테스트 04: 다이어리 작성 성공")
     public void 작성_성공() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
+                .issuedDate(LocalDate.now())
+                .emotionTagId(emotionTagId)
+                .content(content)
+                .isOpened(false)
+                .build();
 
+        //when
+        ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     /* Read: 다이어리 조회 */
@@ -242,5 +308,16 @@ public class DiariesTest {
     @DisplayName("테스트 37: 다이어리 신고 성공")
     public void 다이어리_신고_성공() {
 
+    }
+
+    private static ExtractableResponse<Response> diaryCreateRequest(String accessToken, DiaryCreateRequest request) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/diaries")
+                .then().log().all()
+                .extract();
     }
 }
