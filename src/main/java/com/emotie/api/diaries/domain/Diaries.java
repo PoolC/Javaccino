@@ -1,6 +1,7 @@
 package com.emotie.api.diaries.domain;
 
 import com.emotie.api.common.domain.Postings;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,6 @@ public class Diaries extends Postings {
 
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
-
 
     @Builder
     public Diaries(

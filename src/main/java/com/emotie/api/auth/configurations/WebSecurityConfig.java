@@ -69,6 +69,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/members/follow/{nickname}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
 
+                .antMatchers(HttpMethod.POST, "/diaries").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
