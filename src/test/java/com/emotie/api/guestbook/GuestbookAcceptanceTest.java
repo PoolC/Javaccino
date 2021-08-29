@@ -2,6 +2,7 @@ package com.emotie.api.guestbook;
 
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import com.emotie.api.member.MemberDataLoader;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.auth.AuthAcceptanceTest.unauthorizedLogin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -22,8 +24,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class GuestbookAcceptanceTest extends AcceptanceTest {
 
     private static final String
-            ownerNickname = MemberDataLoader.authorizedEmail, notExistNickname = "없는 닉네임", myNickname = MemberDataLoader.unauthorizedEmail,
-            createContent = "구독하고 갑ㄴ디ㅏ";
+            ownerNickname = MemberDataLoader.authorizedEmail, notExistNickname = "없는 닉네임", writerNickname = MemberDataLoader.unauthorizedEmail,
+            createContent = "구독하고 갑ㄴ디ㅏ", changedContent = "구독하고 갑니다";
+
+    private static final int
+            existId = GuestbookDataLoader.existId, notExistId = GuestbookDataLoader.notExistId;
 
     /*
         1. 방명록 전체 조회
@@ -112,7 +117,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, myNickname); ///
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, writerNickname); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
@@ -153,10 +158,79 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         3. 방명록 수정
      */
+    @Test
+    @DisplayName("테스트 3-1: 방명록 수정 실패 [403]; 방명록 작성자가 아닐 때")
+    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+
+    }
+
+    @Test
+    @DisplayName("테스트 3-2: 방명록 수정 실패 [400]; content가 null일 때")
+    public void 방명록_수정_실패_BAD_REQUEST() throws Exception {
+
+    }
+
+    @Test
+    @DisplayName("테스트 3-3: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
+    public void 방명록_수정_실패_NOT_FOUND_1() throws Exception {
+
+    }
+
+    @Test
+    @DisplayName("테스트 3-4: 방명록 수정 실패 [404]; nickname에 해당하는 회원이 없을 때")
+    public void 방명록_수정_실패_NOT_FOUND_2() throws Exception {
+
+    }
+
+    @Test
+    @DisplayName("테스트 3-5: 방명록 수정 성공 [200];")
+    public void 방명록_수정_성공_OK() throws Exception {
+        // TODO: 본인이 수정하려고 한 방명록이 아닌 다른 본인작성 방명록을 수정하려 하는건 어떻게 막나?
+        // given
+        String accessToken = unauthorizedLogin();
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content(changedContent)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
 
     /*
         4. 방명록 신고하기(toggle)
      */
+    @Test
+    @DisplayName("테스트 4-: 방명록 신고 성공 [200]; isReported = false -> true")
+    public void 방명록_신고_성공_OK() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(GuestbookReportResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", true);
+    }
+
+    @Test
+    @DisplayName("테스트 4-: 방명록 신고 취소 성공 [200]; isReported = true -> false")
+    public void 방명록_신고_취소_성공_OK() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(GuestbookReportResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", false);
+    }
 
     /*
         5. 방명록 삭제
@@ -165,6 +239,33 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         6. 방명록 전체 삭제
      */
+    @Test
+    @DisplayName("테스트 6-1: 방명록 수정 실패 [403]; 방명록 주인장이 아닐 때")
+    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 6-2: 방명록 수정 성공 [200];")
+    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
 
 
     /*
@@ -182,6 +283,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     private static ExtractableResponse<Response> guestbookCreateRequest(String accessToken, GuestbookCreateRequest request, String nickname) {
         return RestAssured
                 .given().log().all()
+                .auth().oauth2(accessToken)
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().post("/guestbooks/{nickname}", nickname)
@@ -189,4 +291,24 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
+    private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, String nickname, Integer guestbookId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().put("/guestbooks/{nickname}/{guestbookId}", nickname, guestbookId)
+                .then().log().all()
+                .extract();
+    }
+
+
+    private static ExtractableResponse<Response> guestbookAllDeleteRequest(String accessToken, String nickname) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().delete("/guestbooks/{nickname}", nickname)
+                .then().log().all()
+                .extract();
+    }
 }
