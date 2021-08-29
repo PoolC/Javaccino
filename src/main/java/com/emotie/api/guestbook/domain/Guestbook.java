@@ -19,8 +19,9 @@ public class Guestbook extends Postings {
 
     @Builder
     public Guestbook(
-            Integer ownerId, Integer guestId, String content, Integer reportCount
+            Integer id, Integer ownerId, Integer guestId, String content, Integer reportCount
     ) {
+        this.id = id;
         this.ownerId = ownerId;
         this.writerId = guestId;
         this.content = content;
