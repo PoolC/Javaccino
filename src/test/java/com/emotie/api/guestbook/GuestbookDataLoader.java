@@ -27,8 +27,8 @@ public class GuestbookDataLoader implements CommandLineRunner {
                 // unauth 유저가 auth 유저에게 남긴 방명록
                 Guestbook.builder()
                         .id(existId)
-                        .ownerId(unauthorizedUUID)
-                        .guestId(authorizedUUID)
+                        .ownerId(authorizedUUID)
+                        .guestId(unauthorizedUUID)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
                         .build());
