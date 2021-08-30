@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 @Getter
 @NoArgsConstructor
@@ -22,7 +24,7 @@ public class Diaries extends Postings {
 
     @Builder
     public Diaries(
-            Integer memberId, String content, Integer emotionTagId, Boolean isOpened, Integer reportCount
+            String memberId, String content, Integer emotionTagId, Boolean isOpened, Integer reportCount
     ) {
         this.writerId = memberId;
         this.content = content;
@@ -36,7 +38,7 @@ public class Diaries extends Postings {
      *
      * @return 인스턴스의 데이터가 들어있는 Map
      */
-    private Map<String, Object> toMap(){
+    private Map<String, Object> toMap() {
         return Map.ofEntries(
                 Map.entry("id", this.id),
                 Map.entry("member_id", this.writerId),
@@ -55,9 +57,9 @@ public class Diaries extends Postings {
     /**
      * 새로운 내용으로 업데이트를 진행하고 기존 내용을 Map으로 반환함.
      *
-     * @param content -> 새로운 내용
+     * @param content      -> 새로운 내용
      * @param emotionTagId -> 새로운 감정 태그
-     * @param isOpened -> 접근성 갱신
+     * @param isOpened     -> 접근성 갱신
      * @return 기존 내용
      */
     public Map<String, Object> updatePosting(String content, Integer emotionTagId, Boolean isOpened) {

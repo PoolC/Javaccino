@@ -6,7 +6,6 @@ import lombok.Setter;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -18,7 +17,7 @@ public abstract class Postings extends TimestampEntity {
     protected Integer id;
 
     @Column(name = "writer_id", nullable = false)
-    protected Integer writerId;
+    protected String writerId;
 
     @Column(name = "content", nullable = false)
     protected String content;

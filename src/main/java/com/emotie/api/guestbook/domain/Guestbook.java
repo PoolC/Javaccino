@@ -14,12 +14,12 @@ import java.util.Map;
 @Entity(name = "guestbooks")
 public class Guestbook extends Postings {
     @Column(name = "owner_id", nullable = false)
-    private Integer ownerId;
+    private String ownerId;
 
 
     @Builder
     public Guestbook(
-            Integer id, Integer ownerId, Integer guestId, String content, Integer reportCount
+            Integer id, String ownerId, String guestId, String content, Integer reportCount
     ) {
         this.id = id;
         this.ownerId = ownerId;

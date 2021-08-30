@@ -23,13 +23,12 @@ public class GuestbookDataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // TODO: UUID는 String인데, ownerId와 guestId는 int 협의 필요
         guestbookRepository.save(
                 // unauth 유저가 auth 유저에게 남긴 방명록
                 Guestbook.builder()
                         .id(existId)
-//                        .ownerId(unauthorizedUUID)
-//                        .guestId(authorizedUUID)
+                        .ownerId(unauthorizedUUID)
+                        .guestId(authorizedUUID)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
                         .build());
