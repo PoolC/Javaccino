@@ -2,6 +2,7 @@ package com.emotie.api.guestbook;
 
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookReportResponse;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import com.emotie.api.member.MemberDataLoader;
 import io.restassured.RestAssured;
@@ -168,7 +169,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -184,7 +185,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -192,7 +193,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 3-3: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
-    public void 방명록_수정_실패_NOT_FOUND_1() throws Exception {
+    public void 방명록_수정_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
@@ -200,30 +201,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, notExistId); ///
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, notExistId); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    @DisplayName("테스트 3-4: 방명록 수정 실패 [404]; 해당 nickname이 없을 때")
-    public void 방명록_수정_실패_NOT_FOUND_2() throws Exception {
-        // given
-        String accessToken = unauthorizedLogin();
-        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
-                .content(changedContent)
-                .build();
-
-        // when
-        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, notExistNickname, existId); ///
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-    }
-
-    @Test
-    @DisplayName("테스트 3-5: 방명록 수정 성공 [200];")
+    @DisplayName("테스트 3-4: 방명록 수정 성공 [200];")
     public void 방명록_수정_성공_OK() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
@@ -232,7 +217,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -242,7 +227,47 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         4. 방명록 신고하기(toggle)
      */
     @Test
-    @DisplayName("테스트 4-: 방명록 신고 성공 [200]; reportCnt++")
+    @DisplayName("테스트 4-1: 방명록 신고 실패 [403]; 로그인하지 않았을 때")
+    public void 방명록_신고_실패_FORBIDDEN() throws Exception {
+        // given
+        String accessToken = ""; ///
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 4-2: 방명록 신고 실패 [404]; 해당 guestbookId가 없을 때")
+    public void 방명록_신고_실패_NOT_FOUND() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, notExistId); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 4-3: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
+    public void 방명록_신고_실패_CONFLICT() throws Exception {
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+    }
+
+    // TODO: true, false 나오는지 확인해야 되며, 관계 테이블 다 엮을 것
+    @Test
+    @DisplayName("테스트 4-4: 방명록 신고 성공 [200]; isReported = true")
     public void 방명록_신고_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -257,7 +282,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-: 방명록 신고 취소 성공 [200]; reportCnt--")
+    @DisplayName("테스트 4-5: 방명록 신고 취소 성공 [200]; isReported = false")
     public void 방명록_신고_취소_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -337,20 +362,27 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .body(request)
-                .contentType(APPLICATION_JSON_VALUE)
+                .body(request).contentType(APPLICATION_JSON_VALUE)
                 .when().post("/guestbooks/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, String nickname, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, Integer guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .body(request)
-                .contentType(APPLICATION_JSON_VALUE)
-                .when().put("/guestbooks/{nickname}/{guestbookId}", nickname, guestbookId)
+                .body(request).contentType(APPLICATION_JSON_VALUE)
+                .when().put("/guestbooks/{guestbookId}", guestbookId)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> guestbookReportRequest(String accessToken, Integer guestbookId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().put("/guestbooks/report/{guestbookId}", guestbookId)
                 .then().log().all()
                 .extract();
     }
