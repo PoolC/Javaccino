@@ -92,7 +92,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 2-2: 방명록 작성 실패 [400]; content가 null일 때")
+    @DisplayName("테스트 2-2: 방명록 작성 실패 [400]; content가 blank일 때")
     public void 방명록_작성_실패_BAD_REQUEST() throws Exception {
         // given
         String accessToken = unauthorizedLogin();
@@ -161,31 +161,70 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @Test
     @DisplayName("테스트 3-1: 방명록 수정 실패 [403]; 방명록 작성자가 아닐 때")
     public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+        // given
+        String accessToken = authorizedLogin(); ///
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content(changedContent)
+                .build();
 
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    @DisplayName("테스트 3-2: 방명록 수정 실패 [400]; content가 null일 때")
+    @DisplayName("테스트 3-2: 방명록 수정 실패 [400]; content가 blank일 때")
     public void 방명록_수정_실패_BAD_REQUEST() throws Exception {
+        // given
+        String accessToken = unauthorizedLogin();
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content("") ///
+                .build();
 
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
     @DisplayName("테스트 3-3: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_수정_실패_NOT_FOUND_1() throws Exception {
+        // given
+        String accessToken = unauthorizedLogin();
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content(changedContent)
+                .build();
 
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, ownerNickname, notExistId); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    @DisplayName("테스트 3-4: 방명록 수정 실패 [404]; nickname에 해당하는 회원이 없을 때")
+    @DisplayName("테스트 3-4: 방명록 수정 실패 [404]; 해당 nickname이 없을 때")
     public void 방명록_수정_실패_NOT_FOUND_2() throws Exception {
+        // given
+        String accessToken = unauthorizedLogin();
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content(changedContent)
+                .build();
 
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, notExistNickname, existId); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     @DisplayName("테스트 3-5: 방명록 수정 성공 [200];")
     public void 방명록_수정_성공_OK() throws Exception {
-        // TODO: 본인이 수정하려고 한 방명록이 아닌 다른 본인작성 방명록을 수정하려 하는건 어떻게 막나?
         // given
         String accessToken = unauthorizedLogin();
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
@@ -203,7 +242,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         4. 방명록 신고하기(toggle)
      */
     @Test
-    @DisplayName("테스트 4-: 방명록 신고 성공 [200]; isReported = false -> true")
+    @DisplayName("테스트 4-: 방명록 신고 성공 [200]; reportCnt++")
     public void 방명록_신고_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -218,7 +257,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-: 방명록 신고 취소 성공 [200]; isReported = true -> false")
+    @DisplayName("테스트 4-: 방명록 신고 취소 성공 [200]; reportCnt--")
     public void 방명록_신고_취소_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -240,28 +279,42 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         6. 방명록 전체 삭제
      */
     @Test
-    @DisplayName("테스트 6-1: 방명록 수정 실패 [403]; 방명록 주인장이 아닐 때")
-    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+    @DisplayName("테스트 6-1: 방명록 전체 삭제 실패 [403]; 방명록 주인장이 아닐 때")
+    public void 방명록_전체_삭제_실패_FORBIDDEN() throws Exception {
 
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = unauthorizedLogin(); ///
 
         // when
-        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken);
+        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, writerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 6-2: 방명록 수정 성공 [200];")
-    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+    @DisplayName("테스트 6-2: 방명록 전체 삭제 실패 [404]; 해당 nickname이 없을 때")
+    public void 방명록_전체_삭제_실패_NOT_FOUND() throws Exception {
+
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, notExistNickname); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 6-3: 방명록 전체 삭제 성공 [200];")
+    public void 방명록_전체_삭제_성공_OK() throws Exception {
 
         // given
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken);
+        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, ownerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -307,7 +360,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().delete("/guestbooks/{nickname}", nickname)
+                .when().delete("/guestbooks/clear/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
