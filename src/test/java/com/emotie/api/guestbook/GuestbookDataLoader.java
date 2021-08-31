@@ -19,7 +19,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
 
     public static String unauthorizedUUID = memberRepository.findByNickname(MemberDataLoader.unauthorizedEmail).get().getUUID(),
             authorizedUUID = memberRepository.findByNickname(MemberDataLoader.authorizedEmail).get().getUUID();
-    public static Integer existId = 1, notExistId = 2;
+    public static Integer existId = 1, reportedId = 2, notExistId = 3;
 
     @Override
     public void run(String... args) throws Exception {
@@ -31,6 +31,15 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .guestId(unauthorizedUUID)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
+                        .build());
+        guestbookRepository.save(
+                // 신고된 방명록
+                Guestbook.builder()
+                        .id(reportedId)
+                        .ownerId(authorizedUUID)
+                        .guestId(unauthorizedUUID)
+                        .content("무수한 신고의 요청이..!")
+                        .reportCount(5)
                         .build());
     }
 }

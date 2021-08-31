@@ -29,7 +29,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
             createContent = "구독하고 갑ㄴ디ㅏ", changedContent = "구독하고 갑니다";
 
     private static final int
-            existId = GuestbookDataLoader.existId, notExistId = GuestbookDataLoader.notExistId;
+            existId = GuestbookDataLoader.existId, reportedId = GuestbookDataLoader.reportedId, notExistId = GuestbookDataLoader.notExistId;
 
     /*
         1. 방명록 전체 조회
@@ -299,6 +299,75 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         5. 방명록 삭제
      */
+    @Test
+    @DisplayName("테스트 5-1: 방명록 삭제 실패 [403]; 방명록 주인장이나 작성자가 아닐 때")
+    public void 방명록_삭제_실패_FORBIDDEN_1() throws Exception {
+
+        // given
+        String accessToken = ""; ///
+
+        // when
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 5-2: 방명록 삭제 실패 [403]; 신고된 방명록일 때")
+    public void 방명록_삭제_실패_FORBIDDEN_2() throws Exception {
+
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, reportedId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 5-3: 방명록 삭제 실패 [404]; 해당 guestbookId가 없을 때")
+    public void 방명록_삭제_실패_NOT_FOUND() throws Exception {
+
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, notExistId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 5-4: 방명록 삭제 성공 [200]; 작성자가 삭제")
+    public void 방명록_삭제_성공_OK_1() throws Exception {
+
+        // given
+        String accessToken = unauthorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    @DisplayName("테스트 5-5: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
+    public void 방명록_삭제_성공_OK_2() throws Exception {
+
+        // given
+        String accessToken = authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
 
     /*
         6. 방명록 전체 삭제
@@ -387,6 +456,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
+    private static ExtractableResponse<Response> guestbookDeleteRequest(String accessToken, Integer guestbookId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().delete("/guestbooks/{guestbookId}", guestbookId)
+                .then().log().all()
+                .extract();
+    }
 
     private static ExtractableResponse<Response> guestbookAllDeleteRequest(String accessToken, String nickname) {
         return RestAssured
