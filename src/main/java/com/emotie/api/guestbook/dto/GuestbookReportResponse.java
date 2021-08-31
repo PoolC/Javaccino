@@ -7,14 +7,11 @@ import lombok.Getter;
 @Getter
 public class GuestbookReportResponse {
     private final Boolean isReported;
-    private final Integer reportCnt;
 
     @JsonCreator
     public GuestbookReportResponse(
-            @JsonProperty("isReported") Boolean isReported,
-            @JsonProperty("reportCnt") Integer reportCnt
+            @JsonProperty("isReported") Boolean isReported
     ) {
         this.isReported = isReported;
-        this.reportCnt = reportCnt;
     }
 }
