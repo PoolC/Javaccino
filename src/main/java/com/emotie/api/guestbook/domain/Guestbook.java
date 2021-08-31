@@ -64,4 +64,9 @@ public class Guestbook extends Postings {
     public Postings reportPosting() {
         return this;
     }
+
+    // TODO: 블라인드할 신고 누적 신고 횟수 어디에 저장?
+    public Boolean isNotBlinded() {
+        return (this.getReportCount() >= 10);
+    }
 }

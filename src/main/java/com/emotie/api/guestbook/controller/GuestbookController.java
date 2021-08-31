@@ -3,6 +3,7 @@ package com.emotie.api.guestbook.controller;
 import com.emotie.api.guestbook.dto.GuestbookReportResponse;
 import com.emotie.api.guestbook.dto.GuestbookResponse;
 import com.emotie.api.guestbook.dto.GuestbooksResponse;
+import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import lombok.RequiredArgsConstructor;
