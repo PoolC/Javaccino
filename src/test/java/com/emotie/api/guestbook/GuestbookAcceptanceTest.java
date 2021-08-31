@@ -41,7 +41,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = getGuestbooksRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -54,7 +54,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getGuestbooksRequest(accessToken, notExistNickname); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistNickname); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -67,7 +67,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getGuestbooksRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -380,7 +380,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin(); ///
 
         // when
-        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, writerNickname);
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, writerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -394,7 +394,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, notExistNickname); ///
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, notExistNickname); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -408,7 +408,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookAllDeleteRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, ownerNickname);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -418,7 +418,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         private methods
      */
-    private static ExtractableResponse<Response> getGuestbooksRequest(String accessToken, String nickname) {
+    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String nickname) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -465,7 +465,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookAllDeleteRequest(String accessToken, String nickname) {
+    private static ExtractableResponse<Response> guestbookDeleteAllRequest(String accessToken, String nickname) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
