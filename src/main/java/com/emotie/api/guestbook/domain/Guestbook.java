@@ -1,6 +1,7 @@
 package com.emotie.api.guestbook.domain;
 
 import com.emotie.api.common.domain.Postings;
+import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -68,5 +69,9 @@ public class Guestbook extends Postings {
     // TODO: 블라인드할 신고 누적 신고 횟수 어디에 저장?
     public Boolean isNotBlinded() {
         return (this.getReportCount() >= 10);
+    }
+
+    public void update(GuestbookUpdateRequest request) {
+        this.content = request.getContent();
     }
 }

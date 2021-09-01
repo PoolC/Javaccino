@@ -1,11 +1,8 @@
 package com.emotie.api.guestbook.controller;
 
-import com.emotie.api.guestbook.dto.GuestbookReportResponse;
-import com.emotie.api.guestbook.dto.GuestbookResponse;
-import com.emotie.api.guestbook.dto.GuestbooksResponse;
+import com.emotie.api.guestbook.dto.*;
 import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.dto.MemberUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +27,7 @@ public class GuestbookController {
             @AuthenticationPrincipal Member user, @PathVariable String nickname
     ) throws Exception {
         List<GuestbookResponse> guestbooks = new ArrayList<>();
-        guestbooks = guestbookService.getAllBoards(nickname).stream()
+        guestbooks = guestbookService.getAllBoards(user, nickname).stream()
                 .filter(guestbook -> guestbook.isNotBlinded())
                 .map(GuestbookResponse::new)
                 .collect(Collectors.toList());
@@ -42,7 +39,7 @@ public class GuestbookController {
 
     @PostMapping(value = "/{nickname}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createGuestbook(
-            @AuthenticationPrincipal Member user, @RequestBody @Valid MemberUpdateRequest request, @PathVariable String nickname
+            @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookCreateRequest request, @PathVariable String nickname
     ) throws Exception {
         guestbookService.create(user, request, nickname);
         return ResponseEntity.ok().build();
@@ -50,7 +47,7 @@ public class GuestbookController {
 
     @PutMapping(value = "/{guestbookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGuestbook(
-            @AuthenticationPrincipal Member user, @RequestBody @Valid MemberUpdateRequest request, @PathVariable Integer guestbookId
+            @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookUpdateRequest request, @PathVariable Integer guestbookId
     ) throws Exception {
         guestbookService.update(user, request, guestbookId);
         return ResponseEntity.ok().build();
