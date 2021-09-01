@@ -28,7 +28,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                 Guestbook.builder()
                         .id(existId)
                         .ownerId(authorizedUUID)
-                        .guestId(unauthorizedUUID)
+                        .writerId(unauthorizedUUID)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
                         .build());
@@ -37,7 +37,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                 Guestbook.builder()
                         .id(reportedId)
                         .ownerId(authorizedUUID)
-                        .guestId(unauthorizedUUID)
+                        .writerId(unauthorizedUUID)
                         .content("무수한 신고의 요청이..!")
                         .reportCount(5)
                         .build());
