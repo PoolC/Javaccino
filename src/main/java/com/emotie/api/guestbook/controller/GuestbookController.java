@@ -53,9 +53,9 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/report/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GuestbookReportResponse> toggleGuestbookReport(@AuthenticationPrincipal Member user, @PathVariable String nickname) throws Exception {
-        Boolean isReported = guestbookService.toggleReport(user, nickname);
+    @PutMapping(value = "/report/{guestbookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<GuestbookReportResponse> toggleGuestbookReport(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
+        Boolean isReported = guestbookService.toggleReport(user, guestbookId);
         return ResponseEntity.ok(new GuestbookReportResponse(isReported));
     }
 

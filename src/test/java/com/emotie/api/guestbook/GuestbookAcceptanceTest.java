@@ -265,7 +265,6 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
-    // TODO: true, false 나오는지 확인해야 되며, 관계 테이블 다 엮을 것
     @Test
     @DisplayName("테스트 4-4: 방명록 신고 성공 [200]; isReported = true")
     public void 방명록_신고_성공_OK() throws Exception {

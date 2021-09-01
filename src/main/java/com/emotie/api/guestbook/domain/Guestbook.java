@@ -2,12 +2,17 @@ package com.emotie.api.guestbook.domain;
 
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
+import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -17,6 +22,8 @@ public class Guestbook extends Postings {
     @Column(name = "owner_id", nullable = false)
     private String ownerId;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    private final List<Member> reporters = new ArrayList<>();
 
     @Builder
     public Guestbook(
@@ -73,5 +80,16 @@ public class Guestbook extends Postings {
 
     public void update(GuestbookUpdateRequest request) {
         this.content = request.getContent();
+    }
+
+    // TODO: reporters 리스트가 있으면 굳이 카운트를 셀 필요가 있나?
+    public void reportedBy(Member user) {
+        this.reporters.add(user);
+        this.reportCount++;
+    }
+
+    public void unreportedBy(Member user) {
+        this.reporters.remove(user);
+        this.reportCount--;
     }
 }

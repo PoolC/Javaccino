@@ -6,6 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -71,6 +72,9 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followees = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private final List<Guestbook> reportedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -247,5 +251,25 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordHash = passwordHash;
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
+    }
+
+    public Boolean isReported(Guestbook guestbook) {
+        return this.reportedGuestbooks.contains(guestbook);
+    }
+
+    public void report(Guestbook guestbook) {
+        this.reportedGuestbooks.add(guestbook);
+    }
+
+    public void unreport(Guestbook guestbook) {
+        this.reportedGuestbooks.remove(guestbook);
+    }
+
+    public void updateReportCnt(Boolean flag) {
+        if (flag) {
+            this.reportCount++;
+        } else {
+            this.reportCount--;
+        }
     }
 }
