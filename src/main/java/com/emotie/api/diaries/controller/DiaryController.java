@@ -4,10 +4,12 @@ import com.emotie.api.diaries.dto.DiaryCreateRequest;
 import com.emotie.api.diaries.dto.DiaryExportRequest;
 import com.emotie.api.diaries.dto.DiaryReadResponse;
 import com.emotie.api.diaries.service.DiaryService;
+import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -24,8 +26,15 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/follow/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DiaryReadResponse> read() throws Exception {
+    @PostMapping(value = "/{diaryId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DiaryReadResponse> read(@PathVariable Integer diaryId) throws Exception {
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value = "/{diaryId}")
+    public ResponseEntity<Void> update(
+            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
+    ) throws Exception {
         return ResponseEntity.ok().build();
     }
 

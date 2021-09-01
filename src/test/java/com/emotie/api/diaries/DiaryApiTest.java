@@ -4,6 +4,7 @@ import com.emotie.api.AcceptanceTest;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
 import com.emotie.api.diaries.dto.DiaryExportRequest;
 import com.emotie.api.diaries.dto.DiaryReadResponse;
+import com.emotie.api.diaries.dto.DiaryUpdateRequest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -115,7 +116,7 @@ public class DiaryApiTest extends AcceptanceTest {
         Integer diaryId = 0;
 
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -128,7 +129,7 @@ public class DiaryApiTest extends AcceptanceTest {
         Integer diaryId = 0;
 
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -141,7 +142,7 @@ public class DiaryApiTest extends AcceptanceTest {
         Integer diaryId = 0;
 
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -167,39 +168,93 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Update: 다이어리 수정 */
     @Test
-    @DisplayName("테스트 11: 다이어리 수정 시 (400): 감정이 정해지지 않았을 경우")
-    public void 수정_실패_감정_없음() {
+    @DisplayName("테스트 11: 다이어리 수정 시 [400]; 감정이 정해지지 않았을 경우")
+    public void 수정_실패_BAD_REQUEST_1() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    @DisplayName("테스트 12: 다이어리 수정 시 (400): 내용이 null일 경우")
-    public void 수정_실패_내용_없음() {
+    @DisplayName("테스트 12: 다이어리 수정 시 [400]; 내용이 null일 경우")
+    public void 수정_실패_BAD_REQUEST_2() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    @DisplayName("테스트 13: 다이어리 수정 시 (401): 로그인 되어 있지 않았을 경우")
-    public void 수정_실패_비로그인() {
+    @DisplayName("테스트 13: 다이어리 수정 시 [403]; 로그인 되어 있지 않았을 경우")
+    public void 수정_실패_FORBIDDEN_1() {
+        //given
+        String accessToken = "";
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 14: 다이어리 수정 시 (403): 수정을 요청한 사람이 작성자와 다름")
-    public void 수정_실패_작성자가_아님() {
+    @DisplayName("테스트 14: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
+    public void 수정_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 15: 다이어리 수정 시 (404): 해당 다이어리가 없음")
+    @DisplayName("테스트 15: 다이어리 수정 시 [404]; 해당 다이어리가 없음")
     public void 수정_실패_게시물_없음() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 16: 다이어리 수정 성공")
+    @DisplayName("테스트 16: 다이어리 수정 성공 [200]")
     public void 수정_성공() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     /* Delete: 다이어리 삭제 */
@@ -289,7 +344,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 28: 다이어리를 내보낼 때 [404]: 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 28: 다이어리를 내보낼 때 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_내보내기_실패_NOT_FOUND() {
         //given
         String accessToken = authorizedLogin();
@@ -384,7 +439,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(String diaryId) {
+    private static ExtractableResponse<Response> diaryReadRequest(Integer diaryId) {
         return RestAssured
                 .given().log().all()
                 .when().post("/diaries/{diaryId}", diaryId)
@@ -399,6 +454,19 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().post("/diaries/export")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryUpdateRequest(
+            String accessToken, DiaryUpdateRequest request, Integer diaryId
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().put("/diaries/{diaryId}", diaryId)
                 .then().log().all()
                 .extract();
     }
