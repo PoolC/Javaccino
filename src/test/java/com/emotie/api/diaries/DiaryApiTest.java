@@ -2,6 +2,7 @@ package com.emotie.api.diaries;
 
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryReadResponse;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -30,7 +31,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Create: 다이어리 작성 */
     @Test
-    @DisplayName("테스트 01: 다이어리 작성 시 (400): 감정이 정해지지 않았을 경우")
+    @DisplayName("테스트 01: 다이어리 작성 시 [400]; 감정이 정해지지 않았을 경우")
     public void 작성_실패_감정_없음() {
         //given
         String accessToken = authorizedLogin();
@@ -49,7 +50,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02: 다이어리 작성 시 (400): 내용이 null일 경우")
+    @DisplayName("테스트 02: 다이어리 작성 시 [400]; 내용이 null일 경우")
     public void 작성_실패_내용_없음() {
         //given
         String accessToken = authorizedLogin();
@@ -68,7 +69,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03: 다이어리 작성 시 (401): 로그인하지 않았을 경우")
+    @DisplayName("테스트 03: 다이어리 작성 시 [401]; 로그인하지 않았을 경우")
     public void 작성_실패_비로그인() {
         //given
         String accessToken = "";
@@ -87,7 +88,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 04: 다이어리 작성 성공")
+    @DisplayName("테스트 04: 다이어리 작성 성공 [200]")
     public void 작성_성공() {
         //given
         String accessToken = authorizedLogin();
@@ -107,27 +108,47 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Read: 다이어리 조회 */
     @Test
-    @DisplayName("테스트 05: 다이어리 개별 조회 시 (403): 비공개 게시물의 경우")
+    @DisplayName("테스트 05: 다이어리 개별 조회 시 [403]; 비공개 게시물의 경우")
     public void 개별_조회_실패_비공개_게시물() {
+        //given
+        Integer diaryId = 0;
 
+        //when
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 06: 다이어리 개별 조회 시 (404): 해당 게시물이 없을 경우")
+    @DisplayName("테스트 06: 다이어리 개별 조회 시 [404]; 해당 게시물이 없을 경우")
     public void 개별_조회_실패_게시물_없음() {
+        //given
+        Integer diaryId = 0;
 
+        //when
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 07: 다이어리 개별 조회 성공")
+    @DisplayName("테스트 07: 다이어리 개별 조회 성공 [200]")
     public void 개별_조회_성공() {
+        //given
+        Integer diaryId = 0;
 
+        //when
+        ExtractableResponse<Response> response = diaryReadRequest(diaryId.toString());
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
-    @DisplayName("테스트 08: 다이어리 전체 조회 시 (401): 로그인하지 않았을 경우")
+    @DisplayName("테스트 08: 다이어리 전체 조회 시 (403): 로그인하지 않았을 경우")
     public void 전체_조회_실패_비로그인() {
-
     }
 
     @Test
@@ -317,6 +338,16 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().post("/diaries")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryReadRequest(
+            String diaryID
+    ) {
+        return RestAssured
+                .given().log().all()
+                .when().post("/members/follow/{nickname}", diaryID)
                 .then().log().all()
                 .extract();
     }
