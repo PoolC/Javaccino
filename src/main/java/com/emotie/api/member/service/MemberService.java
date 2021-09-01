@@ -42,8 +42,14 @@ public class MemberService {
     }
 
     public Member getMemberByNickname(String nickname) {
-        return memberRepository.findByEmail(nickname).orElseThrow(() -> {
+        return memberRepository.findByNickname(nickname).orElseThrow(() -> {
             throw new NoSuchElementException("해당 닉네임을 가진 사용자가 없습니다.");
+        });
+    }
+
+    public Member getMemberById(String id) {
+        return memberRepository.findById(id).orElseThrow(() -> {
+            throw new NoSuchElementException("해당 id를 가진 사용자가 없습니다.");
         });
     }
 
@@ -104,7 +110,7 @@ public class MemberService {
         }
     }
 
-    private Boolean isNicknameExists(String nickname) {
+    public Boolean isNicknameExists(String nickname) {
         return memberRepository.existsByNickname(nickname);
     }
 
@@ -153,7 +159,7 @@ public class MemberService {
         }
     }
 
-    private void checkLogin(Member member) {
+    public void checkLogin(Member member) {
         Optional.ofNullable(member)
                 .orElseThrow(() -> {
                     throw new UnauthenticatedException("로그인하지 않았습니다.");
@@ -168,7 +174,7 @@ public class MemberService {
         if (member1.equals(member2)) throw new CannotFollowException("자기 자신을 팔로우할 수는 없습니다.");
     }
 
-    private void checkNicknameIsFollowable(Member user, String nickname){
+    private void checkNicknameIsFollowable(Member user, String nickname) {
         Member follower = getMemberByNickname(nickname);
         MemberRoles roles = follower.getRoles();
         checkDifferent(user, follower);
