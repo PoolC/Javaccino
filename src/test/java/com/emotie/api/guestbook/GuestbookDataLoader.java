@@ -30,12 +30,12 @@ public class GuestbookDataLoader implements CommandLineRunner {
             writerNickname = "Writer Kim",
             ownerNickname = "Owner Park",
             notExistNickname = "Not exist nickname",
-            password = "qhdks1!",
+            guestbookPassword = "qhdks1!",
             introduction = "We are Guestbook test users",
             createContent = "구독하고 갑ㄴ디ㅏ",
             changedContent = "구독하고 갑니다";
 
-    public static Integer existId = 1, reportedId = 2, notExistId = 3;
+    public static Integer existId = 1, reportedId = 2, notExistId = -1;
 
     @Override
     public void run(String... args) throws Exception {
@@ -45,7 +45,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .UUID(writerUUID)
                         .email(writerEmail)
                         .nickname(writerNickname)
-                        .passwordHash(passwordHashProvider.encodePassword(password))
+                        .passwordHash(passwordHashProvider.encodePassword(guestbookPassword))
                         .gender(Gender.HIDDEN)
                         .dateOfBirth(LocalDate.now())
                         .introduction(introduction)
@@ -62,7 +62,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .UUID(ownerUUID)
                         .email(ownerEmail)
                         .nickname(ownerNickname)
-                        .passwordHash(passwordHashProvider.encodePassword(password))
+                        .passwordHash(passwordHashProvider.encodePassword(guestbookPassword))
                         .gender(Gender.HIDDEN)
                         .dateOfBirth(LocalDate.now())
                         .introduction(introduction)

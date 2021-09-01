@@ -19,7 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.guestbook.GuestbookDataLoader.*;
-import static com.emotie.api.member.MemberDataLoader.password;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -284,7 +283,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, reportedId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -473,7 +472,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     private static String writerLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(writerEmail)
-                .password(password)
+                .password(guestbookPassword)
                 .build();
 
         return loginRequest(request)
@@ -484,7 +483,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     private static String ownerLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(ownerEmail)
-                .password(password)
+                .password(guestbookPassword)
                 .build();
 
         return loginRequest(request)
