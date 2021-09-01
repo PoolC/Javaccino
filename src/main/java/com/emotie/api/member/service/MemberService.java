@@ -111,11 +111,11 @@ public class MemberService {
     }
 
     public Boolean isNicknameExists(String nickname) {
-        return memberRepository.existsByNickname(nickname);
+        return memberRepository.findByNickname(nickname).isPresent();
     }
 
     private Boolean isEmailExists(String email) {
-        return memberRepository.existsByEmail(email);
+        return memberRepository.findByEmail(email).isPresent();
     }
 
     private void checkCreateRequestValidity(MemberCreateRequest request) {
