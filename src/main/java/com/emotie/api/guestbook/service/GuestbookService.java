@@ -4,6 +4,7 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
+import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
@@ -23,7 +24,6 @@ public class GuestbookService {
 
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(user, nickname);
-        // TODO: getMemberByNickname이 validity에 이어서 2번 호출되는 것을 개선할 수 있나?
         String ownerId = memberService.getMemberByNickname(nickname).getUUID();
         return guestbookRepository.findByOwnerId(ownerId);
     }
@@ -79,7 +79,6 @@ public class GuestbookService {
      */
     private void checkGetAllBoardsRequestValidity(Member user, String nickname) {
         memberService.checkLogin(user);
-        memberService.getMemberByNickname(nickname);
     }
 
     private void checkCreateRequestValidity(Member user, String nickname) {
@@ -129,7 +128,7 @@ public class GuestbookService {
     // TODO: 자기자신을 팔로우할 수 없는 CannotFollowException과 합칠 수 있을까?
     private void checkNotOwner(Member user, String nickname) {
         if (user.equals(memberService.getMemberByNickname(nickname))) {
-            throw new UnauthorizedException("자신의 방명록에는 글을 쓸 수 없습니다.");
+            throw new MyselfException("자신의 방명록에는 글을 쓸 수 없습니다.");
         }
     }
 
@@ -143,7 +142,7 @@ public class GuestbookService {
     private void checkNotWriter(Member user, Integer guestbookId) {
         Member writer = getWriterByGuestbook(getGuestbookById(guestbookId));
         if (user.equals(writer)) {
-            throw new UnauthorizedException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
+            throw new MyselfException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
         }
     }
 

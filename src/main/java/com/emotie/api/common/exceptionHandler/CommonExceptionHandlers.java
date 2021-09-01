@@ -2,13 +2,12 @@ package com.emotie.api.common.exceptionHandler;
 
 import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.DuplicatedMemberException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,7 +53,7 @@ public class CommonExceptionHandlers {
 
     @ExceptionHandler({
             ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
-            CannotFollowException.class
+            CannotFollowException.class, MyselfException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
