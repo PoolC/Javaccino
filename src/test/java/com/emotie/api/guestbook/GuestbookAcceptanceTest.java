@@ -1,13 +1,15 @@
 package com.emotie.api.guestbook;
 
 import com.emotie.api.AcceptanceTest;
+import com.emotie.api.auth.dto.LoginRequest;
+import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.dto.GuestbookReportResponse;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
-import com.emotie.api.member.MemberDataLoader;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
@@ -16,20 +18,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
-import static com.emotie.api.auth.AuthAcceptanceTest.unauthorizedLogin;
+import static com.emotie.api.guestbook.GuestbookDataLoader.*;
+import static com.emotie.api.member.MemberDataLoader.password;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-@ActiveProfiles({"guestbookDataLoader", "memberDataLoader"})
+@ActiveProfiles({"memberDataLoader", "guestbookDataLoader"})
 @TestMethodOrder(MethodOrderer.DisplayName.class)
+@RequiredArgsConstructor
 public class GuestbookAcceptanceTest extends AcceptanceTest {
-
-    private static final String
-            ownerNickname = MemberDataLoader.authorizedEmail, notExistNickname = "없는 닉네임", writerNickname = MemberDataLoader.unauthorizedEmail,
-            createContent = "구독하고 갑ㄴ디ㅏ", changedContent = "구독하고 갑니다";
-
-    private static final int
-            existId = GuestbookDataLoader.existId, reportedId = GuestbookDataLoader.reportedId, notExistId = GuestbookDataLoader.notExistId;
 
     /*
         1. 방명록 전체 조회
@@ -51,7 +48,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 1-2: 방명록 전체 조회 실패 [404]; 해당하는 회원이 없을 때")
     public void 방명록_전체_조회_실패_NOT_FOUND() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = authorizedLogin();
 
         // when
         ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistNickname); ///
@@ -64,7 +61,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 1-3: 방명록 전체 조회 성공 [200];")
     public void 방명록_전체_조회_성공_OK() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = authorizedLogin();
 
         // when
         ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
@@ -96,7 +93,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 2-2: 방명록 작성 실패 [400]; content가 blank일 때")
     public void 방명록_작성_실패_BAD_REQUEST() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookCreateRequest guestbookCreateRequest = GuestbookCreateRequest.builder()
                 .content("") ///
                 .build();
@@ -112,7 +109,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 2-3: 방명록 작성 실패 [409]; 방명록 주인장이 작성하려 할 때")
     public void 방명록_작성_실패_CONFLICT() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookCreateRequest guestbookCreateRequest = GuestbookCreateRequest.builder()
                 .content(createContent)
                 .build();
@@ -128,7 +125,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 2-4: 방명록 작성 실패 [404]; nickname에 해당하는 회원이 없을 때")
     public void 방명록_작성_실패_NOT_FOUND() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookCreateRequest guestbookCreateRequest = GuestbookCreateRequest.builder()
                 .content(createContent)
                 .build();
@@ -144,7 +141,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 2-5: 방명록 작성 성공 [200];")
     public void 방명록_작성_성공_OK() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookCreateRequest guestbookCreateRequest = GuestbookCreateRequest.builder()
                 .content(createContent)
                 .build();
@@ -172,14 +169,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, existId);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     @DisplayName("테스트 3-2: 방명록 수정 실패 [400]; content가 blank일 때")
     public void 방명록_수정_실패_BAD_REQUEST() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
                 .content("") ///
                 .build();
@@ -188,14 +185,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, existId);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
     @DisplayName("테스트 3-3: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_수정_실패_NOT_FOUND() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
                 .content(changedContent)
                 .build();
@@ -204,14 +201,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, notExistId); ///
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
     @DisplayName("테스트 3-4: 방명록 수정 성공 [200];")
     public void 방명록_수정_성공_OK() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
                 .content(changedContent)
                 .build();
@@ -256,7 +253,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 4-3: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
     public void 방명록_신고_실패_CONFLICT() throws Exception {
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin(); ///
 
         // when
         ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
@@ -303,7 +300,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_삭제_실패_FORBIDDEN_1() throws Exception {
 
         // given
-        String accessToken = ""; ///
+        String accessToken = authorizedLogin(); ///
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
@@ -345,7 +342,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_삭제_성공_OK_1() throws Exception {
 
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = writerLogin();
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
@@ -359,7 +356,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_삭제_성공_OK_2() throws Exception {
 
         // given
-        String accessToken = authorizedLogin();
+        String accessToken = ownerLogin();
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, existId);
@@ -376,7 +373,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_전체_삭제_실패_FORBIDDEN() throws Exception {
 
         // given
-        String accessToken = unauthorizedLogin(); ///
+        String accessToken = authorizedLogin(); ///
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, writerNickname);
@@ -390,7 +387,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_전체_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
-        String accessToken = unauthorizedLogin();
+        String accessToken = ownerLogin();
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, notExistNickname); ///
@@ -404,7 +401,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_전체_삭제_성공_OK() throws Exception {
 
         // given
-        String accessToken = authorizedLogin();
+        String accessToken = ownerLogin();
 
         // when
         ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, ownerNickname);
@@ -469,6 +466,38 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .given().log().all()
                 .auth().oauth2(accessToken)
                 .when().delete("/guestbooks/clear/{nickname}", nickname)
+                .then().log().all()
+                .extract();
+    }
+
+    private static String writerLogin() {
+        LoginRequest request = LoginRequest.builder()
+                .email(writerEmail)
+                .password(password)
+                .build();
+
+        return loginRequest(request)
+                .as(LoginResponse.class)
+                .getAccessToken();
+    }
+
+    private static String ownerLogin() {
+        LoginRequest request = LoginRequest.builder()
+                .email(ownerEmail)
+                .password(password)
+                .build();
+
+        return loginRequest(request)
+                .as(LoginResponse.class)
+                .getAccessToken();
+    }
+
+    public static ExtractableResponse<Response> loginRequest(LoginRequest request) {
+        return RestAssured
+                .given().log().all()
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/auth/login")
                 .then().log().all()
                 .extract();
     }
