@@ -1,6 +1,7 @@
 package com.emotie.api.diaries.controller;
 
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryExportRequest;
 import com.emotie.api.diaries.dto.DiaryReadResponse;
 import com.emotie.api.diaries.service.DiaryService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,11 @@ public class DiaryController {
 
     @PostMapping(value = "/follow/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadResponse> read() throws Exception {
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/export")
+    public ResponseEntity<Void> export(@RequestBody @Valid DiaryExportRequest diaryExportRequest) throws Exception {
         return ResponseEntity.ok().build();
     }
 

@@ -2,6 +2,7 @@ package com.emotie.api.diaries;
 
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryExportRequest;
 import com.emotie.api.diaries.dto.DiaryReadResponse;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -32,7 +33,7 @@ public class DiaryApiTest extends AcceptanceTest {
     /* Create: 다이어리 작성 */
     @Test
     @DisplayName("테스트 01: 다이어리 작성 시 [400]; 감정이 정해지지 않았을 경우")
-    public void 작성_실패_감정_없음() {
+    public void 작성_실패_BAD_REQUEST_1() {
         //given
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
@@ -51,7 +52,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 02: 다이어리 작성 시 [400]; 내용이 null일 경우")
-    public void 작성_실패_내용_없음() {
+    public void 작성_실패_BAD_REQUEST_2() {
         //given
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
@@ -69,8 +70,8 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03: 다이어리 작성 시 [401]; 로그인하지 않았을 경우")
-    public void 작성_실패_비로그인() {
+    @DisplayName("테스트 03: 다이어리 작성 시 [403]; 로그인하지 않았을 경우")
+    public void 작성_실패_FORBIDDEN() {
         //given
         String accessToken = "";
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
@@ -84,12 +85,12 @@ public class DiaryApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     @DisplayName("테스트 04: 다이어리 작성 성공 [200]")
-    public void 작성_성공() {
+    public void 작성_성공_OK() {
         //given
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
@@ -109,7 +110,7 @@ public class DiaryApiTest extends AcceptanceTest {
     /* Read: 다이어리 조회 */
     @Test
     @DisplayName("테스트 05: 다이어리 개별 조회 시 [403]; 비공개 게시물의 경우")
-    public void 개별_조회_실패_비공개_게시물() {
+    public void 개별_조회_실패_FORBIDDEN() {
         //given
         Integer diaryId = 0;
 
@@ -122,7 +123,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 06: 다이어리 개별 조회 시 [404]; 해당 게시물이 없을 경우")
-    public void 개별_조회_실패_게시물_없음() {
+    public void 개별_조회_실패_NOT_FOUND() {
         //given
         Integer diaryId = 0;
 
@@ -135,7 +136,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 07: 다이어리 개별 조회 성공 [200]")
-    public void 개별_조회_성공() {
+    public void 개별_조회_성공_OK() {
         //given
         Integer diaryId = 0;
 
@@ -149,6 +150,7 @@ public class DiaryApiTest extends AcceptanceTest {
     @Test
     @DisplayName("테스트 08: 다이어리 전체 조회 시 (403): 로그인하지 않았을 경우")
     public void 전체_조회_실패_비로그인() {
+
     }
 
     @Test
@@ -259,33 +261,73 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* 다이어리 내보내기 */
     @Test
-    @DisplayName("테스트 26: 다이어리를 내보낼 때 (401): 로그인하지 않았을 경우")
-    public void 다이어리_내보내기_실패_비로그인() {
+    @DisplayName("테스트 26: 다이어리를 내보낼 때 [403]; 로그인하지 않았을 경우")
+    public void 다이어리_내보내기_실패_FORBIDDEN_1() {
+        //given
+        String accessToken = "";
+        DiaryExportRequest request = DiaryExportRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 27: 다이어리를 내보낼 때 (403): 요청한 사람이 작성자가 아닌 경우")
-    public void 다이어리_내보내기_실패_작성자_아님() {
+    @DisplayName("테스트 27: 다이어리를 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
+    public void 다이어리_내보내기_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportRequest request = DiaryExportRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 28: 다이어리를 내보낼 때 (404): 해당 다이어리가 없는 경우")
-    public void 다이어리_내보내기_실패_게시물_없음() {
+    @DisplayName("테스트 28: 다이어리를 내보낼 때 [404]: 해당 다이어리가 없는 경우")
+    public void 다이어리_내보내기_실패_NOT_FOUND() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportRequest request = DiaryExportRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 29: 다이어리를 내보낼 때 (409): 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
-    public void 다이어리_내보내기_실패_허용되지_않음() {
+    @DisplayName("테스트 29: 다이어리를 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
+    public void 다이어리_내보내기_실패_CONFLICT() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportRequest request = DiaryExportRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 30: 다이어리 내보내기 성공")
-    public void 다이어리_내보내기_성공() {
+    @DisplayName("테스트 30: 다이어리 내보내기 성공 [200]")
+    public void 다이어리_내보내기_성공_OK() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportRequest request = DiaryExportRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     @Test
@@ -342,12 +384,21 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(
-            String diaryID
-    ) {
+    private static ExtractableResponse<Response> diaryReadRequest(String diaryId) {
         return RestAssured
                 .given().log().all()
-                .when().post("/members/follow/{nickname}", diaryID)
+                .when().post("/diaries/{diaryId}", diaryId)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryExportRequest(String accessToken, DiaryExportRequest request) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/diaries/export")
                 .then().log().all()
                 .extract();
     }
