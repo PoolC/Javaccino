@@ -3,9 +3,7 @@ package com.emotie.api.common.domain;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 
 @Getter
 @Setter
@@ -13,6 +11,7 @@ import javax.persistence.MappedSuperclass;
 public abstract class Postings extends TimestampEntity {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO) // TODO: auto로 해도 되나?
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
