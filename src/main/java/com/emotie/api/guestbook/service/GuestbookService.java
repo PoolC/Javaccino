@@ -23,7 +23,9 @@ public class GuestbookService {
 
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(user, nickname);
-        return guestbookRepository.findByNickname(nickname);
+        // TODO: getMemberByNickname이 validity에 이어서 2번 호출되는 것을 개선할 수 있나?
+        String ownerId = memberService.getMemberByNickname(nickname).getUUID();
+        return guestbookRepository.findByOwnerId(ownerId);
     }
 
     public void create(Member user, GuestbookCreateRequest request, String nickname) {
