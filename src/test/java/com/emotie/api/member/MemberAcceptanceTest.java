@@ -180,7 +180,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     public void 회원가입_실패_CONFLICT_1() throws Exception {
         // given
         MemberCreateRequest request = MemberCreateRequest.builder()
-                .nickname(MemberDataLoader.authorizedEmail)
+                .nickname(authorizedNickname)
                 .password(createTestPassword)
                 .passwordCheck(createTestPassword)
                 .gender(Gender.HIDDEN)
