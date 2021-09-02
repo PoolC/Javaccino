@@ -1,10 +1,7 @@
 package com.emotie.api.diaries;
 
 import com.emotie.api.AcceptanceTest;
-import com.emotie.api.diaries.dto.DiaryCreateRequest;
-import com.emotie.api.diaries.dto.DiaryExportRequest;
-import com.emotie.api.diaries.dto.DiaryReadResponse;
-import com.emotie.api.diaries.dto.DiaryUpdateRequest;
+import com.emotie.api.diaries.dto.*;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -259,33 +256,74 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Delete: 다이어리 삭제 */
     @Test
-    @DisplayName("테스트 17: 다이어리 삭제 시 (401): 로그인하지 않았을 경우")
-    public void 삭제_실패_비로그인() {
+    @DisplayName("테스트 17: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
+    public void 삭제_실패_FORBIDDEN_1() {
+        //given
+        String accessToken = "";
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
 
     }
 
     @Test
-    @DisplayName("테스트 18: 다이어리 삭제 시 (403): 삭제를 요청한 사람과 작성자가 다를 경우")
-    public void 삭제_실패_작성자가_아님() {
+    @DisplayName("테스트 18: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
+    public void 삭제_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 19: 다이어리 삭제 시 (404): 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
-    public void 삭제_실패_게시물_없음() {
+    @DisplayName("테스트 19: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
+    public void 삭제_실패_NOT_FOUND() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 20: 다이어리 삭제 시 (409): 삭제를 요청한 데이터에 중복이 있는 경우")
-    public void 삭제_실패_중복_제거_시도() {
+    @DisplayName("테스트 20: 다이어리 삭제 시 [409]; 삭제를 요청한 데이터에 중복이 있는 경우")
+    public void 삭제_실패_CONFLICT() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 21: 다이어리 삭제 성공")
-    public void 삭제_성공() {
+    @DisplayName("테스트 21: 다이어리 삭제 성공 [200]")
+    public void 삭제_성공_OK() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     /* 기타 */
@@ -467,6 +505,17 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().put("/diaries/{diaryId}", diaryId)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryDeleteRequest(String accessToken, DiaryDeleteRequest request) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().delete("/diaries")
                 .then().log().all()
                 .extract();
     }

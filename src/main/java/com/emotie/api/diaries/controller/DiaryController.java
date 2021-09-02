@@ -1,6 +1,7 @@
 package com.emotie.api.diaries.controller;
 
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryDeleteRequest;
 import com.emotie.api.diaries.dto.DiaryExportRequest;
 import com.emotie.api.diaries.dto.DiaryReadResponse;
 import com.emotie.api.diaries.service.DiaryService;
@@ -35,6 +36,11 @@ public class DiaryController {
     public ResponseEntity<Void> update(
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
     ) throws Exception {
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping
+    public ResponseEntity<Void> delete(@RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest) throws Exception{
         return ResponseEntity.ok().build();
     }
 
