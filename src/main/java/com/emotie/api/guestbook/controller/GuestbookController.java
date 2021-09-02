@@ -22,13 +22,13 @@ import java.util.stream.Collectors;
 public class GuestbookController {
     private final GuestbookService guestbookService;
 
-    @GetMapping(value = "/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
             @AuthenticationPrincipal Member user, @PathVariable String nickname
     ) throws Exception {
         List<GuestbookResponse> guestbooks = new ArrayList<>();
         guestbooks = guestbookService.getAllBoards(user, nickname).stream()
-                .filter(guestbook -> guestbook.isNotBlinded())
+                .filter(guestbook -> guestbook.isNotOverReported())
                 .map(GuestbookResponse::new)
                 .collect(Collectors.toList());
         guestbooks.sort(Comparator.comparing(GuestbookResponse::getCreatedAt));
@@ -37,7 +37,7 @@ public class GuestbookController {
         return ResponseEntity.ok().body(response);
     }
 
-    @PostMapping(value = "/{nickname}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/user/{nickname}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createGuestbook(
             @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookCreateRequest request, @PathVariable String nickname
     ) throws Exception {
@@ -53,7 +53,7 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/report/{guestbookId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/report/{guestbookId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbookReportResponse> toggleGuestbookReport(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
         Boolean isReported = guestbookService.toggleReport(user, guestbookId);
         return ResponseEntity.ok(new GuestbookReportResponse(isReported));
@@ -65,9 +65,15 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "/clear/{nickname}")
+    @DeleteMapping(value = "/user/{nickname}")
     public ResponseEntity<Void> clearGuestbook(@AuthenticationPrincipal Member user, @PathVariable String nickname) throws Exception {
         guestbookService.clear(user, nickname);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "guestbooks/blind/{guestbookId}")
+    public ResponseEntity<Void> blindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
+        guestbookService.blind(user, guestbookId);
         return ResponseEntity.ok().build();
     }
 }

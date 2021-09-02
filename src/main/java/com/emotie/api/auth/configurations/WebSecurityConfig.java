@@ -69,12 +69,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/members/follow/{nickname}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
 
-                .antMatchers(HttpMethod.GET, "/guestbooks/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
-                .antMatchers(HttpMethod.POST, "/guestbooks/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.GET, "/guestbooks/user/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/user/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
                 .antMatchers(HttpMethod.PUT, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
-                .antMatchers(HttpMethod.PUT, "/guestbooks/report/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/report/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
                 .antMatchers(HttpMethod.DELETE, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
-                .antMatchers(HttpMethod.DELETE, "/guestbooks/clear/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.DELETE, "/guestbooks/user/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/blind/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
 
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
