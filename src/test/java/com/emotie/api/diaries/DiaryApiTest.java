@@ -424,33 +424,74 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 31: 다이어리를 모두 내보낼 때 (401): 로그인하지 않았을 경우")
-    public void 다이어리_모두_내보내기_실패_비로그인() {
+    @DisplayName("테스트 31: 다이어리를 모두 내보낼 때 [403]; 로그인하지 않았을 경우")
+    public void 다이어리_모두_내보내기_실패_FORBIDDEN_1() {
+        //given
+        String accessToken = "";
+        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
+
+        //when
+        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 32: 다이어리를 모두 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
+    public void 다이어리_모두_내보내기_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
+
+        //when
+        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 33: 다이어리를 모두 내보낼 때 [404]; 해당 다이어리가 없는 경우")
+    public void 다이어리_모두_내보내기_실패_NOT_FOUND() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
+
+        //when
+        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
 
     }
 
     @Test
-    @DisplayName("테스트 32: 다이어리를 모두 내보낼 때 (403): 요청한 사람이 작성자가 아닌 경우")
-    public void 다이어리_모두_내보내기_실패_작성자_아님() {
+    @DisplayName("테스트 34: 다이어리를 모두 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
+    public void 다이어리_모두_내보내기_실패_CONFLICT() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
 
+        //when
+        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 33: 다이어리를 모두 내보낼 때 (404): 해당 다이어리가 없는 경우")
-    public void 다이어리_모두_내보내기_실패_게시물_없음() {
+    @DisplayName("테스트 35: 다이어리 모두 내보내기 성공 [200]")
+    public void 다이어리_모두_내보내기_성공_OK() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
 
-    }
+        //when
+        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
 
-    @Test
-    @DisplayName("테스트 34: 다이어리를 모두 내보낼 때 (409): 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
-    public void 다이어리_모두_내보내기_실패_허용되지_않음() {
-
-    }
-
-    @Test
-    @DisplayName("테스트 35: 다이어리 모두 내보내기 성공")
-    public void 다이어리_모두_내보내기_성공() {
-
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     /* 다이어리 신고 */
@@ -516,6 +557,19 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().delete("/diaries")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryExportAllRequest(
+            String accessToken, DiaryExportAllRequest request
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/diaries/export_all")
                 .then().log().all()
                 .extract();
     }
