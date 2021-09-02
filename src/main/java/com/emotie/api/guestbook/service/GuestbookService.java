@@ -67,11 +67,30 @@ public class GuestbookService {
 
     public void delete(Member executor, Integer guestbookId) {
         checkDeleteRequestValidity(executor, guestbookId);
+        guestbookRepository.deleteById(guestbookId);
     }
 
     public void clear(Member user, String nickname) {
         checkClearRequestValidity(user, nickname);
+        guestbookRepository.deleteByOwnerId(nickname);
+    }
 
+    public Boolean toggleBlind(Member user, Integer guestbookId) {
+        checkBlindRequestValidity(user, guestbookId);
+
+        Guestbook target = getGuestbookById(guestbookId);
+
+        if (user.isBlinded(target)) {
+            unblind(user, target);
+            memberRepository.saveAndFlush(user);
+            guestbookRepository.saveAndFlush(target);
+            return false;
+        }
+
+        blind(user, target);
+        memberRepository.saveAndFlush(user);
+        guestbookRepository.saveAndFlush(target);
+        return true;
     }
 
     /*
@@ -100,12 +119,15 @@ public class GuestbookService {
     private void checkDeleteRequestValidity(Member user, Integer guestbookId) {
         checkWriterOrOwner(user, guestbookId);
         checkNotReported(guestbookId);
-        Guestbook guestbook = getGuestbookById(guestbookId);
     }
 
     private void checkClearRequestValidity(Member user, String nickname) {
         checkOwner(user, nickname);
         memberService.getMemberByNickname(nickname);
+    }
+
+    private void checkBlindRequestValidity(Member user, Integer guestbookId) {
+        checkOwner(user, guestbookId);
     }
 
     /*
@@ -177,8 +199,26 @@ public class GuestbookService {
     }
 
     private void checkOwner(Member user, String nickname) {
-        if (!user.equals(memberService.getMemberByNickname(nickname))) {
+        Member owner = memberService.getMemberByNickname(nickname);
+        if (!user.equals(owner)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
+        }
+    }
+
+    private void blind(Member user, Guestbook target) {
+        user.blind(target);
+        target.blindedBy(user);
+    }
+
+    private void unblind(Member user, Guestbook target) {
+        user.unblind(target);
+        target.unblindedBy(user);
+    }
+
+    private void checkOwner(Member user, Integer guestbookId) {
+        Member owner = getOwnerByGuestbook(getGuestbookById(guestbookId));
+        if (!user.equals(owner)) {
+            throw new UnauthorizedException("방명록 게시물을 숨길 권한이 없습니다.");
         }
     }
 }

@@ -73,7 +73,7 @@ public class GuestbookController {
 
     @PostMapping(value = "guestbooks/blind/{guestbookId}")
     public ResponseEntity<Void> blindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
-        guestbookService.blind(user, guestbookId);
+        guestbookService.toggleBlind(user, guestbookId);
         return ResponseEntity.ok().build();
     }
 }
