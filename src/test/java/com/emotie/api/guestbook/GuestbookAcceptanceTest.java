@@ -3,6 +3,7 @@ package com.emotie.api.guestbook;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
+import com.emotie.api.guestbook.dto.GuestbookBlindResponse;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.dto.GuestbookReportResponse;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
@@ -409,6 +410,68 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
+    /*
+    7. 방명록 숨기기(toggle)
+     */
+    @Test
+    @DisplayName("테스트 7-1: 방명록 숨기기 실패 [403]; 방명록 주인장이 아닐 때")
+    public void 방명록_숨기기_실패_FORBIDDEN() throws Exception {
+
+        // given
+        String accessToken = authorizedLogin(); ///
+
+        // when
+        ExtractableResponse<Response> response = guestbookBlindRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 7-2: 방명록 숨기기 실패 [404]; 해당 guestbookId가 없을 때")
+    public void 방명록_숨기기_실패_NOT_FOUND() throws Exception {
+
+        // given
+        String accessToken = ownerLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookBlindRequest(accessToken, notExistId); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 7-3: 방명록 숨기기 성공 [200]; isBlinded = true")
+    public void 방명록_숨기기_실패_OK_1() throws Exception {
+
+        // given
+        String accessToken = ownerLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookBlindRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(GuestbookBlindResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", true);
+    }
+
+    @Test
+    @DisplayName("테스트 7-4: 방명록 숨기기 성공 [200]; isBlinded = false")
+    public void 방명록_숨기기_실패_OK_2() throws Exception {
+
+        // given
+        String accessToken = ownerLogin();
+
+        // when
+        ExtractableResponse<Response> response = guestbookBlindRequest(accessToken, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(GuestbookBlindResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", false);
+    }
 
     /*
         private methods
@@ -417,7 +480,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().get("/guestbooks/{nickname}", nickname)
+                .when().get("/guestbooks/user/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
@@ -427,7 +490,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .given().log().all()
                 .auth().oauth2(accessToken)
                 .body(request).contentType(APPLICATION_JSON_VALUE)
-                .when().post("/guestbooks/{nickname}", nickname)
+                .when().post("/guestbooks/user/{nickname}", nickname)
                 .then().log().all()
                 .extract();
     }
@@ -446,7 +509,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().put("/guestbooks/report/{guestbookId}", guestbookId)
+                .when().post("/guestbooks/report/{guestbookId}", guestbookId)
                 .then().log().all()
                 .extract();
     }
@@ -464,7 +527,16 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().delete("/guestbooks/clear/{nickname}", nickname)
+                .when().delete("/guestbooks/user/{nickname}", nickname)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> guestbookBlindRequest(String accessToken, Integer guestbookId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().post("/guestbooks/blind/{guestbookId}", guestbookId)
                 .then().log().all()
                 .extract();
     }
