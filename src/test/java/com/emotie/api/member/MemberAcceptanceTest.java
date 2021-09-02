@@ -517,7 +517,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = updatePasswordRequest(accessToken, request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
 
         PasswordUpdateRequest rollbackRequest = PasswordUpdateRequest.builder()
                 .password(password)
