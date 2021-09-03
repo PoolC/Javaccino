@@ -4,6 +4,7 @@ package com.emotie.api.emotion.domain;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.diaries.domain.Diaries;
 import groovy.lang.Lazy;
+import lombok.Builder;
 import lombok.Getter;
 
 import javax.persistence.*;
@@ -34,6 +35,7 @@ public class Emotion extends TimestampEntity {
     protected Emotion(){
     }
 
+    @Builder
     private Emotion(String name, String color, Integer priority){
         this.name = name;
         this.color = color;
