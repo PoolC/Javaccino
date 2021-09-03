@@ -10,17 +10,16 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
+@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters"})
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @RequiredArgsConstructor
 public class DiaryApiTest extends AcceptanceTest {
@@ -149,7 +148,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 09: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
-    public void 전체_조회_실패_회원_없음() {
+    public void 전체_조회_실패_NOT_FOUND() {
         //given
         Integer pageNumber = 0;
         String nickname = notExistNickname;
@@ -163,7 +162,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 10: 다이어리 전체 조회 성공 [200]")
-    public void 전체_조회_성공() {
+    public void 전체_조회_성공_OK() {
         //given
         Integer pageNumber = 0;
         String nickname = existNickname;
@@ -253,7 +252,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Test
     @DisplayName("테스트 16: 다이어리 수정 성공 [200]")
-    public void 수정_성공() {
+    public void 수정_성공_OK() {
         //given
         String accessToken = authorizedLogin();
         Integer diaryId = 0;
