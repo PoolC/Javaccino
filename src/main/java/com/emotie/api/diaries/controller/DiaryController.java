@@ -66,4 +66,8 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping(value = "/report/{diaryId}")
+    public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
+        return ResponseEntity.ok().build();
+    }
 }

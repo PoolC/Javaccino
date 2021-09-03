@@ -503,20 +503,68 @@ public class DiaryApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     /* 다이어리 신고 */
     @Test
-    @DisplayName("테스트 36: 다이어리 신고 시 (404): 해당 다이어리가 없는 경우")
-    public void 다이어리_신고_실패_게시물_없음() {
+    @DisplayName("테스트 36: 다이어리 신고 시 [403]; 로그인하지 않음")
+    public void 다이어리_신고_실패_FORBIDDEN() {
+        //given
+        String accessToken = "";
+        Integer diaryId = 0;
 
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 37: 다이어리 신고 성공")
-    public void 다이어리_신고_성공() {
+    @DisplayName("테스트 37: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
+    public void 다이어리_신고_실패_NOT_FOUND() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
 
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 38: 다이어리 신고 성공 [200]; Not Report -> Report")
+    public void 다이어리_신고_성공_OK_1() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReportResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", true);
+    }
+
+    @Test
+    @DisplayName("테스트 38: 다이어리 신고 성공 [200]; Report -> Not Report")
+    public void 다이어리_신고_성공_OK_2() {
+        //given
+        String accessToken = authorizedLogin();
+        Integer diaryId = 0;
+
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReportResponse.class))
+                .hasFieldOrPropertyWithValue("isReported", false);
     }
 
     private static ExtractableResponse<Response> diaryCreateRequest(String accessToken, DiaryCreateRequest request) {
@@ -590,6 +638,15 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().delete("/diaries")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryReportRequest(String accessToken, Integer diaryId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().put("/diaries/report/{diaryId}", diaryId)
                 .then().log().all()
                 .extract();
     }
