@@ -26,8 +26,15 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/{diaryId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/{diaryId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadResponse> read(@PathVariable Integer diaryId) throws Exception {
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/{nickname}/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DiaryReadAllResponse> readAll(
+            @PathVariable String nickname, @PathVariable Integer pageNumber
+    ) throws Exception {
         return ResponseEntity.ok().build();
     }
 

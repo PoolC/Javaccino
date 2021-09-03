@@ -25,7 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor
 public class DiaryApiTest extends AcceptanceTest {
 
-    private final String content = "오늘 잠을 잘 잤다. 좋았다.";
+    private final String content = "오늘 잠을 잘 잤다. 좋았다.",
+            notExistNickname = "공릉동익룡",
+            existNickname = "공릉동공룡";
     private final Integer emotionTagId = 1;
 
     /* Create: 다이어리 작성 */
@@ -146,21 +148,31 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 08: 다이어리 전체 조회 시 (403): 로그인하지 않았을 경우")
-    public void 전체_조회_실패_비로그인() {
-
-    }
-
-    @Test
-    @DisplayName("테스트 09: 다이어리 전체 조회 시 (404): 해당하는 회원이 없을 경우")
+    @DisplayName("테스트 09: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
     public void 전체_조회_실패_회원_없음() {
+        //given
+        Integer pageNumber = 0;
+        String nickname = notExistNickname;
 
+        //when
+        ExtractableResponse<Response> response = diaryReadAllRequest(nickname, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 10: 다이어리 전체 조회 성공")
+    @DisplayName("테스트 10: 다이어리 전체 조회 성공 [200]")
     public void 전체_조회_성공() {
+        //given
+        Integer pageNumber = 0;
+        String nickname = existNickname;
 
+        //when
+        ExtractableResponse<Response> response = diaryReadAllRequest(nickname, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     /* Update: 다이어리 수정 */
@@ -526,6 +538,14 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
+    private static ExtractableResponse<Response> diaryReadAllRequest(String nickname, Integer pageNumber) {
+        return RestAssured
+                .given().log().all()
+                .when().post("/diaries/{nickname}/{pageNumber}", nickname, pageNumber)
+                .then().log().all()
+                .extract();
+    }
+
     private static ExtractableResponse<Response> diaryExportRequest(String accessToken, DiaryExportRequest request) {
         return RestAssured
                 .given().log().all()
@@ -533,6 +553,19 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().post("/diaries/export")
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryExportAllRequest(
+            String accessToken, DiaryExportAllRequest request
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .body(request)
+                .contentType(APPLICATION_JSON_VALUE)
+                .when().post("/diaries/export_all")
                 .then().log().all()
                 .extract();
     }
@@ -557,19 +590,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
                 .when().delete("/diaries")
-                .then().log().all()
-                .extract();
-    }
-
-    private static ExtractableResponse<Response> diaryExportAllRequest(
-            String accessToken, DiaryExportAllRequest request
-    ) {
-        return RestAssured
-                .given().log().all()
-                .auth().oauth2(accessToken)
-                .body(request)
-                .contentType(APPLICATION_JSON_VALUE)
-                .when().post("/diaries/export_all")
                 .then().log().all()
                 .extract();
     }
