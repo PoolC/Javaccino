@@ -6,16 +6,16 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class EmotionUpdateRequest {
+public class EmotionCreateRequest {
 
     private String emotion;
     private String color;
 
     @JsonCreator
     @Builder
-    public EmotionUpdateRequest(
-            @JsonProperty(value="emotion") String emotion,
-            @JsonProperty(value="color") String color
+    public EmotionCreateRequest(
+                    @JsonProperty(value="emotion") String emotion,
+                    @JsonProperty(value="color") String color
     ) {
         this.emotion = emotion;
         this.color = color;

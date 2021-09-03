@@ -13,8 +13,8 @@ import java.util.*;
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diaries extends Postings {
-    @Column(name = "emotion_tag_id", nullable = false)
-    private Integer emotionTagId;
+//    @Column(name = "emotion_tag_id", nullable = false)
+//    private Integer emotionTagId;
 
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
@@ -30,7 +30,7 @@ public class Diaries extends Postings {
     ) {
         this.writerId = memberId;
         this.content = content;
-        this.emotionTagId = emotionTagId;
+//        this.emotionTagId = emotionTagId;
         this.isOpened = isOpened;
         this.reportCount = reportCount;
     }
@@ -45,7 +45,7 @@ public class Diaries extends Postings {
                 Map.entry("id", this.id),
                 Map.entry("member_id", this.writerId),
                 Map.entry("content", this.content),
-                Map.entry("emotion_tag_id", this.emotionTagId),
+//                Map.entry("emotion_tag_id", this.emotionTagId),
                 Map.entry("is_opened", this.isOpened),
                 Map.entry("report_count", this.reportCount)
         );
@@ -67,7 +67,7 @@ public class Diaries extends Postings {
     public Map<String, Object> updatePosting(String content, Integer emotionTagId, Boolean isOpened) {
         Map<String, Object> prevPostingData = this.toMap();
         this.content = content;
-        this.emotionTagId = emotionTagId;
+//        this.emotionTagId = emotionTagId;
         this.isOpened = isOpened;
         return prevPostingData;
     }

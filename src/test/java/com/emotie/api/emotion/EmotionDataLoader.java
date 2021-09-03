@@ -2,6 +2,7 @@ package com.emotie.api.emotion;
 
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.diaries.domain.Diaries;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Gender;
@@ -14,11 +15,11 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
 
 @Component
@@ -38,6 +39,11 @@ public class EmotionDataLoader implements ApplicationRunner {
     public static ArrayList<String> emotionNames = new ArrayList<>();
     public static ArrayList<String> emotionColors = new ArrayList<>();
 
+    public static Integer updatingEmotionId;
+    public static Integer deletingSuccessEmotionId;
+    public static Integer deletingFailEmotionId;
+
+    @Transactional
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
@@ -90,6 +96,13 @@ public class EmotionDataLoader implements ApplicationRunner {
         for (int i = 0; i < 8; i++){
             emotionRepository.save(Emotion.of(emotionNames.get(i), emotionColors.get(i), 0));
         }
+
+        updatingEmotionId = emotionRepository.findByEmotion("슬픔|SAD").orElseThrow().getId();
+        deletingFailEmotionId = emotionRepository.findByEmotion("지침|TIRED").orElseThrow().getId();
+        deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정|NONE").orElseThrow().getId();
+
+        Diaries diary = new Diaries(0, "",deletingFailEmotionId,false, 0);
+        emotionRepository.getById(deletingFailEmotionId).getDiariesList().add(diary);
 
     }
 }
