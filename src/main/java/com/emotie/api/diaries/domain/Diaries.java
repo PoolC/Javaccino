@@ -1,12 +1,12 @@
 package com.emotie.api.diaries.domain;
 
 import com.emotie.api.common.domain.Postings;
+import com.emotie.api.emotion.domain.Emotion;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.util.*;
 
 @Getter
@@ -19,6 +19,10 @@ public class Diaries extends Postings {
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="emotion_tag_id")
+    private Emotion emotion;
 
     @Builder
     public Diaries(
