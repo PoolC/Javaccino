@@ -32,7 +32,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         1. 방명록 전체 조회
      */
     @Test
-    @DisplayName("테스트 1-1: 방명록 전체 조회 실패 [403]; 로그인하지 않았을 때")
+    @DisplayName("테스트 01-01: 방명록 전체 조회 실패 [403]; 로그인하지 않았을 때")
     public void 방명록_전체_조회_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = ""; ///
@@ -45,7 +45,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 1-2: 방명록 전체 조회 실패 [404]; 해당하는 회원이 없을 때")
+    @DisplayName("테스트 01-02: 방명록 전체 조회 실패 [404]; 해당하는 회원이 없을 때")
     public void 방명록_전체_조회_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -58,7 +58,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 1-3: 방명록 전체 조회 성공 [200];")
+    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200];")
     public void 방명록_전체_조회_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -74,7 +74,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         2. 방명록 작성
      */
     @Test
-    @DisplayName("테스트 2-1: 방명록 작성 실패 [403]; 로그인하지 않았을 때")
+    @DisplayName("테스트 02-01: 방명록 작성 실패 [403]; 로그인하지 않았을 때")
     public void 방명록_작성_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = ""; ///
@@ -90,7 +90,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 2-2: 방명록 작성 실패 [400]; content가 blank일 때")
+    @DisplayName("테스트 02-02: 방명록 작성 실패 [400]; content가 blank일 때")
     public void 방명록_작성_실패_BAD_REQUEST() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -106,7 +106,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 2-3: 방명록 작성 실패 [409]; 방명록 주인장이 작성하려 할 때")
+    @DisplayName("테스트 02-03: 방명록 작성 실패 [409]; 방명록 주인장이 작성하려 할 때")
     public void 방명록_작성_실패_CONFLICT() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -122,7 +122,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 2-4: 방명록 작성 실패 [404]; nickname에 해당하는 회원이 없을 때")
+    @DisplayName("테스트 02-04: 방명록 작성 실패 [404]; nickname에 해당하는 회원이 없을 때")
     public void 방명록_작성_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -138,7 +138,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 2-5: 방명록 작성 성공 [200];")
+    @DisplayName("테스트 02-05: 방명록 작성 성공 [200];")
     public void 방명록_작성_성공_OK() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -157,7 +157,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         3. 방명록 수정
      */
     @Test
-    @DisplayName("테스트 3-1: 방명록 수정 실패 [403]; 방명록 작성자가 아닐 때")
+    @DisplayName("테스트 03-01: 방명록 수정 실패 [403]; 방명록 작성자가 아닐 때")
     public void 방명록_수정_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = authorizedLogin(); ///
@@ -173,7 +173,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 3-2: 방명록 수정 실패 [400]; content가 blank일 때")
+    @DisplayName("테스트 03-02: 방명록 수정 실패 [400]; content가 blank일 때")
     public void 방명록_수정_실패_BAD_REQUEST() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -189,7 +189,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 3-3: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 03-03: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_수정_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -205,7 +205,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 3-4: 방명록 수정 성공 [200];")
+    @DisplayName("테스트 03-04: 방명록 수정 성공 [200];")
     public void 방명록_수정_성공_OK() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -224,7 +224,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         4. 방명록 신고하기(toggle)
      */
     @Test
-    @DisplayName("테스트 4-1: 방명록 신고 실패 [403]; 로그인하지 않았을 때")
+    @DisplayName("테스트 04-01: 방명록 신고 실패 [403]; 로그인하지 않았을 때")
     public void 방명록_신고_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = ""; ///
@@ -237,7 +237,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-2: 방명록 신고 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 04-02: 방명록 신고 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_신고_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -250,7 +250,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-3: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
+    @DisplayName("테스트 04-03: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
     public void 방명록_신고_실패_CONFLICT() throws Exception {
         // given
         String accessToken = writerLogin(); ///
@@ -263,7 +263,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-4: 방명록 신고 성공 [200]; isReported = true")
+    @DisplayName("테스트 04-04: 방명록 신고 성공 [200]; isReported = true")
     public void 방명록_신고_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -278,7 +278,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 4-5: 방명록 신고 취소 성공 [200]; isReported = false")
+    @DisplayName("테스트 04-05: 방명록 신고 취소 성공 [200]; isReported = false")
     public void 방명록_신고_취소_성공_OK() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -296,7 +296,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         5. 방명록 삭제
      */
     @Test
-    @DisplayName("테스트 5-1: 방명록 삭제 실패 [403]; 방명록 주인장이나 작성자가 아닐 때")
+    @DisplayName("테스트 05-01: 방명록 삭제 실패 [403]; 방명록 주인장이나 작성자가 아닐 때")
     public void 방명록_삭제_실패_FORBIDDEN_1() throws Exception {
 
         // given
@@ -310,7 +310,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 5-2: 방명록 삭제 실패 [403]; 신고된 방명록일 때")
+    @DisplayName("테스트 05-02: 방명록 삭제 실패 [403]; 신고된 방명록일 때")
     public void 방명록_삭제_실패_FORBIDDEN_2() throws Exception {
 
         // given
@@ -324,7 +324,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 5-3: 방명록 삭제 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 05-03: 방명록 삭제 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
@@ -338,7 +338,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 5-4: 방명록 삭제 성공 [200]; 작성자가 삭제")
+    @DisplayName("테스트 05-04: 방명록 삭제 성공 [200]; 작성자가 삭제")
     public void 방명록_삭제_성공_OK_1() throws Exception {
 
         // given
@@ -352,7 +352,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 5-5: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
+    @DisplayName("테스트 05-05: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
     public void 방명록_삭제_성공_OK_2() throws Exception {
 
         // given
@@ -369,7 +369,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         6. 방명록 전체 삭제
      */
     @Test
-    @DisplayName("테스트 6-1: 방명록 전체 삭제 실패 [403]; 방명록 주인장이 아닐 때")
+    @DisplayName("테스트 06-01: 방명록 전체 삭제 실패 [403]; 방명록 주인장이 아닐 때")
     public void 방명록_전체_삭제_실패_FORBIDDEN() throws Exception {
 
         // given
@@ -383,7 +383,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 6-2: 방명록 전체 삭제 실패 [404]; 해당 nickname이 없을 때")
+    @DisplayName("테스트 06-02: 방명록 전체 삭제 실패 [404]; 해당 nickname이 없을 때")
     public void 방명록_전체_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
@@ -397,7 +397,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 6-3: 방명록 전체 삭제 성공 [200];")
+    @DisplayName("테스트 06-03: 방명록 전체 삭제 성공 [200];")
     public void 방명록_전체_삭제_성공_OK() throws Exception {
 
         // given
@@ -414,7 +414,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     7. 방명록 숨기기(toggle)
      */
     @Test
-    @DisplayName("테스트 7-1: 방명록 숨기기 실패 [403]; 방명록 주인장이 아닐 때")
+    @DisplayName("테스트 07-01: 방명록 숨기기 실패 [403]; 방명록 주인장이 아닐 때")
     public void 방명록_숨기기_실패_FORBIDDEN() throws Exception {
 
         // given
@@ -428,7 +428,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 7-2: 방명록 숨기기 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 07-02: 방명록 숨기기 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_숨기기_실패_NOT_FOUND() throws Exception {
 
         // given
@@ -442,7 +442,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 7-3: 방명록 숨기기 성공 [200]; isBlinded = true")
+    @DisplayName("테스트 07-03: 방명록 숨기기 성공 [200]; isBlinded = true")
     public void 방명록_숨기기_실패_OK_1() throws Exception {
 
         // given
@@ -458,7 +458,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 7-4: 방명록 숨기기 성공 [200]; isBlinded = false")
+    @DisplayName("테스트 07-04: 방명록 숨기기 성공 [200]; isBlinded = false")
     public void 방명록_숨기기_실패_OK_2() throws Exception {
 
         // given
