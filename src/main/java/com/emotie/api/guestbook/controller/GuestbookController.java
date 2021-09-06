@@ -70,10 +70,10 @@ public class GuestbookController {
         guestbookService.clear(user, nickname);
         return ResponseEntity.ok().build();
     }
-
-    @PostMapping(value = "guestbooks/blind/{guestbookId}")
-    public ResponseEntity<Void> blindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
-        guestbookService.toggleBlind(user, guestbookId);
-        return ResponseEntity.ok().build();
-    }
+//
+//    @PostMapping(value = "guestbooks/blind/{guestbookId}")
+//    public ResponseEntity<Void> blindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
+//        guestbookService.toggleBlind(user, guestbookId);
+//        return ResponseEntity.ok().build();
+//    }
 }

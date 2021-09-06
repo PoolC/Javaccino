@@ -80,17 +80,19 @@ public class GuestbookService {
 
         Guestbook target = getGuestbookById(guestbookId);
 
-        if (user.isBlinded(target)) {
-            unblind(user, target);
-            memberRepository.saveAndFlush(user);
-            guestbookRepository.saveAndFlush(target);
-            return false;
-        }
-
-        blind(user, target);
-        memberRepository.saveAndFlush(user);
-        guestbookRepository.saveAndFlush(target);
+        // TODO: 글 숨기기 논의 해결 후
         return true;
+//        if (user.isBlinded(target)) {
+//            unblind(user, target);
+//            memberRepository.saveAndFlush(user);
+//            guestbookRepository.saveAndFlush(target);
+//            return false;
+//        }
+//
+//        blind(user, target);
+//        memberRepository.saveAndFlush(user);
+//        guestbookRepository.saveAndFlush(target);
+//        return true;
     }
 
     /*
@@ -168,16 +170,19 @@ public class GuestbookService {
         }
     }
 
+    // TODO: 글 숨기기 논의 해결 후
+    // TODO: 트랜잭션 안 겹치게
     private void report(Member user, Guestbook target) {
         user.report(target);
         target.reportedBy(user);
-        getWriterByGuestbook(target).updateReportCnt(true);
+        getWriterByGuestbook(target).updateReportCount(true);
     }
 
+    // TODO: 글 숨기기 논의 해결 후
     private void unreport(Member user, Guestbook target) {
         user.unreport(target);
         target.unreportedBy(user);
-        getWriterByGuestbook(target).updateReportCnt(false);
+        getWriterByGuestbook(target).updateReportCount(false);
     }
 
     private void checkWriterOrOwner(Member user, Integer guestbookId) {
@@ -189,11 +194,10 @@ public class GuestbookService {
         }
     }
 
-    // TODO: 블라인드할 누적 신고 횟수 어디에 저장?
     // TODO: blinded 칼럼을 추가해서 관리하는게 더 나을까?
     private void checkNotReported(Integer guestbookId) {
         Guestbook guestbook = getGuestbookById(guestbookId);
-        if (guestbook.getReportCount() >= 10) {
+        if (guestbook.isNotOverReported()) {
             throw new UnauthorizedException("신고를 많이 받아 삭제할 수 없는 방명록입니다.");
         }
     }
@@ -205,14 +209,17 @@ public class GuestbookService {
         }
     }
 
+    // TODO: 트랜잭션 안 겹치게
+    // TODO: 글 숨기기 논의 해결 후
     private void blind(Member user, Guestbook target) {
-        user.blind(target);
-        target.blindedBy(user);
+//        user.blind(target);
+//        target.blindedBy(user);
     }
 
+    // TODO: 글 숨기기 논의 해결 후
     private void unblind(Member user, Guestbook target) {
-        user.unblind(target);
-        target.unblindedBy(user);
+//        user.unblind(target);
+//        target.unblindedBy(user);
     }
 
     private void checkOwner(Member user, Integer guestbookId) {

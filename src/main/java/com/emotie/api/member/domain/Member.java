@@ -67,14 +67,18 @@ public class Member extends TimestampEntity implements UserDetails {
     @Embedded
     private MemberRoles roles;
 
+    // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followers = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followees = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private final List<Guestbook> reportedGuestbooks = new ArrayList<>();
+//    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class)
+//    private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
+//
+//    @OneToMany(mappedBy = "member", targetEntity = MemberBlindGuestbook.class)
+//    private final List<MemberBlindGuestbook> blindedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -253,19 +257,23 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
+    // TODO: 글 숨기기 논의 해결 후
     public Boolean isReported(Guestbook guestbook) {
-        return this.reportedGuestbooks.contains(guestbook);
+        return true;
+//        return this.reportedGuestbooks.contains(guestbook);
     }
 
+    // TODO: 글 숨기기 논의 해결 후
     public void report(Guestbook guestbook) {
-        this.reportedGuestbooks.add(guestbook);
+//        this.reportedGuestbooks.add(guestbook);
     }
 
+    // TODO: 글 숨기기 논의 해결 후
     public void unreport(Guestbook guestbook) {
-        this.reportedGuestbooks.remove(guestbook);
+//        this.reportedGuestbooks.remove(guestbook);
     }
 
-    public void updateReportCnt(Boolean flag) {
+    public void updateReportCount(Boolean flag) {
         if (flag) {
             this.reportCount++;
         } else {
