@@ -10,6 +10,8 @@ import javax.persistence.*;
 @MappedSuperclass
 public abstract class Postings extends TimestampEntity {
 
+    public static Integer reportCountThreshold = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) // TODO: auto로 해도 되나?
     @Column(name = "id", nullable = false, unique = true)
