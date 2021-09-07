@@ -31,7 +31,7 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/{nickname}/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadAllResponse> readAll(
             @PathVariable String nickname, @PathVariable Integer pageNumber
     ) throws Exception {
