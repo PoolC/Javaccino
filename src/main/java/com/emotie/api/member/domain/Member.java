@@ -6,6 +6,8 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.diaries.domain.Emotion;
+import com.emotie.api.diaries.vo.EmotionStatus;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -17,10 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity(name = "members")
 @Getter
@@ -76,6 +75,15 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "emotion_status",
+            joinColumns = @JoinColumn(name = "member_id")
+    )
+    @MapKeyColumn
+    @Column(name = "emotion")
+    private final Map<Emotion, EmotionStatus> emotionStatus = new HashMap<>();
+
     protected Member() {
     }
 
@@ -94,6 +102,11 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = authorizationTokenValidUntil;
         this.reportCount = reportCount;
         this.roles = roles;
+
+        // TODO: 일단은 0점 & 0점으로 초기화하지만, 따로 방법이 있으면 좋을 듯?
+        Arrays.stream(Emotion.values()).forEach(
+                it -> this.emotionStatus.put(it, new EmotionStatus(0.0, 0))
+        );
     }
 
     public Member(MemberRoles roles) {
@@ -247,5 +260,11 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordHash = passwordHash;
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
+    }
+
+    public void initializeEmotionStatus(
+            Map<Emotion, EmotionStatus> initStatus
+    ) {
+        this.emotionStatus.putAll(initStatus);
     }
 }
