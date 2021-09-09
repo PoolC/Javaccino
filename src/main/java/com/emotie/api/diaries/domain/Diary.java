@@ -12,15 +12,17 @@ import java.util.*;
 @Getter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
-public class Diaries extends Postings {
+public class Diary extends Postings {
     @Column(name = "emotion", nullable = false)
     private Emotion emotion;
 
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
 
+    private static Integer prevId = 0;
+
     @Builder
-    public Diaries(
+    public Diary(
             String writerId, String content, Emotion emotion, Boolean isOpened
     ) {
         this.writerId = writerId;
@@ -28,6 +30,7 @@ public class Diaries extends Postings {
         this.emotion = emotion;
         this.isOpened = isOpened;
         this.reportCount = 0;
+        this.id = nextId();
     }
 
     @Override
@@ -38,5 +41,9 @@ public class Diaries extends Postings {
     @Override
     public Postings reportPosting() {
         return this;
+    }
+
+    private Integer nextId() {
+        return prevId++;
     }
 }

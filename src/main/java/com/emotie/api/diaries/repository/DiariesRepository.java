@@ -1,12 +1,9 @@
 package com.emotie.api.diaries.repository;
 
-import com.emotie.api.diaries.domain.Diaries;
+import com.emotie.api.diaries.domain.Diary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Date;
-import java.util.List;
-
-public interface DiariesRepository extends JpaRepository<Diaries, Integer> {
+public interface DiariesRepository extends JpaRepository<Diary, Integer> {
 //    List<Diaries> findAfterDate(Date startDate);
 //
 //    List<Diaries> findBeforeDate(Date endDate);

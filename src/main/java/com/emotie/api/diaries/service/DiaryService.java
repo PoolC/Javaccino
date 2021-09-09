@@ -1,7 +1,7 @@
 package com.emotie.api.diaries.service;
 
 import com.emotie.api.auth.exception.UnauthorizedException;
-import com.emotie.api.diaries.domain.Diaries;
+import com.emotie.api.diaries.domain.Diary;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
 import com.emotie.api.diaries.repository.DiariesRepository;
 import com.emotie.api.member.domain.Member;
@@ -18,7 +18,7 @@ public class DiaryService {
     public void create(Member user, DiaryCreateRequest diaryCreateRequest) {
         checkCreateRequestValidity(user, diaryCreateRequest);
         diariesRepository.save(
-                Diaries.builder()
+                Diary.builder()
                         .writerId(user.getUUID())
                         .emotion(diaryCreateRequest.getEmotion())
                         .content(diaryCreateRequest.getContent())

@@ -3,6 +3,7 @@ package com.emotie.api.diaries;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.dto.*;
+import com.emotie.api.member.MemberDataLoader;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 
@@ -21,6 +23,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
 @SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters"})
+@ActiveProfiles("memberDataLoader")
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @RequiredArgsConstructor
 public class DiaryApiTest extends AcceptanceTest {

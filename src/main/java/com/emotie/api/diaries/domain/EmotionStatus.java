@@ -1,8 +1,13 @@
-package com.emotie.api.diaries.vo;
+package com.emotie.api.diaries.domain;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import javax.persistence.Embeddable;
 
 @Getter
+@Embeddable
+@NoArgsConstructor
 public class EmotionStatus {
     private static final double TRANSFER_WEIGHT = 0.9;
     private double score;

@@ -7,7 +7,7 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.diaries.domain.Emotion;
-import com.emotie.api.diaries.vo.EmotionStatus;
+import com.emotie.api.diaries.domain.EmotionStatus;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -15,6 +15,7 @@ import lombok.Getter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -75,7 +76,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "emotion_status",
             joinColumns = @JoinColumn(name = "member_id")
