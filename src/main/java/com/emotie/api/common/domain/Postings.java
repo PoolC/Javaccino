@@ -12,13 +12,12 @@ import java.util.Map;
 @Setter
 @MappedSuperclass
 public abstract class Postings extends TimestampEntity {
-
     @Id
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
     @Column(name = "writer_id", nullable = false)
-    protected Integer writerId;
+    protected String writerId;
 
     @Column(name = "content", nullable = false)
     protected String content;

@@ -1,5 +1,6 @@
 package com.emotie.api.diaries.dto;
 
+import com.emotie.api.diaries.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
@@ -18,8 +19,7 @@ public class DiaryCreateRequest {
     private final LocalDate issuedDate;
 
     @NotNull
-    @Min(message = "감정 태그는 음이 아닌 정수여야 합니다.", value = 0)
-    private final Integer emotionTagId;
+    private final Emotion emotion;
 
     @NotBlank
     private final String content;
@@ -30,13 +30,13 @@ public class DiaryCreateRequest {
     @Builder
     @JsonCreator
     public DiaryCreateRequest(
-            @JsonProperty(value = "issued_date") LocalDate issuedDate,
-            @JsonProperty(value = "emotion_tag_id") Integer emotionTagId,
-            @JsonProperty(value = "content") String content,
-            @JsonProperty(value = "is_opened") Boolean isOpened
+            @JsonProperty(value = "issued_date", required = true) LocalDate issuedDate,
+            @JsonProperty(value = "emotion", required = true) Emotion emotion,
+            @JsonProperty(value = "content", required = true) String content,
+            @JsonProperty(value = "is_opened", required = true) Boolean isOpened
     ) {
         this.issuedDate = issuedDate;
-        this.emotionTagId = emotionTagId;
+        this.emotion = emotion;
         this.content = content;
         this.isOpened = isOpened;
     }

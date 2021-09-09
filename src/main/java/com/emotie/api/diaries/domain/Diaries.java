@@ -21,7 +21,7 @@ public class Diaries extends Postings {
 
     @Builder
     public Diaries(
-            Integer writerId, String content, Emotion emotion, Boolean isOpened
+            String writerId, String content, Emotion emotion, Boolean isOpened
     ) {
         this.writerId = writerId;
         this.content = content;

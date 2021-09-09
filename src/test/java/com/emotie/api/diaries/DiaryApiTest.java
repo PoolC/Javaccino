@@ -1,6 +1,7 @@
 package com.emotie.api.diaries;
 
 import com.emotie.api.AcceptanceTest;
+import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.dto.*;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -27,7 +28,7 @@ public class DiaryApiTest extends AcceptanceTest {
     private final String content = "오늘 잠을 잘 잤다. 좋았다.",
             notExistNickname = "공릉동익룡",
             existNickname = "공릉동공룡";
-    private final Integer emotionTagId = 1;
+    private final Emotion emotion = Emotion.HAPPY;
 
     /* Create: 다이어리 작성 */
     @Test
@@ -37,7 +38,7 @@ public class DiaryApiTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
                 .issuedDate(LocalDate.now())
-                .emotionTagId(null)
+                .emotion(null)
                 .content(content)
                 .isOpened(false)
                 .build();
@@ -56,7 +57,7 @@ public class DiaryApiTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
                 .issuedDate(LocalDate.now())
-                .emotionTagId(emotionTagId)
+                .emotion(emotion)
                 .content(" ")
                 .isOpened(false)
                 .build();
@@ -75,7 +76,7 @@ public class DiaryApiTest extends AcceptanceTest {
         String accessToken = "";
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
                 .issuedDate(LocalDate.now())
-                .emotionTagId(emotionTagId)
+                .emotion(emotion)
                 .content(content)
                 .isOpened(false)
                 .build();
@@ -94,7 +95,7 @@ public class DiaryApiTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
                 .issuedDate(LocalDate.now())
-                .emotionTagId(emotionTagId)
+                .emotion(emotion)
                 .content(content)
                 .isOpened(false)
                 .build();

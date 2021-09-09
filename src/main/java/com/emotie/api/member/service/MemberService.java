@@ -4,6 +4,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
@@ -102,6 +103,11 @@ public class MemberService {
         } else {
             expel(user);
         }
+    }
+
+    public void updateEmotionStatus(Member user, Emotion emotion) {
+        user.updateEmotionStatus(emotion);
+        memberRepository.saveAndFlush(user);
     }
 
     private Boolean isNicknameExists(String nickname) {

@@ -3,6 +3,7 @@ package com.emotie.api.diaries.controller;
 import com.emotie.api.diaries.dto.*;
 import com.emotie.api.diaries.service.DiaryService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,12 +18,14 @@ import javax.validation.Valid;
 @RequiredArgsConstructor
 public class DiaryController {
     private final DiaryService diaryService;
+    private final MemberService memberService;
 
     @PostMapping
     public ResponseEntity<Void> write(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
     ) throws Exception{
-        diaryService.create(diaryCreateRequest);
+        diaryService.create(user, diaryCreateRequest);
+        memberService.updateEmotionStatus(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
