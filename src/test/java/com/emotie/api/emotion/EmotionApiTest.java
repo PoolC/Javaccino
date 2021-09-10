@@ -8,6 +8,7 @@ import com.emotie.api.emotion.dto.EmotionCreateRequest;
 import com.emotie.api.emotion.dto.EmotionsResponse;
 import com.emotie.api.emotion.dto.EmotionUpdateRequest;
 import com.emotie.api.emotion.repository.EmotionRepository;
+import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.MemberDataLoader;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -32,12 +33,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @ActiveProfiles("EmotionDataLoader")
-@Transactional
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 public class EmotionApiTest extends AcceptanceTest {
 
     @Autowired
     private EmotionRepository emotionRepository;
+
+    @Autowired
+    private EmotionService emotionService;
 
     @Test
     @DisplayName("테스트 01-01: 감정 전체 조회 성공 200")
@@ -53,12 +56,12 @@ public class EmotionApiTest extends AcceptanceTest {
                 (int) responseBody.getEmotions().stream()
                         .filter(emotionResponse -> emotionNames.stream().noneMatch(Predicate.isEqual(emotionResponse.getEmotion())))
                         .count()
-        ).isEqualTo(8);
+        ).isEqualTo(0);
         assertThat(
                 (int) responseBody.getEmotions().stream()
                         .filter(emotionResponse -> emotionColors.stream().noneMatch(Predicate.isEqual(emotionResponse.getColor())))
                         .count()
-        ).isEqualTo(8);
+        ).isEqualTo(0);
     }
 
     @Test
@@ -142,7 +145,6 @@ public class EmotionApiTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
-        assertTrue(emotionRepository.findByEmotion(duplicateEmotion).isEmpty());
     }
 
     @Test
@@ -167,6 +169,7 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("테스트 03-01: 감정 수정 실패 403: 로그인하지 않았거나 관리자가 아닐 시")
     public void 감정_수정_실패_FORBIDDEN() throws Exception {
         // given
@@ -191,11 +194,12 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("테스트 03-02: 감정 수정 실패 400: 색깔이 #Hex꼴이 아닌 경우 (올바르지 않은 색깔값일 경우)")
     public void 감정_수정_실패_BAD_REQUEST_1() throws Exception {
         // given
         String accessToken = adminLogin();
-        String beforeUpdateEmotion = emotionRepository.getById(updatingEmotionId).getEmotion();
+        String beforeUpdateEmotion = beforeUpdatingEmotion;
         Integer updateId = updatingEmotionId;
         String updateEmotion = "수정";
         String wrongColor = "#???@@@";
@@ -215,6 +219,7 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("테스트 03-03: 감정 수정 실패 400: emotion의 값이 없거나, color 값이 없을 시")
     public void 감정_수정_실패_BAD_REQUEST_2() throws Exception {
         // given
@@ -239,31 +244,8 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03-04: 감정 수정 실패 409: emotion의 값이 이미 존재하는 값일 경우 ")
-    public void 감정_수정_실패_CONFLICT() throws Exception {
-        // given
-        String accessToken = adminLogin();
-        String beforeUpdateEmotion = emotionRepository.getById(updatingEmotionId).getEmotion();
-        Integer updateId = updatingEmotionId;
-        String duplicateEmotion = emotionNames.get(0);
-        String duplicateColor = emotionColors.get(0);
-
-        EmotionUpdateRequest request = EmotionUpdateRequest.builder()
-                .emotion(duplicateEmotion)
-                .color(duplicateColor)
-                .build();
-
-        // when
-        ExtractableResponse<Response> response = updateEmotion(accessToken,request, updateId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
-        assertTrue(emotionRepository.findByEmotion(beforeUpdateEmotion).isPresent());
-        assertThat(emotionRepository.getById(updateId).getEmotion()).isEqualTo(beforeUpdateEmotion);
-    }
-
-    @Test
-    @DisplayName("테스트 03-05: 감정 수정 실패 404: 쿼리파라미터 emotion id 에 해당하는 emotion이 없는 경우 ")
+    @Transactional
+    @DisplayName("테스트 03-04: 감정 수정 실패 404: 쿼리파라미터 emotion id 에 해당하는 emotion이 없는 경우 ")
     public void 감정_수정_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = adminLogin();
@@ -286,11 +268,12 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03-06: 감정 수정 성공 200")
+    @Transactional
+    @DisplayName("테스트 03-05: 감정 수정 성공 200")
     public void 감정_수정_성공_OK() throws Exception {
         // given
         String accessToken = adminLogin();
-        String beforeUpdateEmotion = emotionRepository.getById(updatingEmotionId).getEmotion();
+        String beforeUpdateEmotion = beforeUpdatingEmotion;
         Integer updateId = updatingEmotionId;
         String updateEmotion = "수정";
         String updateColor = "#123123";
@@ -305,13 +288,14 @@ public class EmotionApiTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(OK.value());
-        assertTrue(emotionRepository.findByEmotion(beforeUpdateEmotion).isEmpty());
         assertTrue(emotionRepository.findByEmotion(updateEmotion).isPresent());
+        assertThat(emotionRepository.findByEmotion(updateEmotion).get().getEmotion()).isEqualTo(updateEmotion);
         assertThat(emotionRepository.getById(updateId).getEmotion()).isEqualTo(updateEmotion);
-        assertThat(emotionRepository.getById(updateId).getEmotion()).isEqualTo(updateColor);
+        assertThat(emotionRepository.getById(updateId).getColor()).isEqualTo(updateColor);
     }
 
     @Test
+    @Transactional
     @DisplayName("테스트 04-01: 감정 삭제 실패 403: 로그인하지 않았거나 관리자가 아닐 시")
     public void 감정_삭제_실패_FORBIDDEN() throws Exception {
         // given
@@ -327,26 +311,12 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 04-02: 감정 삭제 실패 409: 해당 감정을 사용중인 Diary가 있을 시")
-    public void 감정_삭제_실패_CONFLICT() throws Exception {
-        // given
-        String accessToken = adminLogin();
-        Integer deletingId = deletingFailEmotionId;
-
-        // when
-        ExtractableResponse<Response> response = deleteEmotion(accessToken,deletingId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
-        assertThat(emotionRepository.findAll().size()).isEqualTo(9);
-    }
-
-    @Test
-    @DisplayName("테스트 04-03: 감정 삭제 실패 409: 쿼리파라미터 emotion id 에 해당하는 emotion이 없는 경우 ")
+    @Transactional
+    @DisplayName("테스트 04-02: 감정 삭제 실패 404: 쿼리파라미터 emotion id 에 해당하는 emotion이 없는 경우 ")
     public void 감정_삭제_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = adminLogin();
-        Integer deletingId = deletingSuccessEmotionId;
+        Integer deletingId = -1;
 
         // when
         ExtractableResponse<Response> response = deleteEmotion(accessToken,deletingId);
@@ -357,6 +327,25 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
+    @Transactional
+    @DisplayName("테스트 04-03: 감정 삭제 실패 409: 해당 감정을 사용중인 Diary가 있을 시")
+    public void 감정_삭제_실패_CONFLICT() throws Exception {
+        // given
+        String accessToken = adminLogin();
+        Integer deletingId = deletingFailEmotionId;
+        System.out.println("deletingFailEmotionId = " + deletingFailEmotionId);
+        System.out.println("SADFASDF" + emotionRepository.findById(deletingId).get().getDiariesList().size());
+        System.out.println("emotionRepository.findById(deletingSuccessEmotionId).ge = " + emotionRepository.findById(deletingSuccessEmotionId).get().getDiariesList().size());
+        // when
+        ExtractableResponse<Response> response = deleteEmotion(accessToken,deletingId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
+        assertThat(emotionRepository.findAll().size()).isEqualTo(9);
+    }
+
+    @Test
+    @Transactional
     @DisplayName("테스트 04-04: 감정 삭제 성공 200 ")
     public void 감정_삭제_성공_OK() throws Exception {
         // given
@@ -375,7 +364,7 @@ public class EmotionApiTest extends AcceptanceTest {
     private static ExtractableResponse<Response> getAllEmotions() {
         return RestAssured
                 .given().log().all()
-                .when().get("/emotions}")
+                .when().get("/emotions")
                 .then().log().all()
                 .extract();
     }

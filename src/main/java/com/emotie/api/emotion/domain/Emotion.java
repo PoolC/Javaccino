@@ -35,14 +35,19 @@ public class Emotion extends TimestampEntity {
     }
 
     @Builder
-    private Emotion(String emotion, String color, Integer priority){
+    private Emotion(String emotion, String color){
         this.emotion = emotion;
         this.color = color;
         this.priority = priority;
     }
 
-    public static Emotion of(String name, String color, Integer priority){
-        return new Emotion(name, color, priority);
+    public static Emotion of(String emotion, String color){
+        return new Emotion(emotion, color);
+    }
+
+    public void update(String emotion, String color){
+        this.emotion = emotion;
+        this.color = color;
     }
 
 

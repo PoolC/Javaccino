@@ -2,6 +2,8 @@ package com.emotie.api.common.exceptionHandler;
 
 import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.emotion.exception.DuplicatedEmotionException;
+import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.DuplicatedMemberException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -54,7 +56,7 @@ public class CommonExceptionHandlers {
 
     @ExceptionHandler({
             ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
-            CannotFollowException.class
+            CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

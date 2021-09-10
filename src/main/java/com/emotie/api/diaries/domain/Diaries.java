@@ -80,6 +80,11 @@ public class Diaries extends Postings {
         return prevPostingData;
     }
 
+    public void setEmotion(Emotion emotion){
+        this.emotion = emotion;
+
+    }
+
     @Override
     public Postings reportPosting() {
         return this;

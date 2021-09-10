@@ -3,6 +3,7 @@ package com.emotie.api.emotion;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.diaries.domain.Diaries;
+import com.emotie.api.diaries.repository.DiariesRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Gender;
@@ -30,6 +31,7 @@ public class EmotionDataLoader implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final PasswordHashProvider passwordHashProvider;
     private final EmotionRepository emotionRepository;
+    private final DiariesRepository diariesRepository;
 
     public static String
             adminEmail = "admin@gmail.com",
@@ -40,6 +42,7 @@ public class EmotionDataLoader implements ApplicationRunner {
     public static ArrayList<String> emotionColors = new ArrayList<>();
 
     public static Integer updatingEmotionId;
+    public static String beforeUpdatingEmotion;
     public static Integer deletingSuccessEmotionId;
     public static Integer deletingFailEmotionId;
 
@@ -84,7 +87,7 @@ public class EmotionDataLoader implements ApplicationRunner {
         emotionNames.add("지침|TIRED");
         emotionNames.add("무감정|NONE");
 
-        emotionColors.add("#F29CB6");
+        emotionColors.add("#A29CB6");
         emotionColors.add("#9431A4");
         emotionColors.add("#AEE477");
         emotionColors.add("#FF855E");
@@ -94,15 +97,24 @@ public class EmotionDataLoader implements ApplicationRunner {
         emotionColors.add("#FFFFFF");
 
         for (int i = 0; i < 8; i++){
-            emotionRepository.save(Emotion.of(emotionNames.get(i), emotionColors.get(i), 0));
+            Emotion emotion = Emotion.of(emotionNames.get(i), emotionColors.get(i));
+            if ( i < 7) {
+                Diaries diary = new Diaries(0, "", -1, false, 0);
+                diary.setEmotion(emotion);
+                emotion.getDiariesList().add(diary);
+            }
+            emotionRepository.save(emotion);
         }
 
         updatingEmotionId = emotionRepository.findByEmotion("슬픔|SAD").orElseThrow().getId();
+        beforeUpdatingEmotion = "슬픔|SAD";
+
         deletingFailEmotionId = emotionRepository.findByEmotion("지침|TIRED").orElseThrow().getId();
         deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정|NONE").orElseThrow().getId();
-
-        Diaries diary = new Diaries(0, "",deletingFailEmotionId,false, 0);
-        emotionRepository.getById(deletingFailEmotionId).getDiariesList().add(diary);
+        System.out.println("deletingFailEmotionId = " + deletingFailEmotionId);
+        System.out.println("emotionRepository.findByEmotion(\"지침|TIRED\").orElseThrow().getDiariesList().size() = " + emotionRepository.findById(deletingFailEmotionId).orElseThrow().getDiariesList().size());
+        System.out.println("deletingSuccessEmotionId = " + deletingSuccessEmotionId);
+        System.out.println(" emotionRepository.findByEmotion(\"무감정|NONE\").orElseThrow().getDiariesList().size() = " + emotionRepository.findById(deletingSuccessEmotionId).orElseThrow().getDiariesList().size());
 
     }
 }
