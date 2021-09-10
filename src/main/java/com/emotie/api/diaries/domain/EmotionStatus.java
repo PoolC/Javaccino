@@ -9,7 +9,7 @@ import javax.persistence.Embeddable;
 @Embeddable
 @NoArgsConstructor
 public class EmotionStatus {
-    private static final double TRANSFER_WEIGHT = 0.9;
+    private static final double TRANSFER_WEIGHT = 0.79;
     private double score;
     private int count;
 
