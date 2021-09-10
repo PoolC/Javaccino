@@ -270,25 +270,6 @@ public class Member extends TimestampEntity implements UserDetails {
         this.emotionStatus.putAll(initStatus);
     }
 
-    // 다수의 감정이 다수의 점수에 얽혀 있을 때
-    public void updateEmotionStatus(
-            Map<Emotion, Double> updateStatus
-    ) {
-        Arrays.stream(Emotion.values()).forEach(
-                emotion -> {
-                    EmotionStatus status = this.emotionStatus.get(emotion);
-                    // 업데이트 내역에 있는 것은 모두 주어진대로 업데이트하고, 아닌 것은 0.0으로 업데이트 함.
-                    // Short-circuit evaluation
-                    if (updateStatus.containsKey(emotion) && updateStatus.get(emotion) > 0) {
-                        status.addOne();
-                        status.updateScore(updateStatus.get(emotion));
-                    } else {
-                        status.updateScore(0.0);
-                    }
-                }
-        );
-    }
-
     // 1개의 감정만 있을 때;
     public void updateEmotionStatus(Emotion emotion) {
         this.emotionStatus.forEach(
@@ -304,18 +285,4 @@ public class Member extends TimestampEntity implements UserDetails {
         );
     }
 
-    // 1개의 감정과 주어진 점수가 있을 때;
-    public void updateEmotionStatus(Emotion emotion, double updateScore) {
-        this.emotionStatus.forEach(
-                (emotionKey, emotionStatusValue) -> {
-                    // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
-                    if (emotionKey == emotion) {
-                        emotionStatusValue.updateScore(updateScore);
-                        emotionStatusValue.addOne();
-                    } else {
-                        emotionStatusValue.updateScore(0.0);
-                    }
-                }
-        );
-    }
 }
