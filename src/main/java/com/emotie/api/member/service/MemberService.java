@@ -110,6 +110,14 @@ public class MemberService {
         }
     }
 
+    private Boolean isNicknameExists(String nickname) {
+        return memberRepository.existsByNickname(nickname);
+    }
+
+    private Boolean isEmailExists(String email) {
+        return memberRepository.existsByEmail(email);
+    }
+
     private void checkCreateRequestValidity(MemberCreateRequest request) {
         checkNicknameUnique(request.getNickname());
         checkEmailUnique(request.getEmail());
@@ -140,14 +148,16 @@ public class MemberService {
     }
 
     private void checkNicknameUnique(String nickname) {
-        if (memberRepository.findByNickname(nickname).isPresent())
+        if (isNicknameExists(nickname)) {
             throw new DuplicatedMemberException("이미 가입한 닉네임입니다.");
+        }
     }
 
     private void checkEmailUnique(String email) {
-        if (memberRepository.findByEmail(email).isPresent())
-            throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
-    }
+            if (isEmailExists(email)) {
+                throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
+            }
+        }
 
     public void checkLogin(Member member) {
         Optional.ofNullable(member)
