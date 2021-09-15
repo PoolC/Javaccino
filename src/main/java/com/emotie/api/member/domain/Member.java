@@ -262,13 +262,6 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
-    // TODO: 2021-09-07 : 예비로 초기화 메서드 작성함.
-    public void initializeEmotionStatus(
-            Map<Emotion, EmotionStatus> initStatus
-    ) {
-        this.emotionStatus.putAll(initStatus);
-    }
-
     public void deepenEmotionStatus(Emotion emotion) {
         this.emotionStatus.forEach(
                 (emotionKey, emotionStatusValue) -> {
@@ -296,4 +289,8 @@ public class Member extends TimestampEntity implements UserDetails {
         );
     }
 
+    public void updateEmotionStatus(Emotion originalEmotion, Emotion updatedEmotion) {
+        reduceEmotionStatus(originalEmotion);
+        deepenEmotionStatus(updatedEmotion);
+    }
 }

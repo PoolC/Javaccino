@@ -115,6 +115,12 @@ public class MemberService {
         memberRepository.saveAndFlush(user);
     }
 
+    public void updateEmotionStatus(Member user, Emotion originalEmotion, Emotion updatedEmotion) {
+        user.reduceEmotionStatus(originalEmotion);
+        user.deepenEmotionStatus(updatedEmotion);
+        memberRepository.saveAndFlush(user);
+    }
+
     private Boolean isNicknameExists(String nickname) {
         return memberRepository.existsByNickname(nickname);
     }
