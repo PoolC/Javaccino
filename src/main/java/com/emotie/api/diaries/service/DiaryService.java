@@ -1,5 +1,6 @@
 package com.emotie.api.diaries.service;
 
+import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.diaries.domain.Diary;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
 import com.emotie.api.diaries.dto.DiaryUpdateRequest;
@@ -16,26 +17,28 @@ import java.util.NoSuchElementException;
 public class DiaryService {
     private final DiaryRepository diaryRepository;
 
-    public void create(Member user, DiaryCreateRequest diaryCreateRequest) {
-        checkIfContentIsValid(diaryCreateRequest.getContent());
+    public void create(Member user, DiaryCreateRequest request) {
+        checkCreateRequestValidity(request);
         diaryRepository.save(
                 Diary.builder()
-                        .issuedDate(diaryCreateRequest.getIssuedDate())
+                        .issuedDate(request.getIssuedDate())
                         .writerId(user.getUUID())
-                        .emotion(diaryCreateRequest.getEmotion())
-                        .content(diaryCreateRequest.getContent())
-                        .isOpened(diaryCreateRequest.getIsOpened())
+                        .emotion(request.getEmotion())
+                        .content(request.getContent())
+                        .isOpened(request.getIsOpened())
                         .build()
         );
     }
 
-    public void update(Member user, Integer diaryId, DiaryUpdateRequest diaryUpdateRequest) {
-        checkIfContentIsValid(diaryUpdateRequest.getContent());
+    public void update(Member user, Integer diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
-        diary.setIssuedDate(diaryUpdateRequest.getIssuedDate());
-        diary.setEmotion(diaryUpdateRequest.getEmotion());
-        diary.setContent(diaryUpdateRequest.getContent());
-        diary.setIsOpened(diaryUpdateRequest.getIsOpened());
+
+        checkUpdateRequestValidity(user, request, diary);
+
+        diary.setIssuedDate(request.getIssuedDate());
+        diary.setEmotion(request.getEmotion());
+        diary.setContent(request.getContent());
+        diary.setIsOpened(request.getIsOpened());
         diaryRepository.saveAndFlush(diary);
     }
 
@@ -45,7 +48,20 @@ public class DiaryService {
         );
     }
 
+    private void checkCreateRequestValidity(DiaryCreateRequest request) {
+        checkIfContentIsValid(request.getContent());
+    }
+
+    private void checkUpdateRequestValidity(Member user, DiaryUpdateRequest request, Diary diary) {
+        checkIfContentIsValid(request.getContent());
+        checkIfUserValid(user, diary);
+    }
+
     private void checkIfContentIsValid(String content) {
 
+    }
+
+    private void checkIfUserValid(Member user, Diary diary) {
+        if (!user.getUUID().equals(diary.getWriterId())) throw new UnauthorizedException("작성자만이 수정할 수 있습니다.");
     }
 }

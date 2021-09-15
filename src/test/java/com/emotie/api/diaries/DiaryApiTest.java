@@ -185,7 +185,12 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(content)
+                .emotion(null)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
@@ -200,7 +205,12 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(null)
+                .emotion(emotion)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
@@ -215,7 +225,12 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = "";
         Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(content)
+                .emotion(emotion)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();;
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
@@ -230,7 +245,12 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(content)
+                .emotion(emotion)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
@@ -244,8 +264,13 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_게시물_없음() {
         //given
         String accessToken = authorizedLogin();
-        Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        Integer diaryId = 1;
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(content)
+                .emotion(emotion)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
@@ -260,7 +285,12 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         Integer diaryId = 0;
-        DiaryUpdateRequest request = DiaryUpdateRequest.builder().build();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(content)
+                .emotion(emotion)
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
