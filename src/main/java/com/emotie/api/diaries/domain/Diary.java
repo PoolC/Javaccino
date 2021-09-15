@@ -4,12 +4,14 @@ import com.emotie.api.common.domain.Postings;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import java.util.*;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diary extends Postings {
