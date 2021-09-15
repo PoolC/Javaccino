@@ -1,9 +1,11 @@
 package com.emotie.api.common.domain;
 
+import com.emotie.api.member.domain.Member;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -18,7 +20,7 @@ public abstract class Postings extends TimestampEntity {
     protected Integer id;
 
     @Column(name = "writer_id", nullable = false)
-    protected String writerId;
+    protected Member writer;
 
     @Column(name = "content", nullable = false)
     protected String content;
@@ -39,4 +41,17 @@ public abstract class Postings extends TimestampEntity {
      * @return 신고된 게시물
      */
     public abstract Postings reportPosting();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Postings posting = (Postings) o;
+        return getId().equals(posting.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }
