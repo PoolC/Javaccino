@@ -15,7 +15,6 @@ import lombok.Getter;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -270,16 +269,28 @@ public class Member extends TimestampEntity implements UserDetails {
         this.emotionStatus.putAll(initStatus);
     }
 
-    // 1개의 감정만 있을 때;
-    public void updateEmotionStatus(Emotion emotion) {
+    public void deepenEmotionStatus(Emotion emotion) {
         this.emotionStatus.forEach(
                 (emotionKey, emotionStatusValue) -> {
                     // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
                     if (emotionKey == emotion) {
-                        emotionStatusValue.updateScore(1.0);
+                        emotionStatusValue.deepenScore(1.0);
                         emotionStatusValue.addOne();
                     } else {
-                        emotionStatusValue.updateScore(0.0);
+                        emotionStatusValue.deepenScore(0.0);
+                    }
+                }
+        );
+    }
+
+    public void reduceEmotionStatus(Emotion emotion) {
+        this.emotionStatus.forEach(
+                (emotionKey, emotionStatusValue) -> {
+                    if (emotionKey == emotion) {
+                        emotionStatusValue.reduceScore(1.0);
+                        emotionStatusValue.removeOne();
+                    } else {
+                        emotionStatusValue.reduceScore(0.0);
                     }
                 }
         );

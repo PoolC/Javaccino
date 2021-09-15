@@ -10,6 +10,7 @@ import javax.persistence.Embeddable;
 @NoArgsConstructor
 public class EmotionStatus {
     private static final double TRANSFER_WEIGHT = 0.79;
+    private static final double REVERSE_TRANSFER_WEIGHT = 1/TRANSFER_WEIGHT;
     private double score;
     private int count;
 
@@ -22,7 +23,16 @@ public class EmotionStatus {
         this.count += 1;
     }
 
-    public void updateScore(double newScore) {
-        this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * newScore;
+    public void removeOne() {
+        if (this.count <= 0) throw new IllegalStateException("글이 음수가 될 수는 없습니다.");
+        this.count -= 1;
+    }
+
+    public void deepenScore(double scoreUpdater) {
+        this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * scoreUpdater;
+    }
+
+    public void reduceScore(double scoreUpdater) {
+        this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * scoreUpdater;
     }
 }

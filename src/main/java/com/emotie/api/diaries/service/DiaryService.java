@@ -2,6 +2,7 @@ package com.emotie.api.diaries.service;
 
 import com.emotie.api.diaries.domain.Diary;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryUpdateRequest;
 import com.emotie.api.diaries.repository.DiaryRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -23,5 +24,9 @@ public class DiaryService {
                         .isOpened(diaryCreateRequest.getIsOpened())
                         .build()
         );
+    }
+
+    public void update(Member user, DiaryUpdateRequest diaryUpdateRequest) {
+
     }
 }

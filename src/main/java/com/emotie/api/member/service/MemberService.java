@@ -105,8 +105,13 @@ public class MemberService {
         }
     }
 
-    public void updateEmotionStatus(Member user, Emotion emotion) {
-        user.updateEmotionStatus(emotion);
+    public void deepenEmotionStatus(Member user, Emotion emotion) {
+        user.deepenEmotionStatus(emotion);
+        memberRepository.saveAndFlush(user);
+    }
+
+    public void reduceEmotionStatus(Member user, Emotion emotion) {
+        user.reduceEmotionStatus(emotion);
         memberRepository.saveAndFlush(user);
     }
 
