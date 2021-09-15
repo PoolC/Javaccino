@@ -28,7 +28,7 @@ public class GuestbookController {
     ) throws Exception {
         List<GuestbookResponse> guestbooks = new ArrayList<>();
         guestbooks = guestbookService.getAllBoards(user, nickname).stream()
-                .filter(guestbook -> guestbook.isNotOverReported())
+                .filter(guestbook -> guestbook.isNotOverReported() && !guestbook.getIsGlobalBlinded())
                 .map(GuestbookResponse::new)
                 .collect(Collectors.toList());
         guestbooks.sort(Comparator.comparing(GuestbookResponse::getCreatedAt));
