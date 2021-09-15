@@ -1,6 +1,7 @@
 package com.emotie.api.guestbook;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.common.domain.Postings;
 import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.member.domain.Gender;
@@ -35,7 +36,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
             createContent = "구독하고 갑ㄴ디ㅏ",
             changedContent = "구독하고 갑니다";
 
-    public static Integer existId = 1, reportedId = 2, notExistId = -1;
+    public static Integer existId = 1, overReportedId = 2, notExistId = -1;
 
     @Override
     public void run(String... args) throws Exception {
@@ -84,11 +85,11 @@ public class GuestbookDataLoader implements CommandLineRunner {
         guestbookRepository.save(
                 // 신고된 방명록
                 Guestbook.builder()
-                        .id(reportedId)
+                        .id(overReportedId)
                         .ownerId(ownerUUID)
                         .writerId(writerUUID)
                         .content("무수한 신고의 요청이..!")
-                        .reportCount(5)
+                        .reportCount(Postings.reportCountThreshold)
                         .build());
     }
 }
