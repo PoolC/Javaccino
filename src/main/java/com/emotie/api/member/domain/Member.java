@@ -7,6 +7,9 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.guestbook.domain.Guestbook;
+import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
+import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
+import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -74,11 +77,11 @@ public class Member extends TimestampEntity implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followees = new ArrayList<>();
 
-//    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class)
-//    private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
-//
-//    @OneToMany(mappedBy = "member", targetEntity = MemberBlindGuestbook.class)
-//    private final List<MemberBlindGuestbook> blindedGuestbooks = new ArrayList<>();
+    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class)
+    private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", targetEntity = MemberLocalBlindGuestbook.class)
+    private final List<MemberLocalBlindGuestbook> localblindedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -257,27 +260,29 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
-    // TODO: 글 숨기기 논의 해결 후
+    // TODO: Exception?
+//    @Transactional
     public Boolean isReported(Guestbook guestbook) {
-        return true;
-//        return this.reportedGuestbooks.contains(guestbook);
+        return this.reportedGuestbooks.contains(new MemberReportGuestbook(this, guestbook));
     }
 
-    // TODO: 글 숨기기 논의 해결 후
-    public void report(Guestbook guestbook) {
-//        this.reportedGuestbooks.add(guestbook);
-    }
-
-    // TODO: 글 숨기기 논의 해결 후
-    public void unreport(Guestbook guestbook) {
-//        this.reportedGuestbooks.remove(guestbook);
-    }
-
-    public void updateReportCount(Boolean flag) {
-        if (flag) {
-            this.reportCount++;
-        } else {
-            this.reportCount--;
+    // TODO: Exception?
+//    @Transactional
+    public void report(Boolean isReported, MemberReportGuestbook memberReportGuestbook) {
+        if (isReported){
+            this.reportedGuestbooks.remove(memberReportGuestbook);
+            return;
         }
+        this.reportedGuestbooks.add(memberReportGuestbook);
+    }
+
+    // TODO: Exception?
+//    @Transactional
+    public void updateReportCount(Boolean isReported) {
+        if (isReported) {
+            this.reportCount++;
+            return;
+        }
+        this.reportCount--;
     }
 }
