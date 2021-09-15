@@ -11,21 +11,21 @@ import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
-@Entity(name = "members_report_guestbooks")
-@IdClass(MemberReportGuestbookKey.class)
-public class MemberReportGuestbook {
+@Entity(name = "members_local_blind_guestbooks")
+@IdClass(MemberLocalBlindGuestbookKey.class)
+public class MemberLocalBlindGuestbook {
     @Id
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
-
+    
     @Id
     @ManyToOne
     @JoinColumn(name = "guestbook_id")
     private Guestbook guestbook;
 
     @Builder
-    public MemberReportGuestbook(
+    public MemberLocalBlindGuestbook(
             Member member, Guestbook guestbook
     ) {
         this.member = member;
@@ -36,9 +36,9 @@ public class MemberReportGuestbook {
     public boolean equals(Object o){
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MemberReportGuestbook memberReportGuestbook = (MemberReportGuestbook) o;
-        return Objects.equals(getMember(), memberReportGuestbook.getMember()) &&
-                Objects.equals(getGuestbook(), memberReportGuestbook.getGuestbook());
+        MemberLocalBlindGuestbook memberLocalBlindGuestbook = (MemberLocalBlindGuestbook) o;
+        return Objects.equals(getMember(), memberLocalBlindGuestbook.getMember()) &&
+                Objects.equals(getGuestbook(), memberLocalBlindGuestbook.getGuestbook());
     }
 
     @Override
@@ -47,7 +47,7 @@ public class MemberReportGuestbook {
     }
 }
 
-class MemberReportGuestbookKey implements Serializable {
+class MemberLocalBlindGuestbookKey implements Serializable {
     private Member member;
     private Guestbook guestbook;
 }
