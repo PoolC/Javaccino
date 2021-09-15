@@ -75,7 +75,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/guestbooks/report/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
                 .antMatchers(HttpMethod.DELETE, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
                 .antMatchers(HttpMethod.DELETE, "/guestbooks/user/{nickname}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
-                .antMatchers(HttpMethod.POST, "/guestbooks/blind/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/global_blind/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/local_blind/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
 
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
