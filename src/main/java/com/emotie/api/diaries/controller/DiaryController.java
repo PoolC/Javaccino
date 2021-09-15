@@ -42,7 +42,8 @@ public class DiaryController {
 
     @PutMapping(value = "/{diaryId}")
     public ResponseEntity<Void> update(
-            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
+            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
+            @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
         return ResponseEntity.ok().build();
     }
