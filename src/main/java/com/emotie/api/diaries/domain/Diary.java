@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import java.time.LocalDate;
 import java.util.*;
 
 @Getter
@@ -15,6 +16,9 @@ import java.util.*;
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diary extends Postings {
+    @Column(name = "issued_date", nullable = false)
+    private LocalDate issuedDate;
+
     @Column(name = "emotion", nullable = false)
     private Emotion emotion;
 
@@ -25,8 +29,9 @@ public class Diary extends Postings {
 
     @Builder
     public Diary(
-            String writerId, String content, Emotion emotion, Boolean isOpened
+            LocalDate issuedDate, String writerId, String content, Emotion emotion, Boolean isOpened
     ) {
+        this.issuedDate = issuedDate;
         this.writerId = writerId;
         this.content = content;
         this.emotion = emotion;
