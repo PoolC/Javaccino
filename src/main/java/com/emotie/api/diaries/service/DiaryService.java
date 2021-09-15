@@ -8,16 +8,19 @@ import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-// TODO: 2021-08-06
+import java.util.NoSuchElementException;
+
 @SuppressWarnings("unused")
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
-    private final DiaryRepository diariesRepository;
+    private final DiaryRepository diaryRepository;
 
     public void create(Member user, DiaryCreateRequest diaryCreateRequest) {
-        diariesRepository.save(
+        checkIfContentIsValid(diaryCreateRequest.getContent());
+        diaryRepository.save(
                 Diary.builder()
+                        .issuedDate(diaryCreateRequest.getIssuedDate())
                         .writerId(user.getUUID())
                         .emotion(diaryCreateRequest.getEmotion())
                         .content(diaryCreateRequest.getContent())
@@ -26,7 +29,23 @@ public class DiaryService {
         );
     }
 
-    public void update(Member user, DiaryUpdateRequest diaryUpdateRequest) {
+    public void update(Member user, Integer diaryId, DiaryUpdateRequest diaryUpdateRequest) {
+        checkIfContentIsValid(diaryUpdateRequest.getContent());
+        Diary diary = getDiaryById(diaryId);
+        diary.setIssuedDate(diaryUpdateRequest.getIssuedDate());
+        diary.setEmotion(diaryUpdateRequest.getEmotion());
+        diary.setContent(diaryUpdateRequest.getContent());
+        diary.setIsOpened(diaryUpdateRequest.getIsOpened());
+        diaryRepository.saveAndFlush(diary);
+    }
+
+    private Diary getDiaryById(Integer diaryId) {
+        return diaryRepository.findById(diaryId).orElseThrow(
+                () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
+        );
+    }
+
+    private void checkIfContentIsValid(String content) {
 
     }
 }
