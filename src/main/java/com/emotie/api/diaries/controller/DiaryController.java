@@ -45,6 +45,8 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
             @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
+        diaryService.update(user, diaryId, diaryUpdateRequest);
+        memberService.reduceEmotionStatus(user, diaryUpdateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
