@@ -158,7 +158,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
      */
     @Test
     @DisplayName("테스트 03-01: 방명록 수정 실패 [403]; 방명록 작성자가 아닐 때")
-    public void 방명록_수정_실패_FORBIDDEN() throws Exception {
+    public void 방명록_수정_실패_FORBIDDEN_1() throws Exception {
         // given
         String accessToken = authorizedLogin(); ///
         GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
@@ -189,7 +189,23 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03-03: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 03-03: 방명록 수정 실패 [403]; 일정 횟수 이상 신고된 방명록일 때")
+    public void 방명록_수정_실패_FORBIDDEN_2() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+        GuestbookUpdateRequest guestbookUpdateRequest = GuestbookUpdateRequest.builder()
+                .content(changedContent)
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = guestbookUpdateRequest(accessToken, guestbookUpdateRequest, overReportedId); ///
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 03-04: 방명록 수정 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_수정_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -205,7 +221,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03-04: 방명록 수정 성공 [200];")
+    @DisplayName("테스트 03-05: 방명록 수정 성공 [200];")
     public void 방명록_수정_성공_OK() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -284,7 +300,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, reportedId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, overReportedId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -310,14 +326,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05-02: 방명록 삭제 실패 [403]; 신고된 방명록일 때")
+    @DisplayName("테스트 05-02: 방명록 삭제 실패 [403]; 일정 횟수 이상 신고된 방명록일 때")
     public void 방명록_삭제_실패_FORBIDDEN_2() throws Exception {
 
         // given
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, reportedId);
+        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, overReportedId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
