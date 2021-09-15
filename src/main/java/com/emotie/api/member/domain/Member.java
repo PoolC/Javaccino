@@ -77,6 +77,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followees = new ArrayList<>();
 
+    // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
     @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class)
     private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
 
@@ -261,15 +262,13 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     // TODO: Exception?
-//    @Transactional
-    public Boolean isReported(Guestbook guestbook) {
-        return this.reportedGuestbooks.contains(new MemberReportGuestbook(this, guestbook));
+    public Boolean isReportExists(MemberReportGuestbook memberReportGuestbook) {
+        return this.reportedGuestbooks.contains(memberReportGuestbook);
     }
 
     // TODO: Exception?
-//    @Transactional
-    public void report(Boolean isReported, MemberReportGuestbook memberReportGuestbook) {
-        if (isReported){
+    public void report(MemberReportGuestbook memberReportGuestbook) {
+        if (isReportExists(memberReportGuestbook)){
             this.reportedGuestbooks.remove(memberReportGuestbook);
             return;
         }
@@ -277,12 +276,25 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     // TODO: Exception?
-//    @Transactional
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
             this.reportCount++;
             return;
         }
         this.reportCount--;
+    }
+
+    // TODO: Exception?
+    public Boolean isLocalBlindExists(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
+        return this.localblindedGuestbooks.contains(memberLocalBlindGuestbook);
+    }
+
+    // TODO: Exception?
+    public void localBlind(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
+        if (isLocalBlindExists(memberLocalBlindGuestbook)){
+            this.localblindedGuestbooks.remove(memberLocalBlindGuestbook);
+            return;
+        }
+        this.localblindedGuestbooks.add(memberLocalBlindGuestbook);
     }
 }

@@ -24,6 +24,7 @@ public class Guestbook extends Postings {
     @Column(name = "is_global_blinded", nullable = false)
     private Boolean isGlobalBlinded;
 
+    // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
     @OneToMany(mappedBy = "guestbook", targetEntity = MemberReportGuestbook.class)
     private final List<MemberReportGuestbook> reporters = new ArrayList<>();
 
@@ -60,9 +61,15 @@ public class Guestbook extends Postings {
         this.content = request.getContent();
     }
 
+    public Boolean isReportExists(MemberReportGuestbook memberReportGuestbook) {
+        return this.reporters.contains(memberReportGuestbook);
+    }
+
     // TODO: reporters 리스트가 있으면 굳이 카운트를 셀 필요가 있나?
-    public void reportedBy(Boolean isReported, MemberReportGuestbook memberReportGuestbook) {
+    public void reportedBy(MemberReportGuestbook memberReportGuestbook) {
+        Boolean isReported = isReportExists(memberReportGuestbook);
         this.updateReportCount(isReported);
+        getOwner().updateReportCount(isReported);
         if (isReported){
             this.reporters.remove(memberReportGuestbook);
             return;
@@ -72,11 +79,25 @@ public class Guestbook extends Postings {
 
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
-            this.reportCount++;
+            this.reportCount--;
             return;
         }
-        this.reportCount--;
+        this.reportCount++;
     }
 
+    public void globalBlind(){
+        this.isGlobalBlinded = !this.isGlobalBlinded;
+    }
+    // TODO: Exception?
+    public Boolean isLocalBlindExists(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
+        return this.localBlinders.contains(memberLocalBlindGuestbook);
+    }
 
+    public void localBlindedBy(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
+        if (isLocalBlindExists(memberLocalBlindGuestbook)){
+            this.localBlinders.remove(memberLocalBlindGuestbook);
+            return;
+        }
+        this.localBlinders.add(memberLocalBlindGuestbook);
+    }
 }

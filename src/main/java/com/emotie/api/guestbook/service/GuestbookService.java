@@ -2,6 +2,7 @@ package com.emotie.api.guestbook.service;
 
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.guestbook.domain.Guestbook;
+import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
 import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
@@ -51,15 +52,15 @@ public class GuestbookService {
         guestbookRepository.saveAndFlush(guestbook);
     }
 
+    // TODO: isReported 잘 동작하는지 확인
     public Boolean toggleReport(Member user, Integer guestbookId) {
         checkToggleReportRequestValidity(user, guestbookId);
-
         Guestbook target = getGuestbookById(guestbookId);
-
-        report(user.isReported(target), user, target);
+        MemberReportGuestbook memberReportGuestbook = new MemberReportGuestbook(user, target);
+        report(user, target);
         memberRepository.saveAndFlush(user);
         guestbookRepository.saveAndFlush(target);
-        return user.isReported((target));
+        return user.isReportExists(memberReportGuestbook);
     }
 
     public void delete(Member executor, Integer guestbookId) {
@@ -73,42 +74,23 @@ public class GuestbookService {
         guestbookRepository.deleteByOwner(owner);
     }
 
-//    public Boolean toggleGlobalBlind(Member user, Integer guestbookId) {
-//        checkGlobalBlindRequestValidity(user, guestbookId);
-//
-//        Guestbook target = getGuestbookById(guestbookId);
-//
-//        return true;
-//        if (user.hasGlobalBlinded(target)) {
-//            unGlobalBlind(user, target);
-//            memberRepository.saveAndFlush(user);
-//            guestbookRepository.saveAndFlush(target);
-//            return false;
-//        }
-//
-//        blind(user, target);
-//        memberRepository.saveAndFlush(user);
-//        guestbookRepository.saveAndFlush(target);
-//        return true;
-//    }
-//
-//    public Boolean toggleLocalBlind(Member user, Integer guestbookId) {
-//        checkGlobalBlindRequestValidity(user, guestbookId);
-//
-//        Guestbook target = getGuestbookById(guestbookId);
-//
-//        if (user.isGlobalBlinded(target)) {
-//            unGlobalBlind(user, target);
-//            memberRepository.saveAndFlush(user);
-//            guestbookRepository.saveAndFlush(target);
-//            return false;
-//        }
-//
-//        blind(user, target);
-//        memberRepository.saveAndFlush(user);
-//        guestbookRepository.saveAndFlush(target);
-//        return true;
-//    }
+    public Boolean toggleGlobalBlind(Member user, Integer guestbookId) {
+        checkToggleGlobalBlindRequestValidity(user, guestbookId);
+        Guestbook target = getGuestbookById(guestbookId);
+        target.globalBlind();
+        guestbookRepository.saveAndFlush(target);
+        return target.getIsGlobalBlinded();
+    }
+
+    public Boolean toggleLocalBlind(Member user, Integer guestbookId) {
+        checkToggleLocalBlindRequestValidity(user, guestbookId);
+        Guestbook target = getGuestbookById(guestbookId);
+        MemberLocalBlindGuestbook memberLocalBlindGuestbook = new MemberLocalBlindGuestbook(user, target);
+        localBlind(user, target);
+        memberRepository.saveAndFlush(user);
+        guestbookRepository.saveAndFlush(target);
+        return user.isLocalBlindExists(memberLocalBlindGuestbook);
+    }
 
     /*
     유효성 검사 메서드
@@ -151,13 +133,13 @@ public class GuestbookService {
         checkOwner(user, nickname);
     }
 
-    private void checkGlobalBlindRequestValidity(Member user, Integer guestbookId) {
+    private void checkToggleGlobalBlindRequestValidity(Member user, Integer guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkOwner(user, guestbookId);
     }
 
-    private void checkLocalBlindRequestValidity(Member user, Integer guestbookId) {
+    private void checkToggleLocalBlindRequestValidity(Member user, Integer guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
     }
@@ -165,6 +147,16 @@ public class GuestbookService {
     /*
     기타 메서드
      */
+    private void report(Member user, Guestbook target) {
+        user.report(new MemberReportGuestbook(user, target));
+        target.reportedBy(new MemberReportGuestbook(user, target));
+    }
+
+    private void localBlind(Member user, Guestbook target) {
+        user.localBlind(new MemberLocalBlindGuestbook(user, target));
+        target.localBlindedBy(new MemberLocalBlindGuestbook(user, target));
+    }
+
     private Guestbook getGuestbookById(Integer guestbookId) {
         return guestbookRepository.findById(guestbookId).orElseThrow(() -> {
             throw new NoSuchElementException("해당 id를 가진 방명록이 없습니다.");
@@ -180,7 +172,7 @@ public class GuestbookService {
 
     private void checkGuestbookIdExists(Integer guestbookId){
         if (!guestbookRepository.existsById(guestbookId)){
-            throw new NoSuchElementException("해당 nickname을 가진 사용자가 없습니다.");
+            throw new NoSuchElementException("해당 id를 가진 방명록이 없습니다.");
         }
     }
 
@@ -204,13 +196,6 @@ public class GuestbookService {
         if (user.equals(writer)) {
             throw new MyselfException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
         }
-    }
-
-    private void report(Boolean isReported, Member user, Guestbook target) {
-        user.report(isReported, new MemberReportGuestbook(user, target));
-        target.reportedBy(isReported, new MemberReportGuestbook(user, target));
-        target.getOwner().updateReportCount(isReported);
-        // report cnt 꼬이지 않게 잘 보기
     }
 
     private void checkWriterOrOwner(Member user, Integer guestbookId) {
@@ -239,15 +224,5 @@ public class GuestbookService {
         if (!user.equals(owner)) {
             throw new UnauthorizedException("방명록 게시물을 숨길 권한이 없습니다.");
         }
-    }
-
-    private void blind(Member user, Guestbook target) {
-        user.blind(target);
-        target.blindedBy(user);
-    }
-
-    private void unblind(Member user, Guestbook target) {
-        user.unblind(target);
-        target.unblindedBy(user);
     }
 }

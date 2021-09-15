@@ -18,7 +18,7 @@ public class MemberLocalBlindGuestbook {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
-    
+
     @Id
     @ManyToOne
     @JoinColumn(name = "guestbook_id")
