@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Component
 @Profile("guestbookDataLoader")
@@ -24,8 +25,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
     private final PasswordHashProvider passwordHashProvider;
     private final MemberRepository memberRepository;
 
-    public static String writerUUID = "1a076897-14c7-4f76-986c-63bb6e03151c",
-            ownerUUID = "c211ffed-ee58-49f9-8c64-a28777446826",
+    public static String
             writerEmail = "writer@naver.com",
             ownerEmail = "owner@naver.com",
             writerNickname = "Writer Kim",
@@ -43,7 +43,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
         // 방명록 작성자
         memberRepository.save(
                 Member.builder()
-                        .UUID(writerUUID)
+                        .UUID(UUID.randomUUID().toString())
                         .email(writerEmail)
                         .nickname(writerNickname)
                         .passwordHash(passwordHashProvider.encodePassword(guestbookPassword))
@@ -60,7 +60,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
         // 방명록 주인장
         memberRepository.save(
                 Member.builder()
-                        .UUID(ownerUUID)
+                        .UUID(UUID.randomUUID().toString())
                         .email(ownerEmail)
                         .nickname(ownerNickname)
                         .passwordHash(passwordHashProvider.encodePassword(guestbookPassword))
@@ -74,22 +74,28 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
                         .build());
+
+        Member owner = memberRepository.findByNickname(ownerNickname).get();
+        Member writer = memberRepository.findByNickname(writerNickname).get();
+
         guestbookRepository.save(
                 Guestbook.builder()
                         .id(existId)
-                        .ownerId(ownerUUID)
-                        .writerId(writerUUID)
+                        .owner(owner)
+                        .writer(writer)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
+                        .isGlobalBlinded(false)
                         .build());
         guestbookRepository.save(
                 // 신고된 방명록
                 Guestbook.builder()
                         .id(overReportedId)
-                        .ownerId(ownerUUID)
-                        .writerId(writerUUID)
+                        .owner(owner)
+                        .writer(writer)
                         .content("무수한 신고의 요청이..!")
                         .reportCount(Postings.reportCountThreshold)
+                        .isGlobalBlinded(false)
                         .build());
     }
 }

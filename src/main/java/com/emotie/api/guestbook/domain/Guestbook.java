@@ -19,7 +19,7 @@ import java.util.List;
 @Entity(name = "guestbooks")
 public class Guestbook extends Postings {
     @Column(name = "owner_id", nullable = false)
-    private String ownerId;
+    private Member owner;
 
     @Column(name = "is_global_blinded", nullable = false)
     private Boolean isGlobalBlinded;
@@ -32,13 +32,14 @@ public class Guestbook extends Postings {
 
     @Builder
     public Guestbook(
-            Integer id, String ownerId, String writerId, String content, Integer reportCount
+            Integer id, Member owner, Member writer, String content, Integer reportCount, Boolean isGlobalBlinded
     ) {
         this.id = id;
-        this.ownerId = ownerId;
-        this.writerId = writerId;
+        this.owner = owner;
+        this.writer = writer;
         this.content = content;
         this.reportCount = reportCount;
+        this.isGlobalBlinded = isGlobalBlinded;
     }
 
     @Override
@@ -59,7 +60,6 @@ public class Guestbook extends Postings {
         this.content = request.getContent();
     }
 
-    // TODO: 글 숨기기 논의 해결 후
     // TODO: reporters 리스트가 있으면 굳이 카운트를 셀 필요가 있나?
     public void reportedBy(Boolean isReported, MemberReportGuestbook memberReportGuestbook) {
         this.updateReportCount(isReported);
@@ -70,7 +70,6 @@ public class Guestbook extends Postings {
         this.reporters.add(memberReportGuestbook);
     }
 
-//    @Transactional
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
             this.reportCount++;
