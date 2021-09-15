@@ -3,10 +3,7 @@ package com.emotie.api.guestbook;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
-import com.emotie.api.guestbook.dto.GuestbookBlindResponse;
-import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
-import com.emotie.api.guestbook.dto.GuestbookReportResponse;
-import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
+import com.emotie.api.guestbook.dto.*;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -469,7 +466,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookBlindResponse.class))
+        assertThat(response.body().as(GuestbookGlobalBlindResponse.class))
                 .hasFieldOrPropertyWithValue("isGlobalBlinded", true);
     }
 
@@ -485,7 +482,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookBlindResponse.class))
+        assertThat(response.body().as(GuestbookGlobalBlindResponse.class))
                 .hasFieldOrPropertyWithValue("isGlobalBlinded", false);
     }
 
@@ -533,7 +530,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookBlindResponse.class))
+        assertThat(response.body().as(GuestbookLocalBlindResponse.class))
                 .hasFieldOrPropertyWithValue("isLocalBlinded", true);
     }
 
@@ -549,7 +546,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookBlindResponse.class))
+        assertThat(response.body().as(GuestbookLocalBlindResponse.class))
                 .hasFieldOrPropertyWithValue("isLocalBlinded", false);
     }
 
