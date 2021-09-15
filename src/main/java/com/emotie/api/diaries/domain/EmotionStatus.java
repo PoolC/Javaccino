@@ -14,7 +14,7 @@ public class EmotionStatus {
     private double score;
     private int count;
 
-    public EmotionStatus(double score, int count) {
+    public EmotionStatus(Double score, Integer count) {
         this.score = score;
         this.count = count;
     }
@@ -28,11 +28,11 @@ public class EmotionStatus {
         this.count -= 1;
     }
 
-    public void deepenScore(double scoreUpdater) {
+    public void deepenScore(Double scoreUpdater) {
         this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * scoreUpdater;
     }
 
-    public void reduceScore(double scoreUpdater) {
+    public void reduceScore(Double scoreUpdater) {
         this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * scoreUpdater;
     }
 }
