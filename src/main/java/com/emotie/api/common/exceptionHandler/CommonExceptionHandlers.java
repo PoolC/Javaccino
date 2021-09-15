@@ -54,7 +54,7 @@ public class CommonExceptionHandlers {
 
     @ExceptionHandler({
             ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
-            CannotFollowException.class
+            CannotFollowException.class, IllegalStateException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
