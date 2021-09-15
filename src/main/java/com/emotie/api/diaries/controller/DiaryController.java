@@ -5,7 +5,6 @@ import com.emotie.api.diaries.service.DiaryService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -25,7 +24,7 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
     ) throws Exception{
         diaryService.create(user, diaryCreateRequest);
-        memberService.updateEmotionStatus(user, diaryCreateRequest.getEmotion());
+        memberService.deepenEmotionStatus(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
