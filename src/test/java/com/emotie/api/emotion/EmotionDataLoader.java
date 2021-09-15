@@ -101,9 +101,10 @@ public class EmotionDataLoader implements ApplicationRunner {
             if ( i < 7) {
                 Diaries diary = new Diaries(0, "", -1, false, 0);
                 diary.setEmotion(emotion);
+                diariesRepository.save(diary);
                 emotion.getDiariesList().add(diary);
             }
-            emotionRepository.save(emotion);
+            emotionRepository.saveAndFlush(emotion);
         }
 
         updatingEmotionId = emotionRepository.findByEmotion("슬픔|SAD").orElseThrow().getId();

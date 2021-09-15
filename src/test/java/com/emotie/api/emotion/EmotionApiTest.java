@@ -311,7 +311,6 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("테스트 04-02: 감정 삭제 실패 404: 쿼리파라미터 emotion id 에 해당하는 emotion이 없는 경우 ")
     public void 감정_삭제_실패_NOT_FOUND() throws Exception {
         // given
@@ -327,15 +326,12 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("테스트 04-03: 감정 삭제 실패 409: 해당 감정을 사용중인 Diary가 있을 시")
     public void 감정_삭제_실패_CONFLICT() throws Exception {
         // given
         String accessToken = adminLogin();
         Integer deletingId = deletingFailEmotionId;
-        System.out.println("deletingFailEmotionId = " + deletingFailEmotionId);
-        System.out.println("SADFASDF" + emotionRepository.findById(deletingId).get().getDiariesList().size());
-        System.out.println("emotionRepository.findById(deletingSuccessEmotionId).ge = " + emotionRepository.findById(deletingSuccessEmotionId).get().getDiariesList().size());
+
         // when
         ExtractableResponse<Response> response = deleteEmotion(accessToken,deletingId);
 
@@ -345,7 +341,6 @@ public class EmotionApiTest extends AcceptanceTest {
     }
 
     @Test
-    @Transactional
     @DisplayName("테스트 04-04: 감정 삭제 성공 200 ")
     public void 감정_삭제_성공_OK() throws Exception {
         // given

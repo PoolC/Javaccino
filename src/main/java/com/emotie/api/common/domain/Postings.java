@@ -15,6 +15,7 @@ import java.util.Map;
 public abstract class Postings extends TimestampEntity {
 
     @Id
+    @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
