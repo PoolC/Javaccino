@@ -23,10 +23,10 @@ public class Guestbook extends Postings {
     private Boolean isGlobalBlinded;
 
     // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
-    @OneToMany(mappedBy = "guestbook", targetEntity = MemberReportGuestbook.class)
+    @OneToMany(mappedBy = "guestbook", targetEntity = MemberReportGuestbook.class, fetch = FetchType.EAGER)
     private final List<MemberReportGuestbook> reporters = new ArrayList<>();
 
-    @OneToMany(mappedBy = "guestbook", targetEntity = MemberLocalBlindGuestbook.class)
+    @OneToMany(mappedBy = "guestbook", targetEntity = MemberLocalBlindGuestbook.class, fetch = FetchType.EAGER)
     private final List<MemberLocalBlindGuestbook> localBlinders = new ArrayList<>();
 
     @Builder

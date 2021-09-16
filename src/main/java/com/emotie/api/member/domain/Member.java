@@ -78,10 +78,10 @@ public class Member extends TimestampEntity implements UserDetails {
     private final List<Member> followees = new ArrayList<>();
 
     // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
-    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class)
+    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class, fetch = FetchType.EAGER)
     private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", targetEntity = MemberLocalBlindGuestbook.class)
+    @OneToMany(mappedBy = "member", targetEntity = MemberLocalBlindGuestbook.class, fetch = FetchType.EAGER)
     private final List<MemberLocalBlindGuestbook> localblindedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
