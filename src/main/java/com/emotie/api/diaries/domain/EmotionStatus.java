@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Getter
 @Embeddable
 @NoArgsConstructor
-public class EmotionStatus implements Serializable {
+public class EmotionStatus {
     private static final double TRANSFER_WEIGHT = 0.79;
     private static final double REVERSE_TRANSFER_WEIGHT = 1/TRANSFER_WEIGHT;
     private double score;
