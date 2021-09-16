@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import static java.util.function.Predicate.not;
 
 @Embeddable
-public class MemberRoles {
+public class MemberRoles implements Serializable {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "role", joinColumns = @JoinColumn(name = "member_id"))
     @Enumerated(EnumType.STRING)
