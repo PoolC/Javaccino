@@ -1,6 +1,7 @@
 package com.emotie.api.diaries.domain;
 
 import com.emotie.api.common.domain.Postings;
+import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,10 +30,10 @@ public class Diary extends Postings {
 
     @Builder
     public Diary(
-            LocalDate issuedDate, String writerId, String content, Emotion emotion, Boolean isOpened
+            LocalDate issuedDate, Member writer, String content, Emotion emotion, Boolean isOpened
     ) {
         this.issuedDate = issuedDate;
-        this.writerId = writerId;
+        this.writer = writer;
         this.content = content;
         this.emotion = emotion;
         this.isOpened = isOpened;
