@@ -2,6 +2,7 @@ package com.emotie.api.diaries.service;
 
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.diaries.domain.Diary;
+import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
 import com.emotie.api.diaries.dto.DiaryUpdateRequest;
 import com.emotie.api.diaries.repository.DiaryRepository;
@@ -30,8 +31,9 @@ public class DiaryService {
         );
     }
 
-    public void update(Member user, Integer diaryId, DiaryUpdateRequest request) {
+    public Emotion update(Member user, Integer diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
+        Emotion originalEmotion = diary.getEmotion();
 
         checkUpdateRequestValidity(user, request, diary);
 
@@ -40,6 +42,8 @@ public class DiaryService {
         diary.setContent(request.getContent());
         diary.setIsOpened(request.getIsOpened());
         diaryRepository.saveAndFlush(diary);
+
+        return originalEmotion;
     }
 
     private Diary getDiaryById(Integer diaryId) {
