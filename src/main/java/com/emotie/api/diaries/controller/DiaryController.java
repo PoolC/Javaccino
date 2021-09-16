@@ -1,5 +1,6 @@
 package com.emotie.api.diaries.controller;
 
+import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.dto.*;
 import com.emotie.api.diaries.service.DiaryService;
 import com.emotie.api.member.domain.Member;
@@ -45,8 +46,9 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
             @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
-        diaryService.update(user, diaryId, diaryUpdateRequest);
-        memberService.reduceEmotionStatus(user, diaryUpdateRequest.getEmotion());
+        Emotion originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
+        Emotion updatedEmotion = diaryUpdateRequest.getEmotion();
+        memberService.updateEmotionStatus(user, originalEmotion, updatedEmotion);
         return ResponseEntity.ok().build();
     }
 
