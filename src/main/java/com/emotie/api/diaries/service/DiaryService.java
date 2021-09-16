@@ -1,15 +1,21 @@
 package com.emotie.api.diaries.service;
 
 import com.emotie.api.auth.exception.UnauthorizedException;
+import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diaries.domain.Diary;
 import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.dto.DiaryCreateRequest;
+import com.emotie.api.diaries.dto.DiaryDeleteRequest;
 import com.emotie.api.diaries.dto.DiaryUpdateRequest;
+import com.emotie.api.diaries.exception.DuplicatedArgumentsException;
 import com.emotie.api.diaries.repository.DiaryRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @SuppressWarnings("unused")
@@ -23,7 +29,7 @@ public class DiaryService {
         diaryRepository.save(
                 Diary.builder()
                         .issuedDate(request.getIssuedDate())
-                        .writerId(user.getUUID())
+                        .writer(user)
                         .emotion(request.getEmotion())
                         .content(request.getContent())
                         .isOpened(request.getIsOpened())
@@ -46,6 +52,10 @@ public class DiaryService {
         return originalEmotion;
     }
 
+    public void delete(Member user, DiaryDeleteRequest request) {
+        checkDeleteRequestValidity(user, request);
+    }
+
     private Diary getDiaryById(Integer diaryId) {
         return diaryRepository.findById(diaryId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
@@ -61,11 +71,29 @@ public class DiaryService {
         checkIfUserValid(user, diary);
     }
 
+    private void checkDeleteRequestValidity(Member user, DiaryDeleteRequest request) {
+        checkDeleteListValidity(user, request.getId());
+    }
+
     private void checkIfContentIsValid(String content) {
 
     }
 
     private void checkIfUserValid(Member user, Diary diary) {
-        if (!user.getUUID().equals(diary.getWriterId())) throw new UnauthorizedException("작성자만이 수정할 수 있습니다.");
+        if (!user.equals(diary.getWriter())) throw new UnauthorizedException("작성자만이 수정할 수 있습니다.");
+    }
+
+    private void checkDeleteListValidity(Member user, List<Integer> id) {
+        ArrayList<Integer> usedId = new ArrayList<>();
+        id.forEach(
+                (diaryId) -> {
+                    if (usedId.contains(diaryId)) throw new DuplicatedArgumentsException("요청에 중복된 ID가 존재합니다.");
+                    usedId.add(diaryId);
+                    Diary diary = getDiaryById(diaryId);
+                    if (!user.equals(diary.getWriter())) throw new UnauthorizedException("삭제를 요청한 사람에게 해당 권한이 없습니다.");
+                    if (diary.getReportCount() >= Postings.reportCountThreshold)
+                        throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다. ");
+                }
+        );
     }
 }
