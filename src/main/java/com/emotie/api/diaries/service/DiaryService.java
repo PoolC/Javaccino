@@ -28,7 +28,6 @@ public class DiaryService {
 
     public void create(Member user, DiaryCreateRequest request) {
         checkCreateRequestValidity(request);
-        // TODO: 2021-09-16 Writer user가 현재 EmotionStatus 때문에 Serializable 하지 않음; 
         diaryRepository.save(
                 Diary.builder()
                         .issuedDate(request.getIssuedDate())

@@ -230,7 +230,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .emotion(emotion)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
-                .build();;
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
