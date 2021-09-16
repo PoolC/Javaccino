@@ -1,6 +1,7 @@
 package com.emotie.api.common.domain;
 
 import com.emotie.api.member.domain.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +20,8 @@ public abstract class Postings extends TimestampEntity {
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
-    @Column(name = "writer_id", nullable = false)
+    @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "writer_id", nullable = false)
     protected Member writer;
 
     @Column(name = "content", nullable = false)

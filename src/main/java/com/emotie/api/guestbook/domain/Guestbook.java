@@ -6,11 +6,8 @@ import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +15,8 @@ import java.util.List;
 @NoArgsConstructor
 @Entity(name = "guestbooks")
 public class Guestbook extends Postings {
-    @Column(name = "owner_id", nullable = false)
+    @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
 
     @Column(name = "is_global_blinded", nullable = false)
