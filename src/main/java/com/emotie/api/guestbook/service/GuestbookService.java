@@ -71,7 +71,7 @@ public class GuestbookService {
     public void clear(Member user, String nickname) {
         checkClearRequestValidity(user, nickname);
         Member owner = memberService.getMemberByNickname(nickname);
-        guestbookRepository.deleteByOwner(owner);
+        guestbookRepository.deleteAllByOwner(owner);
     }
 
     public Boolean toggleGlobalBlind(Member user, Integer guestbookId) {
