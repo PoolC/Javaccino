@@ -1,23 +1,26 @@
 package com.emotie.api.common.domain;
 
+import com.emotie.api.member.domain.Member;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import java.util.Map;
+import javax.persistence.*;
+import java.util.Objects;
 
 @Getter
 @Setter
 @MappedSuperclass
 public abstract class Postings extends TimestampEntity {
+
+    public static Integer reportCountThreshold = 10;
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO) // TODO: auto로 해도 되나?
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
     @Column(name = "writer_id", nullable = false)
-    protected String writerId;
+    protected Member writer;
 
     @Column(name = "content", nullable = false)
     protected String content;
@@ -38,4 +41,17 @@ public abstract class Postings extends TimestampEntity {
      * @return 신고된 게시물
      */
     public abstract Postings reportPosting();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Postings posting = (Postings) o;
+        return getId().equals(posting.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
+    }
 }
