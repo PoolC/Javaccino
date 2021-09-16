@@ -15,8 +15,10 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 @Service
@@ -26,6 +28,7 @@ public class DiaryService {
 
     public void create(Member user, DiaryCreateRequest request) {
         checkCreateRequestValidity(request);
+        // TODO: 2021-09-16 Writer user가 현재 EmotionStatus 때문에 Serializable 하지 않음; 
         diaryRepository.save(
                 Diary.builder()
                         .issuedDate(request.getIssuedDate())
@@ -52,8 +55,18 @@ public class DiaryService {
         return originalEmotion;
     }
 
-    public void delete(Member user, DiaryDeleteRequest request) {
+    public List<Emotion> delete(Member user, DiaryDeleteRequest request) {
         checkDeleteRequestValidity(user, request);
+        List<Integer> id = request.getId();
+        LinkedList<Emotion> emotions = new LinkedList<>();
+        id.stream().map(this::getDiaryById).forEach(
+                (diary) -> {
+                    emotions.add(diary.getEmotion());
+                    diaryRepository.delete(diary);
+                }
+        );
+
+        return emotions;
     }
 
     private Diary getDiaryById(Integer diaryId) {

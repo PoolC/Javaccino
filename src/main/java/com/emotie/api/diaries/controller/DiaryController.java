@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/diaries")
@@ -56,6 +57,10 @@ public class DiaryController {
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception{
+        List<Emotion> emotions = diaryService.delete(user, diaryDeleteRequest);
+        emotions.forEach(
+                (emotion) -> memberService.reduceEmotionStatus(user, emotion)
+        );
         return ResponseEntity.ok().build();
     }
 
