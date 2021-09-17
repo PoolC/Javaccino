@@ -163,9 +163,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
 
+
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
         checkPasswordResetToken(passwordResetToken);
-        updatePassword(request);
+        updatePassword(request.getPassword());
     }
 
     public void checkAuthorized() {
@@ -187,8 +188,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public boolean isFollowedBy(Member member) {
         return this.followers.contains(member);
     }
-
     // 사용자가 누군가를 팔로우한다는 것은
+
     public void follow(Member member) {
         // 사용자의 팔로이에 그 사람이 추가 되고
         this.followees.add(member);
@@ -237,14 +238,12 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles.changeRole(MemberRole.EXPELLED);
     }
 
-    private void updatePassword(PasswordResetRequest request) {
-        this.passwordHash = request.getPassword();
+    public void updatePassword(String updatePassword) {
+        this.passwordHash = updatePassword;
     }
 
-    public void updateUserInfo(
-            MemberUpdateRequest request, String passwordHash
-    ) {
-        this.passwordHash = passwordHash;
+    public void updateUserInfo(MemberUpdateRequest request) {
+        this.nickname = request.getNickname();
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
     }

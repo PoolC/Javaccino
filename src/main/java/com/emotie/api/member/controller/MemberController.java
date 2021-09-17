@@ -1,10 +1,7 @@
 package com.emotie.api.member.controller;
 
-import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.dto.MemberCreateRequest;
-import com.emotie.api.member.dto.MemberFollowResponse;
-import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.*;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -13,7 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.Arrays;
+import java.util.Map;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 @RestController
@@ -29,6 +26,12 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/nickname")
+    public ResponseEntity<Map<String, Boolean>> checkNicknameDuplicate(@RequestBody @Valid NicknameCheckRequest request) {
+        Boolean checkNicknameDuplicateFlag = memberService.checkNicknameUse(request.getNickname());
+        return ResponseEntity.ok().body(Map.of("checkNickname", checkNicknameDuplicateFlag));
+    }
+
     @PutMapping
     public ResponseEntity<Void> updateMemberInformation(
             @AuthenticationPrincipal Member user, @RequestBody @Valid MemberUpdateRequest request
@@ -36,6 +39,22 @@ public class MemberController {
         memberService.update(user, request);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/password")
+    public ResponseEntity<Map<String, Boolean>> checkPasswordRight(@AuthenticationPrincipal Member user,
+                                                                   @RequestBody @Valid PasswordCheckRequest request) {
+        Boolean checkPasswordRightFlag = memberService.checkPasswordRight(user, request);
+        return ResponseEntity.ok().body(Map.of("checkPassword", checkPasswordRightFlag));
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<Void> updateMemberPassword(
+            @AuthenticationPrincipal Member user, @RequestBody @Valid PasswordUpdateRequest request
+    ) throws Exception {
+        memberService.updatePassword(user, request);
+        return ResponseEntity.ok().build();
+    }
+
 
     @PostMapping(value = "/follow/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MemberFollowResponse> toggleMemberFollow(
