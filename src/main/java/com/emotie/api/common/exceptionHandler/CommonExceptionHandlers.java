@@ -34,13 +34,13 @@ public class CommonExceptionHandlers {
                 .body(errors);
     }
 
-    @ExceptionHandler({UnauthenticatedException.class, WrongPasswordException.class})
+    @ExceptionHandler({UnauthenticatedException.class})
     public ResponseEntity<Map<String, String>> unauthorizedHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Collections.singletonMap("message", e.getMessage()));
     }
 
-    @ExceptionHandler({UnauthorizedException.class})
+    @ExceptionHandler({UnauthorizedException.class, WrongPasswordException.class})
     public ResponseEntity<Map<String, String>> forbiddenHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Collections.singletonMap("message", e.getMessage()));
@@ -53,7 +53,7 @@ public class CommonExceptionHandlers {
     }
 
     @ExceptionHandler({
-            ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
+            ExpiredTokenException.class, WrongTokenException.class, DuplicatedException.class,
             CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
