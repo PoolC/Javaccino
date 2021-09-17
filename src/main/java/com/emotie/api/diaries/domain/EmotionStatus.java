@@ -25,7 +25,7 @@ public class EmotionStatus {
     }
 
     public void removeOne() {
-        if (this.count <= 0) throw new IllegalStateException("글이 음수가 될 수는 없습니다.");
+        if (this.count <= 0) throw new IndexOutOfBoundsException("글 개수가 음수가 될 수는 없습니다.");
         this.count -= 1;
     }
 
