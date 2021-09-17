@@ -454,6 +454,7 @@ public class MemberApiTest extends AcceptanceTest {
 //        assertThat(user).isIn(followedFollowees);
     }
 
+    // TODO: 2021-09-17 갑자기 이 테스트를 통과하지 못함??? 이유는??? 
     @Test
     @DisplayName("테스트 20: 회원 언팔로우 성공 [200]; Followed -> Unfollowing")
     public void 회원_팔로우_성공_OK_2() throws Exception {
@@ -612,7 +613,7 @@ public class MemberApiTest extends AcceptanceTest {
                 .getAccessToken();
     }
 
-    private static String adminLogin() {
+    public static String adminLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(MemberDataLoader.adminEmail)
                 .password(MemberDataLoader.password)
