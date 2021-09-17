@@ -1,8 +1,8 @@
-package com.emotie.api.diaries.controller;
+package com.emotie.api.diary.controller;
 
-import com.emotie.api.diaries.domain.Emotion;
-import com.emotie.api.diaries.dto.*;
-import com.emotie.api.diaries.service.DiaryService;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.diary.dto.*;
+import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;

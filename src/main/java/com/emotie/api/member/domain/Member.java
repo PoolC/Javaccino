@@ -6,7 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.diaries.domain.EmotionStatus;
+import com.emotie.api.diary.domain.EmotionStatus;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -105,9 +105,9 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles = roles;
 
         // TODO: 일단은 0점 & 0점으로 초기화하지만, 따로 방법이 있으면 좋을 듯?
-        Arrays.stream(Emotion.values()).forEach(
-                it -> this.emotionStatus.put(it, new EmotionStatus(0.0, 0))
-        );
+//        Arrays.stream(Emotion.values()).forEach(
+//                it -> this.emotionStatus.put(it, new EmotionStatus(0.0, 0))
+//        );
     }
 
     public Member(MemberRoles roles) {

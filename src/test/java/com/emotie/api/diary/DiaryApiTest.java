@@ -1,9 +1,8 @@
-package com.emotie.api.diaries;
+package com.emotie.api.diary;
 
 import com.emotie.api.AcceptanceTest;
-import com.emotie.api.diaries.domain.Emotion;
-import com.emotie.api.diaries.dto.*;
-import com.emotie.api.member.MemberDataLoader;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.diary.dto.*;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -19,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
-import static com.emotie.api.member.MemberApiTest.adminLogin;
+import static com.emotie.api.member.MemberAcceptanceTest.adminLogin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -33,7 +32,7 @@ public class DiaryApiTest extends AcceptanceTest {
     private final String content = "오늘 잠을 잘 잤다. 좋았다.",
             notExistNickname = "공릉동익룡",
             existNickname = "공릉동공룡";
-    private final Emotion emotion = Emotion.HAPPY;
+    private final Emotion emotion = Emotion.builder().emotion("HAPPY").color("#FFF27D").build();
     private final Integer invalidId = Integer.MAX_VALUE;
 
     /* Create: 다이어리 작성 */

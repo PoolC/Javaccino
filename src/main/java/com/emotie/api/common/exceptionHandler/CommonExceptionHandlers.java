@@ -5,7 +5,7 @@ import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.common.exception.NotSameException;
 import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
-import com.emotie.api.diaries.exception.DuplicatedArgumentsException;
+import com.emotie.api.diary.exception.DuplicatedArgumentsException;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;

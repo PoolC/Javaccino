@@ -1,6 +1,6 @@
-package com.emotie.api.diaries.repository;
+package com.emotie.api.diary.repository;
 
-import com.emotie.api.diaries.domain.Diary;
+import com.emotie.api.diary.domain.Diary;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DiaryRepository extends JpaRepository<Diary, Integer> {

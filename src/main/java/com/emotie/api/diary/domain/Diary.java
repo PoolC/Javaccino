@@ -1,16 +1,15 @@
-package com.emotie.api.diaries.domain;
+package com.emotie.api.diary.domain;
 
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.emotion.domain.Emotion;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.time.LocalDate;
-import java.util.*;
 
 @Getter
 @Setter
@@ -20,7 +19,8 @@ public class Diary extends Postings {
     @Column(name = "issued_date", nullable = false)
     private LocalDate issuedDate;
 
-    @Column(name = "emotion", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="emotion_tag_id")
     private Emotion emotion;
 
     @Column(name = "is_opened", nullable = false)

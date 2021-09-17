@@ -1,4 +1,4 @@
-package com.emotie.api.diaries.dto;
+package com.emotie.api.diary.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

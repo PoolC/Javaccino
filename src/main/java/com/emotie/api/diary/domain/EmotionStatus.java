@@ -1,10 +1,9 @@
-package com.emotie.api.diaries.domain;
+package com.emotie.api.diary.domain;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
-import java.io.Serializable;
 
 @Getter
 @Embeddable

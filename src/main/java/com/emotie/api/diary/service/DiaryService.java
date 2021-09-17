@@ -1,21 +1,18 @@
-package com.emotie.api.diaries.service;
+package com.emotie.api.diary.service;
 
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
-import com.emotie.api.diaries.domain.Diary;
-import com.emotie.api.diaries.domain.Emotion;
-import com.emotie.api.diaries.dto.DiaryCreateRequest;
-import com.emotie.api.diaries.dto.DiaryDeleteRequest;
-import com.emotie.api.diaries.dto.DiaryUpdateRequest;
-import com.emotie.api.diaries.exception.DuplicatedArgumentsException;
-import com.emotie.api.diaries.repository.DiaryRepository;
+import com.emotie.api.diary.domain.Diary;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.diary.dto.DiaryCreateRequest;
+import com.emotie.api.diary.dto.DiaryDeleteRequest;
+import com.emotie.api.diary.dto.DiaryUpdateRequest;
+import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
 @Service

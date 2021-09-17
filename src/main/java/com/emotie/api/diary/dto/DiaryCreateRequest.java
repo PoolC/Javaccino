@@ -1,6 +1,6 @@
-package com.emotie.api.diaries.dto;
+package com.emotie.api.diary.dto;
 
-import com.emotie.api.diaries.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

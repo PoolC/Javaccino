@@ -1,4 +1,4 @@
-package com.emotie.api.diaries.dto;
+package com.emotie.api.diary.dto;
 
 import lombok.Builder;
 

@@ -816,7 +816,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private String adminLogin() {
+    public static String adminLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(MemberDataLoader.adminEmail)
                 .password(MemberDataLoader.password)
