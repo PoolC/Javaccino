@@ -37,6 +37,7 @@ public class MemberDataLoader implements CommandLineRunner {
 
     public static String authorizationToken = "authorization_token", passwordResetToken = "password_reset_token";
 
+    public static String authorizedNickname = "authorizedNickname";
     private String introduction = "안녕하세요";
 
     @Override
@@ -45,7 +46,7 @@ public class MemberDataLoader implements CommandLineRunner {
                 Member.builder()
                         .UUID(UUID.randomUUID().toString())
                         .email(authorizedEmail)
-                        .nickname(authorizedEmail)
+                        .nickname(authorizedNickname)
                         .passwordHash(passwordHashProvider.encodePassword(password))
                         .gender(Gender.HIDDEN)
                         .dateOfBirth(LocalDate.now())

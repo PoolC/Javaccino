@@ -1,22 +1,22 @@
 package com.emotie.api.member.service;
 
-import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
 import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.PasswordCheckRequest;
+import com.emotie.api.member.dto.PasswordUpdateRequest;
 import com.emotie.api.member.exception.CannotFollowException;
-import com.emotie.api.member.exception.DuplicatedMemberException;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -30,6 +30,10 @@ public class MemberService {
         return memberRepository.findByEmail(email)
                 .orElseThrow(() ->
                         new NoSuchElementException(String.format("해당 이메일(%s)을 가진 회원이 존재하지 않습니다.", email)));
+    }
+
+    public Boolean checkNicknameUse(String nickname) {
+        return !memberRepository.existsByNickname(nickname);
     }
 
     public Member getMemberIfRegistered(String email, String password) {
@@ -69,10 +73,21 @@ public class MemberService {
     }
 
     public void update(Member member, MemberUpdateRequest request) {
-        checkUpdateRequestValidity(member, request);
-        String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
-        member.updateUserInfo(request, passwordHash);
+        if (!checkNicknameUse(request.getNickname())) {
+            throw new DuplicatedException("중복되는 닉네임이 존재합니다.");
+        }
+        member.updateUserInfo(request);
         memberRepository.saveAndFlush(member);
+    }
+
+    public Boolean checkPasswordRight(Member user, PasswordCheckRequest request) {
+        return passwordHashProvider.matches(request.getPassword(), user.getPassword());
+    }
+
+    public void updatePassword(Member member, PasswordUpdateRequest request) {
+        request.checkPasswordMatches();
+        String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
+        member.updatePassword(passwordHash);
     }
 
     public Boolean toggleFollowUnfollow(Member user, String followerNickname) {
@@ -118,20 +133,12 @@ public class MemberService {
         request.checkPasswordMatches();
     }
 
-    private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
-        request.checkPasswordMatches();
-        checkLogin(member);
-    }
-
     private void checkFollowToggleRequestValidity(Member member, String nickname) {
-        checkLogin(member);
         checkAuthorized(member);
         checkNicknameIsFollowable(member, nickname);
     }
 
     private void checkDeleteRequestValidity(Member executor, String nickname) {
-        checkLogin(executor);
-
         // 이 부분에서 유저의 존재성 역시 검증함.
         Member user = getMemberByNickname(nickname);
 
@@ -143,21 +150,14 @@ public class MemberService {
 
     private void checkNicknameUnique(String nickname) {
         if (isNicknameExists(nickname)) {
-            throw new DuplicatedMemberException("이미 가입한 닉네임입니다.");
+            throw new DuplicatedException("이미 가입한 닉네임입니다.");
         }
     }
 
     private void checkEmailUnique(String email) {
         if (isEmailExists(email)) {
-            throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
+            throw new DuplicatedException("이미 가입한 이메일입니다.");
         }
-    }
-
-    private void checkLogin(Member member) {
-        Optional.ofNullable(member)
-                .orElseThrow(() -> {
-                    throw new UnauthenticatedException("로그인하지 않았습니다.");
-                });
     }
 
     private void checkAuthorized(Member member) {
@@ -168,7 +168,7 @@ public class MemberService {
         if (member1.equals(member2)) throw new CannotFollowException("자기 자신을 팔로우할 수는 없습니다.");
     }
 
-    private void checkNicknameIsFollowable(Member user, String nickname){
+    private void checkNicknameIsFollowable(Member user, String nickname) {
         Member follower = getMemberByNickname(nickname);
         MemberRoles roles = follower.getRoles();
         checkDifferent(user, follower);
