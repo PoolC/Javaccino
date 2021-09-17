@@ -53,7 +53,7 @@ public class CommonExceptionHandlers {
     }
 
     @ExceptionHandler({
-            ExpiredTokenException.class, WrongTokenException.class, DuplicatedMemberException.class,
+            ExpiredTokenException.class, WrongTokenException.class, DuplicatedException.class,
             CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
