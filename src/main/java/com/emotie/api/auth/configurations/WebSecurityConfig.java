@@ -60,6 +60,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
 
+                .antMatchers(HttpMethod.GET, "/emotions").permitAll()
+                .antMatchers(HttpMethod.POST, "/emotions").hasAuthority(MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.PUT, "/emotions/{emotionId}").hasAuthority( MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/emotions/{emotionId}").hasAuthority(MemberRole.ADMIN.name())
+
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/auth/authorization").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
                 .antMatchers(HttpMethod.PUT, "/auth/authorization").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())

@@ -1,24 +1,28 @@
 package com.emotie.api.diaries.domain;
 
 import com.emotie.api.common.domain.Postings;
+import com.emotie.api.emotion.domain.Emotion;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.util.*;
 
 @Getter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diaries extends Postings {
-    @Column(name = "emotion_tag_id", nullable = false)
-    private Integer emotionTagId;
+//    @Column(name = "emotion_tag_id", nullable = false)
+//    private Integer emotionTagId;
 
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
 
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="emotion_tag_id")
+    private Emotion emotion;
 
     @Builder
     public Diaries(
@@ -26,7 +30,7 @@ public class Diaries extends Postings {
     ) {
         this.writerId = memberId;
         this.content = content;
-        this.emotionTagId = emotionTagId;
+//        this.emotionTagId = emotionTagId;
         this.isOpened = isOpened;
         this.reportCount = reportCount;
     }
@@ -41,7 +45,7 @@ public class Diaries extends Postings {
                 Map.entry("id", this.id),
                 Map.entry("member_id", this.writerId),
                 Map.entry("content", this.content),
-                Map.entry("emotion_tag_id", this.emotionTagId),
+//                Map.entry("emotion_tag_id", this.emotionTagId),
                 Map.entry("is_opened", this.isOpened),
                 Map.entry("report_count", this.reportCount)
         );
@@ -63,7 +67,7 @@ public class Diaries extends Postings {
     public Map<String, Object> updatePosting(String content, Integer emotionTagId, Boolean isOpened) {
         Map<String, Object> prevPostingData = this.toMap();
         this.content = content;
-        this.emotionTagId = emotionTagId;
+//        this.emotionTagId = emotionTagId;
         this.isOpened = isOpened;
         return prevPostingData;
     }
@@ -74,6 +78,11 @@ public class Diaries extends Postings {
             prevPostingData.add(diary.toMap());
         }
         return prevPostingData;
+    }
+
+    public void setEmotion(Emotion emotion){
+        this.emotion = emotion;
+
     }
 
     @Override
