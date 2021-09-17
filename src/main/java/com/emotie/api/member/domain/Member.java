@@ -6,8 +6,8 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.diaries.domain.Emotion;
 import com.emotie.api.diaries.domain.EmotionStatus;
+import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
+// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Entity(name = "members")
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -178,7 +179,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
         checkPasswordResetToken(passwordResetToken);
-        updatePassword(request);
+        updatePassword(request.getPassword());
     }
 
     public void checkAuthorized() {
@@ -203,10 +204,10 @@ public class Member extends TimestampEntity implements UserDetails {
 
     // 사용자가 누군가를 팔로우한다는 것은
     public void follow(Member member) {
-        // 사용자의 팔로워에 그 사람이 추가 되고
+        // 사용자의 팔로이에 그 사람이 추가 되고
         this.followees.add(member);
 
-        // 그 사람의 팔로이에 사용자가 추가되는 것이다.
+        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
         member.followers.add(this);
     }
 
@@ -250,14 +251,12 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles.changeRole(MemberRole.EXPELLED);
     }
 
-    private void updatePassword(PasswordResetRequest request) {
-        this.passwordHash = request.getPassword();
+    public void updatePassword(String updatePassword) {
+        this.passwordHash = updatePassword;
     }
 
-    public void updateUserInfo(
-            MemberUpdateRequest request, String passwordHash
-    ) {
-        this.passwordHash = passwordHash;
+    public void updateUserInfo(MemberUpdateRequest request) {
+        this.nickname = request.getNickname();
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
     }

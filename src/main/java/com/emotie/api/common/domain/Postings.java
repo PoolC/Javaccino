@@ -4,6 +4,11 @@ import com.emotie.api.member.domain.Member;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import java.util.Map;
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -15,6 +20,7 @@ public abstract class Postings extends TimestampEntity {
     public static Integer reportCountThreshold = 10;
 
     @Id
+    @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 

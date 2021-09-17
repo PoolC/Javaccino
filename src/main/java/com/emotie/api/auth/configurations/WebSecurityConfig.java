@@ -38,9 +38,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList("https://moviePicker.com"));//TODO: 도메인 명에 맞게 넣을 것
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));//TODO: 도메인 명에 맞게 넣을 것
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control",
-                "Content-Type", "Accept", "Content-Length", "Accept-Encoding", "X-Requested-With"));
+                "Content-Type", "Accept", "Content-Length", "Accept-Encoding", "X-Requested-With", "Access-Control-Allow-Origin"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
         configuration.setMaxAge(3600L);
 
@@ -59,6 +59,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+
+                .antMatchers(HttpMethod.GET, "/emotions").permitAll()
+                .antMatchers(HttpMethod.POST, "/emotions").hasAuthority(MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.PUT, "/emotions/{emotionId}").hasAuthority( MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/emotions/{emotionId}").hasAuthority(MemberRole.ADMIN.name())
 
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .antMatchers(HttpMethod.POST, "/auth/authorization").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
