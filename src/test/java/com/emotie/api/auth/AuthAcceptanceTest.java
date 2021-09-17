@@ -89,8 +89,8 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN_2() {
+    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
+    public void 이메일_인증코드_보내기_실패_FORBIDDEN() {
         //given
         String email = authorizedEmail;
 
@@ -99,6 +99,20 @@ public class AuthAcceptanceTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
+
+    }
+
+    @Test
+    @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 404 (해당하는 이메일을 가진 멤버가 존재하지 않을 때)")
+    public void 이메일_인증코드_보내기_실패_NOT_FOUND() {
+        //given
+        String email = "";
+
+        //when
+        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(email);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
     }
 
@@ -117,17 +131,32 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 09: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
-    public void 이메일_인증코드_확인_실패_FORBIDDEN_2() {
+    @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
+    public void 이메일_인증코드_확인_실패_FORBIDDEN() {
         //given
         String email = authorizedEmail;
         String request = authorizationToken;
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(authorizedEmail, request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
+
+    }
+
+    @Test
+    @DisplayName("테스트 09: 이메일 인증코드 확인 실패 403 (해당하는 이메일을 가진 멤버가 존재하지 않을 때)")
+    public void 이메일_인증코드_확인_실패_NOT_FOUND() {
+        //given
+        String email = notExistEmail;
+        String request = authorizationToken;
+
+        //when
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
     }
 
@@ -364,7 +393,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     private ExtractableResponse<Response> sendAuthorizationTokenRequest(String email) {
         return RestAssured
                 .given().log().all()
-                .param("email", "email")
+                .param("email", email)
                 .when().post("/auth/authorization")
                 .then().log().all()
                 .extract();
