@@ -45,7 +45,7 @@ public class DiaryController {
     @PutMapping(value = "/{diaryId}")
     public ResponseEntity<Void> update(
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
-            @Valid DiaryUpdateRequest diaryUpdateRequest
+            @RequestBody @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
         Emotion originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
         Emotion updatedEmotion = diaryUpdateRequest.getEmotion();
