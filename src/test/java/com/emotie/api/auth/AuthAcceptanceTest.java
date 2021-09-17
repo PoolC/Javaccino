@@ -23,8 +23,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AuthAcceptanceTest extends AcceptanceTest {
 
     @Test
-    @DisplayName("테스트 01: 로그인시 실패 401 (비밀번호가 틀렸을 때)")
-    public void 로그인_실패_UNAUTHORIZED_1() {
+    @DisplayName("테스트 01: 로그인시 실패 403 (비밀번호가 틀렸을 때)")
+    public void 로그인_실패_FORBIDDEN_1() {
         //given
         LoginRequest request = LoginRequest.builder()
                 .email(unauthorizedEmail)
@@ -35,12 +35,12 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = loginRequest(request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 02: 로그인 실패 401 (추방된 회원 )")
-    public void 로그인_실패_UNAUTHORIZED_2() {
+    @DisplayName("테스트 02: 로그인 실패 403 (추방된 회원 )")
+    public void 로그인_실패_FORBIDDEN_2() {
         //given
         LoginRequest request = LoginRequest.builder()
                 .email(expelledEmail)
@@ -51,7 +51,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = loginRequest(request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
     }
 
     @Test
