@@ -14,10 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unused")
@@ -55,8 +52,8 @@ public class DiaryService {
     }
 
     public List<Emotion> delete(Member user, DiaryDeleteRequest request) {
-        checkDeleteRequestValidity(user, request);
-        List<Integer> id = request.getId();
+        Set<Integer> id = new HashSet<>(request.getId());
+        checkDeleteRequestValidity(user, id);
         LinkedList<Emotion> emotions = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
                 (diary) -> {
@@ -83,8 +80,8 @@ public class DiaryService {
         checkIfUserValid(user, diary);
     }
 
-    private void checkDeleteRequestValidity(Member user, DiaryDeleteRequest request) {
-        checkDeleteListValidity(user, request.getId());
+    private void checkDeleteRequestValidity(Member user, Set<Integer> id) {
+        checkDeleteListValidity(user, id);
     }
 
     private void checkIfContentIsValid(String content) {
@@ -95,16 +92,13 @@ public class DiaryService {
         if (!user.equals(diary.getWriter())) throw new UnauthorizedException("작성자만이 수정할 수 있습니다.");
     }
 
-    private void checkDeleteListValidity(Member user, List<Integer> id) {
-        ArrayList<Integer> usedId = new ArrayList<>();
+    private void checkDeleteListValidity(Member user, Set<Integer> id) {
         id.forEach(
                 (diaryId) -> {
-                    if (usedId.contains(diaryId)) throw new DuplicatedArgumentsException("요청에 중복된 ID가 존재합니다.");
-                    usedId.add(diaryId);
                     Diary diary = getDiaryById(diaryId);
                     if (!user.equals(diary.getWriter())) throw new UnauthorizedException("삭제를 요청한 사람에게 해당 권한이 없습니다.");
                     if (diary.getReportCount() >= Postings.reportCountThreshold)
-                        throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다. ");
+                        throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다.");
                 }
         );
     }

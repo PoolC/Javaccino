@@ -353,22 +353,6 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 20: 다이어리 삭제 시 [409]; 삭제를 요청한 데이터에 중복이 있는 경우")
-    public void 삭제_실패_CONFLICT() {
-        //given
-        String accessToken = authorizedLogin();
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(0, 0))
-                .build();
-
-        //when
-        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
-    }
-
-    @Test
     @DisplayName("테스트 21: 다이어리 삭제 성공 [200]")
     public void 삭제_성공_OK() {
         //given
