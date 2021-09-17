@@ -62,7 +62,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .antMatchers(HttpMethod.GET, "/emotions").permitAll()
                 .antMatchers(HttpMethod.POST, "/emotions").hasAuthority(MemberRole.ADMIN.name())
-                .antMatchers(HttpMethod.PUT, "/emotions/{emotionId}").hasAuthority( MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.PUT, "/emotions/{emotionId}").hasAuthority(MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.DELETE, "/emotions/{emotionId}").hasAuthority(MemberRole.ADMIN.name())
 
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
@@ -73,7 +73,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.PUT, "/members").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
                 .antMatchers(HttpMethod.POST, "/members/follow/{nickname}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
-
+                .antMatchers(HttpMethod.GET, "/members/me").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
