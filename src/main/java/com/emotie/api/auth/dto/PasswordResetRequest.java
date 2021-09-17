@@ -2,20 +2,31 @@ package com.emotie.api.auth.dto;
 
 import com.emotie.api.common.exception.NotSameException;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Optional;
 
 @Getter
 public class PasswordResetRequest {
+    @NotBlank(message = "이메일을 입력해주세요.")
     private final String email;
+
+    @NotBlank(message = "비밀번호를 입력해주세요.")
     private final String password;
+
+    @NotBlank(message = "비밀번호 확인란에 입력해주세요.")
     private final String passwordCheck;
 
     @JsonCreator
     @Builder
-    public PasswordResetRequest(String email, String password, String passwordCheck) {
+    public PasswordResetRequest(
+            @JsonProperty("email") String email,
+            @JsonProperty("password") String password,
+            @JsonProperty("passwordCheck") String passwordCheck
+    ) {
         this.email = email;
         this.password = password;
         this.passwordCheck = passwordCheck;

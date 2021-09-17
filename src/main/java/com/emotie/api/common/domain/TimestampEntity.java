@@ -20,5 +20,5 @@ public abstract class TimestampEntity {
 
     @LastModifiedDate
     @Column(name = "updatedAt", nullable = false)
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 }

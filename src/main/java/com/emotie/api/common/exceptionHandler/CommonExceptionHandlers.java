@@ -1,22 +1,37 @@
 package com.emotie.api.common.exceptionHandler;
 
 import com.emotie.api.auth.exception.*;
+import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.emotion.exception.DuplicatedEmotionException;
+import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
+import com.emotie.api.member.exception.CannotFollowException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
 public class CommonExceptionHandlers {
-    @ExceptionHandler({IllegalArgumentException.class, NotSameException.class})
+    @ExceptionHandler({
+            IllegalArgumentException.class, NotSameException.class, MethodArgumentNotValidException.class,
+            MismatchedInputException.class
+    })
     public ResponseEntity<Map<String, String>> BadRequestHandler(Exception e) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", e.getMessage());
+
+        checkMethodArgumentNotValidException(e, errors);
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Collections.singletonMap("message", e.getMessage()));
+                .body(errors);
     }
 
     @ExceptionHandler({UnauthenticatedException.class, WrongPasswordException.class})
@@ -37,9 +52,23 @@ public class CommonExceptionHandlers {
                 .body(Collections.singletonMap("message", e.getMessage()));
     }
 
-    @ExceptionHandler({ExpiredTokenException.class, WrongTokenException.class})
+    @ExceptionHandler({
+            ExpiredTokenException.class, WrongTokenException.class, DuplicatedException.class,
+            CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class
+    })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Collections.singletonMap("message", e.getMessage()));
+    }
+
+    private void checkMethodArgumentNotValidException(Exception e, Map<String, String> errors) {
+        if (e instanceof MethodArgumentNotValidException) {
+            MethodArgumentNotValidException ex = (MethodArgumentNotValidException) e;
+            errors.clear();
+            StringBuilder sb = new StringBuilder();
+            ex.getBindingResult().getAllErrors()
+                    .forEach(c -> sb.append(c.getDefaultMessage()));
+            errors.put("message", sb.toString());
+        }
     }
 }

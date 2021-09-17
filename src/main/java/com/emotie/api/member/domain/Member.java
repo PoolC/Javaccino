@@ -6,19 +6,20 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.Column;
-import javax.persistence.Embedded;
-import javax.persistence.Entity;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 @Entity(name = "members")
@@ -65,6 +66,16 @@ public class Member extends TimestampEntity implements UserDetails {
     @Embedded
     private MemberRoles roles;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    private final List<Member> followers = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private final List<Member> followees = new ArrayList<>();
+
+    @Column(name = "withdrawal_date")
+    @Nullable
+    private LocalDateTime withdrawalDate = null;
+
     protected Member() {
     }
 
@@ -82,6 +93,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationToken = authorizationToken;
         this.authorizationTokenValidUntil = authorizationTokenValidUntil;
         this.reportCount = reportCount;
+        this.roles = roles;
+    }
+
+    public Member(MemberRoles roles) {
         this.roles = roles;
     }
 
@@ -135,7 +150,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updateAuthorizationToken(String authorizationToken) {
         this.authorizationToken = authorizationToken;
-        this.authorizationTokenValidUntil = LocalDateTime.now().plusDays(1l);
+        this.authorizationTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
 
     public void checkAuthorizationTokenAndChangeMemberRole(String authorizationToken) {
@@ -145,12 +160,13 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updatePasswordResetToken(String passwordResetToken) {
         this.passwordResetToken = passwordResetToken;
-        this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1l);
+        this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
+
 
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
         checkPasswordResetToken(passwordResetToken);
-        updatePassword(request);
+        updatePassword(request.getPassword());
     }
 
     public void checkAuthorized() {
@@ -162,6 +178,29 @@ public class Member extends TimestampEntity implements UserDetails {
         if (this.isAccountNonExpired()) {
             throw new UnauthenticatedException("추방된 회원입니다.");
         }
+    }
+
+    public boolean isFollowing(Member member) {
+        return this.followees.contains(member);
+    }
+
+    @SuppressWarnings("unused")
+    public boolean isFollowedBy(Member member) {
+        return this.followers.contains(member);
+    }
+    // 사용자가 누군가를 팔로우한다는 것은
+
+    public void follow(Member member) {
+        // 사용자의 팔로이에 그 사람이 추가 되고
+        this.followees.add(member);
+
+        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
+        member.followers.add(this);
+    }
+
+    public void unfollow(Member member) {
+        this.followees.remove(member);
+        member.followers.remove(member);
     }
 
     private void checkAuthorizationToken(String authorizationToken) {
@@ -190,7 +229,22 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = null;
     }
 
-    private void updatePassword(PasswordResetRequest request) {
-        this.passwordHash = request.getPassword();
+    public void withdraw() {
+        this.roles.changeRole(MemberRole.WITHDRAWAL);
+        this.withdrawalDate = LocalDateTime.now();
+    }
+
+    public void expel() {
+        this.roles.changeRole(MemberRole.EXPELLED);
+    }
+
+    public void updatePassword(String updatePassword) {
+        this.passwordHash = updatePassword;
+    }
+
+    public void updateUserInfo(MemberUpdateRequest request) {
+        this.nickname = request.getNickname();
+        this.gender = request.getGender();
+        this.dateOfBirth = request.getDateOfBirth();
     }
 }
