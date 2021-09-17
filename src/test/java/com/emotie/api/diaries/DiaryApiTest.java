@@ -16,8 +16,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
+import static com.emotie.api.member.MemberApiTest.adminLogin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -32,6 +34,7 @@ public class DiaryApiTest extends AcceptanceTest {
             notExistNickname = "공릉동익룡",
             existNickname = "공릉동공룡";
     private final Emotion emotion = Emotion.HAPPY;
+    private final Integer invalidId = Integer.MAX_VALUE;
 
     /* Create: 다이어리 작성 */
     @Test
@@ -243,7 +246,7 @@ public class DiaryApiTest extends AcceptanceTest {
     @DisplayName("테스트 14: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
     public void 수정_실패_FORBIDDEN_2() {
         //given
-        String accessToken = authorizedLogin();
+        String accessToken = adminLogin();
         Integer diaryId = 0;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
                 .content(content)
@@ -305,7 +308,9 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 삭제_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .id(List.of(0))
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
@@ -319,8 +324,10 @@ public class DiaryApiTest extends AcceptanceTest {
     @DisplayName("테스트 18: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
     public void 삭제_실패_FORBIDDEN_2() {
         //given
-        String accessToken = authorizedLogin();
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+        String accessToken = adminLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .id(List.of(0))
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
@@ -334,7 +341,9 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 삭제_실패_NOT_FOUND() {
         //given
         String accessToken = authorizedLogin();
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .id(List.of(0, invalidId))
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
@@ -348,7 +357,9 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 삭제_실패_CONFLICT() {
         //given
         String accessToken = authorizedLogin();
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .id(List.of(0, 0))
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
@@ -362,7 +373,9 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 삭제_성공_OK() {
         //given
         String accessToken = authorizedLogin();
-        DiaryDeleteRequest request = DiaryDeleteRequest.builder().build();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .id(List.of(0))
+                .build();
 
         //when
         ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
