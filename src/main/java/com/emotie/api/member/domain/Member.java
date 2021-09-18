@@ -82,7 +82,7 @@ public class Member extends TimestampEntity implements UserDetails {
     private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", targetEntity = MemberLocalBlindGuestbook.class, fetch = FetchType.EAGER)
-    private final List<MemberLocalBlindGuestbook> localblindedGuestbooks = new ArrayList<>();
+    private final List<MemberLocalBlindGuestbook> localBlindedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -286,15 +286,15 @@ public class Member extends TimestampEntity implements UserDetails {
 
     // TODO: Exception?
     public Boolean isLocalBlindExists(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
-        return this.localblindedGuestbooks.contains(memberLocalBlindGuestbook);
+        return this.localBlindedGuestbooks.contains(memberLocalBlindGuestbook);
     }
 
     // TODO: Exception?
     public void localBlind(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
         if (isLocalBlindExists(memberLocalBlindGuestbook)){
-            this.localblindedGuestbooks.remove(memberLocalBlindGuestbook);
+            this.localBlindedGuestbooks.remove(memberLocalBlindGuestbook);
             return;
         }
-        this.localblindedGuestbooks.add(memberLocalBlindGuestbook);
+        this.localBlindedGuestbooks.add(memberLocalBlindGuestbook);
     }
 }
