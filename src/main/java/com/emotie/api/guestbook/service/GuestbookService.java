@@ -8,6 +8,8 @@ import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
+import com.emotie.api.guestbook.repository.MemberLocalBlindGuestbookRepository;
+import com.emotie.api.guestbook.repository.MemberReportGuestbookRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,8 @@ public class GuestbookService {
     private final MemberRepository memberRepository;
     private final GuestbookRepository guestbookRepository;
     private final MemberService memberService;
+    private final MemberReportGuestbookRepository memberReportGuestbookRepository;
+    private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(user, nickname);
@@ -52,26 +57,36 @@ public class GuestbookService {
         guestbookRepository.saveAndFlush(guestbook);
     }
 
-    // TODO: isReported 잘 동작하는지 확인
     public Boolean toggleReport(Member user, Integer guestbookId) {
         checkToggleReportRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
-        MemberReportGuestbook memberReportGuestbook = new MemberReportGuestbook(user, target);
-        report(user, target);
-        memberRepository.saveAndFlush(user);
-        guestbookRepository.saveAndFlush(target);
-        return user.isReportExists(memberReportGuestbook);
+        Optional<MemberReportGuestbook> memberReportGuestbook = memberReportGuestbookRepository.findByMemberAndGuestbook(user, target);
+        if (memberReportGuestbook.isPresent()){
+            memberReportGuestbookRepository.delete(memberReportGuestbook.get());
+            return false;
+        }
+        memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target));
+        return true;
     }
 
     public void delete(Member executor, Integer guestbookId) {
         checkDeleteRequestValidity(executor, guestbookId);
+        Guestbook target = getGuestbookById(guestbookId);
+        memberReportGuestbookRepository.deleteAllByGuestbook(target);
+        memberLocalBlindGuestbookRepository.deleteAllByGuestbook(target);
         guestbookRepository.deleteById(guestbookId);
     }
 
+    // TODO: cascade 자동으로 할수있는지 확인
     public void clear(Member user, String nickname) {
         checkClearRequestValidity(user, nickname);
         Member owner = memberService.getMemberByNickname(nickname);
-        guestbookRepository.deleteAllByOwner(owner);
+        List<Guestbook> guestbookList = guestbookRepository.findByOwner(owner);
+        guestbookList.stream().forEach(guestbook -> {
+            memberReportGuestbookRepository.deleteAllByGuestbook(guestbook);
+            memberLocalBlindGuestbookRepository.deleteAllByGuestbook(guestbook);
+            guestbookRepository.delete(guestbook);
+        });
     }
 
     public Boolean toggleGlobalBlind(Member user, Integer guestbookId) {
@@ -85,11 +100,13 @@ public class GuestbookService {
     public Boolean toggleLocalBlind(Member user, Integer guestbookId) {
         checkToggleLocalBlindRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
-        MemberLocalBlindGuestbook memberLocalBlindGuestbook = new MemberLocalBlindGuestbook(user, target);
-        localBlind(user, target);
-        memberRepository.saveAndFlush(user);
-        guestbookRepository.saveAndFlush(target);
-        return user.isLocalBlindExists(memberLocalBlindGuestbook);
+        Optional<MemberLocalBlindGuestbook> memberLocalBlindGuestbook = memberLocalBlindGuestbookRepository.findByMemberAndGuestbook(user, target);
+        if (memberLocalBlindGuestbook.isPresent()){
+            memberLocalBlindGuestbookRepository.delete(memberLocalBlindGuestbook.get());
+            return false;
+        }
+        memberLocalBlindGuestbookRepository.save(new MemberLocalBlindGuestbook(user, target));
+        return true;
     }
 
     /*
@@ -147,15 +164,6 @@ public class GuestbookService {
     /*
     기타 메서드
      */
-    private void report(Member user, Guestbook target) {
-        user.report(new MemberReportGuestbook(user, target));
-        target.reportedBy(new MemberReportGuestbook(user, target));
-    }
-
-    private void localBlind(Member user, Guestbook target) {
-        user.localBlind(new MemberLocalBlindGuestbook(user, target));
-        target.localBlindedBy(new MemberLocalBlindGuestbook(user, target));
-    }
 
     private Guestbook getGuestbookById(Integer guestbookId) {
         return guestbookRepository.findById(guestbookId).orElseThrow(() -> {
