@@ -6,14 +6,14 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.guestbook.domain.Guestbook;
-import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
 import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
 import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -76,13 +76,6 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @ElementCollection(fetch = FetchType.EAGER)
     private final List<Member> followees = new ArrayList<>();
-
-    // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
-    @OneToMany(mappedBy = "member", targetEntity = MemberReportGuestbook.class, fetch = FetchType.EAGER)
-    private final List<MemberReportGuestbook> reportedGuestbooks = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", targetEntity = MemberLocalBlindGuestbook.class, fetch = FetchType.EAGER)
-    private final List<MemberLocalBlindGuestbook> localBlindedGuestbooks = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -262,39 +255,11 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     // TODO: Exception?
-    public Boolean isReportExists(MemberReportGuestbook memberReportGuestbook) {
-        return this.reportedGuestbooks.contains(memberReportGuestbook);
-    }
-
-    // TODO: Exception?
-    public void report(MemberReportGuestbook memberReportGuestbook) {
-        if (isReportExists(memberReportGuestbook)){
-            this.reportedGuestbooks.remove(memberReportGuestbook);
-            return;
-        }
-        this.reportedGuestbooks.add(memberReportGuestbook);
-    }
-
-    // TODO: Exception?
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
             this.reportCount++;
             return;
         }
         this.reportCount--;
-    }
-
-    // TODO: Exception?
-    public Boolean isLocalBlindExists(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
-        return this.localBlindedGuestbooks.contains(memberLocalBlindGuestbook);
-    }
-
-    // TODO: Exception?
-    public void localBlind(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
-        if (isLocalBlindExists(memberLocalBlindGuestbook)){
-            this.localBlindedGuestbooks.remove(memberLocalBlindGuestbook);
-            return;
-        }
-        this.localBlindedGuestbooks.add(memberLocalBlindGuestbook);
     }
 }

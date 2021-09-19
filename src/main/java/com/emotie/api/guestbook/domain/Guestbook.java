@@ -6,6 +6,8 @@ import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,18 +24,10 @@ public class Guestbook extends Postings {
     @Column(name = "is_global_blinded", nullable = false)
     private Boolean isGlobalBlinded;
 
-    // TODO: Set을 사용하면 중복 방지 가능한데, 느리다
-    @OneToMany(mappedBy = "guestbook", targetEntity = MemberReportGuestbook.class, fetch = FetchType.EAGER)
-    private final List<MemberReportGuestbook> reporters = new ArrayList<>();
-
-    @OneToMany(mappedBy = "guestbook", targetEntity = MemberLocalBlindGuestbook.class, fetch = FetchType.EAGER)
-    private final List<MemberLocalBlindGuestbook> localBlinders = new ArrayList<>();
-
     @Builder
     public Guestbook(
-            Integer id, Member owner, Member writer, String content, Integer reportCount, Boolean isGlobalBlinded
+            Member owner, Member writer, String content, Integer reportCount, Boolean isGlobalBlinded
     ) {
-        this.id = id;
         this.owner = owner;
         this.writer = writer;
         this.content = content;
@@ -59,22 +53,6 @@ public class Guestbook extends Postings {
         this.content = request.getContent();
     }
 
-    public Boolean isReportExists(MemberReportGuestbook memberReportGuestbook) {
-        return this.reporters.contains(memberReportGuestbook);
-    }
-
-    // TODO: reporters 리스트가 있으면 굳이 카운트를 셀 필요가 있나?
-    public void reportedBy(MemberReportGuestbook memberReportGuestbook) {
-        Boolean isReported = isReportExists(memberReportGuestbook);
-        this.updateReportCount(isReported);
-        getOwner().updateReportCount(isReported);
-        if (isReported){
-            this.reporters.remove(memberReportGuestbook);
-            return;
-        }
-        this.reporters.add(memberReportGuestbook);
-    }
-
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
             this.reportCount--;
@@ -85,17 +63,5 @@ public class Guestbook extends Postings {
 
     public void globalBlind(){
         this.isGlobalBlinded = !this.isGlobalBlinded;
-    }
-    // TODO: Exception?
-    public Boolean isLocalBlindExists(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
-        return this.localBlinders.contains(memberLocalBlindGuestbook);
-    }
-
-    public void localBlindedBy(MemberLocalBlindGuestbook memberLocalBlindGuestbook) {
-        if (isLocalBlindExists(memberLocalBlindGuestbook)){
-            this.localBlinders.remove(memberLocalBlindGuestbook);
-            return;
-        }
-        this.localBlinders.add(memberLocalBlindGuestbook);
     }
 }
