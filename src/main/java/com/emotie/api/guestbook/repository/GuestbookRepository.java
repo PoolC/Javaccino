@@ -14,7 +14,9 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Integer> {
 
     Optional<Guestbook> findById(Integer guestbookId);
 
+    @Transactional
     void deleteAllByOwner(Member owner);
 
+    @Transactional
     void deleteById(Integer guestbookId);
 }
