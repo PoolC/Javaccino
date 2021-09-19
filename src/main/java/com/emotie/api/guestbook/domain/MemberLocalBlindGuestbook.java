@@ -4,23 +4,29 @@ import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
 @Entity(name = "members_local_blind_guestbooks")
-@IdClass(MemberLocalBlindGuestbookKey.class)
+@Table(uniqueConstraints = {
+        @UniqueConstraint(name = "UniqueNumberAndStatus",
+                columnNames = { "member_id", "guestbook_id" }) })
 public class MemberLocalBlindGuestbook {
     @Id
-    @ManyToOne
+    @GeneratedValue
+    private Long id;
+
+    //    @NotFound(action = NotFoundAction.IGNORE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Id
-    @ManyToOne
+    //    @NotFound(action = NotFoundAction.IGNORE)
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "guestbook_id")
     private Guestbook guestbook;
 
@@ -31,23 +37,4 @@ public class MemberLocalBlindGuestbook {
         this.member = member;
         this.guestbook = guestbook;
     }
-
-    @Override
-    public boolean equals(Object o){
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MemberLocalBlindGuestbook memberLocalBlindGuestbook = (MemberLocalBlindGuestbook) o;
-        return Objects.equals(getMember(), memberLocalBlindGuestbook.getMember()) &&
-                Objects.equals(getGuestbook(), memberLocalBlindGuestbook.getGuestbook());
-    }
-
-    @Override
-    public int hashCode(){
-        return Objects.hash(getMember(), getGuestbook());
-    }
-}
-
-class MemberLocalBlindGuestbookKey implements Serializable {
-    private Member member;
-    private Guestbook guestbook;
 }
