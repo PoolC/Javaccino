@@ -1,8 +1,11 @@
 package com.emotie.api.diary.controller;
 
+import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.service.DiaryService;
+import com.emotie.api.emotion.repository.EmotionRepository;
+import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/diaries")
@@ -20,6 +24,7 @@ import java.util.List;
 public class DiaryController {
     private final DiaryService diaryService;
     private final MemberService memberService;
+    private final EmotionRepository emotionRepository;
 
     @PostMapping
     public ResponseEntity<Void> write(
@@ -47,9 +52,9 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
             @RequestBody @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
-        Emotion originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
-        Emotion updatedEmotion = diaryUpdateRequest.getEmotion();
-        memberService.updateEmotionStatus(user, originalEmotion, updatedEmotion);
+        String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
+        String updatingEmotion = diaryUpdateRequest.getEmotion();
+        memberService.updateEmotionStatus(user, originalEmotion, updatingEmotion);
         return ResponseEntity.ok().build();
     }
 
@@ -57,9 +62,11 @@ public class DiaryController {
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception{
-        List<Emotion> emotions = diaryService.delete(user, diaryDeleteRequest);
-        emotions.forEach(
-                (emotion) -> memberService.reduceEmotionStatus(user, emotion)
+        List<Diary> diaries = diaryService.delete(user, diaryDeleteRequest);
+        diaries.forEach(
+                (it) -> {
+                    memberService.reduceEmotionStatus(user, it.getEmotion().getEmotion());
+                }
         );
         return ResponseEntity.ok().build();
     }
@@ -81,5 +88,11 @@ public class DiaryController {
     @PostMapping(value = "/report/{diaryId}")
     public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
         return ResponseEntity.ok().build();
+    }
+
+    private Emotion getEmotionByEmotion(String emotion) {
+        return emotionRepository.findByEmotion(emotion).orElseThrow(
+                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
+        );
     }
 }

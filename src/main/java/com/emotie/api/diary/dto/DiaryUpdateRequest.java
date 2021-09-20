@@ -18,7 +18,7 @@ public class DiaryUpdateRequest {
     private final LocalDate issuedDate;
 
     @NotNull
-    private final Emotion emotion;
+    private final String emotion;
 
     @NotBlank
     private final String content;
@@ -30,7 +30,7 @@ public class DiaryUpdateRequest {
     @JsonCreator
     public DiaryUpdateRequest(
             @JsonProperty(value = "issued_date", required = true) LocalDate issuedDate,
-            @JsonProperty(value = "emotion", required = true) Emotion emotion,
+            @JsonProperty(value = "emotion", required = true) String emotion,
             @JsonProperty(value = "content", required = true) String content,
             @JsonProperty(value = "is_opened", required = true) Boolean isOpened
     ) {

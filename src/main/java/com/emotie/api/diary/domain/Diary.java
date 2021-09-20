@@ -12,7 +12,6 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diary extends Postings {
@@ -26,10 +25,8 @@ public class Diary extends Postings {
     @Column(name = "is_opened", nullable = false)
     private Boolean isOpened;
 
-    private static Integer prevId = 0;
-
     @Builder
-    public Diary(
+    private Diary(
             LocalDate issuedDate, Member writer, String content, Emotion emotion, Boolean isOpened
     ) {
         this.issuedDate = issuedDate;
@@ -38,8 +35,21 @@ public class Diary extends Postings {
         this.emotion = emotion;
         this.isOpened = isOpened;
         this.reportCount = 0;
-        this.id = nextId();
+
+        emotion.getDiariesList().add(this);
     }
+
+    public static Diary of(
+            LocalDate issuedDate, Member writer, String content, Emotion emotion, Boolean isOpened
+    ) {
+        return new Diary(issuedDate, writer, content, emotion, isOpened);
+    }
+
+    public void updateIssuedDate(LocalDate updatingDate) { this.issuedDate = updatingDate; }
+
+    public void updateEmotion(Emotion updatingEmotion) { this.emotion = updatingEmotion; }
+
+    public void updateOpenness(Boolean updatingOpenness) { this.isOpened = updatingOpenness; }
 
     @Override
     public Postings readPosting() {
@@ -49,9 +59,5 @@ public class Diary extends Postings {
     @Override
     public Postings reportPosting() {
         return this;
-    }
-
-    private Integer nextId() {
-        return prevId++;
     }
 }

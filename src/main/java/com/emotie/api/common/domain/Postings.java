@@ -13,7 +13,6 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Getter
-@Setter
 @MappedSuperclass
 public abstract class Postings extends TimestampEntity {
 
@@ -47,6 +46,8 @@ public abstract class Postings extends TimestampEntity {
      * @return 신고된 게시물
      */
     public abstract Postings reportPosting();
+
+    public void rewriteContent(String updatingContent) { this.content = updatingContent; }
 
     @Override
     public boolean equals(Object o) {

@@ -5,6 +5,7 @@ import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final EmotionRepository emotionRepository;
 
     private final PasswordHashProvider passwordHashProvider;
 
@@ -120,20 +122,26 @@ public class MemberService {
         }
     }
 
-    public void deepenEmotionStatus(Member user, Emotion emotion) {
-        user.deepenEmotionStatus(emotion);
+    public void deepenEmotionStatus(Member user, String emotion) {
+        user.deepenEmotionStatus(getEmotionByEmotion(emotion));
         memberRepository.saveAndFlush(user);
     }
 
-    public void reduceEmotionStatus(Member user, Emotion emotion) {
-        user.reduceEmotionStatus(emotion);
+    public void reduceEmotionStatus(Member user, String emotion) {
+        user.reduceEmotionStatus(getEmotionByEmotion(emotion));
         memberRepository.saveAndFlush(user);
     }
 
-    public void updateEmotionStatus(Member user, Emotion originalEmotion, Emotion updatedEmotion) {
-        user.reduceEmotionStatus(originalEmotion);
-        user.deepenEmotionStatus(updatedEmotion);
+    public void updateEmotionStatus(Member user, String originalEmotion, String updatingEmotion) {
+        user.reduceEmotionStatus(getEmotionByEmotion(originalEmotion));
+        user.deepenEmotionStatus(getEmotionByEmotion(updatingEmotion));
         memberRepository.saveAndFlush(user);
+    }
+
+    private Emotion getEmotionByEmotion(String emotion) {
+        return emotionRepository.findByEmotion(emotion).orElseThrow(
+                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
+        );
     }
 
     private Boolean isNicknameExists(String nickname) {

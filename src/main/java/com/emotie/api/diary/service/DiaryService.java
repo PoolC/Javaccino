@@ -8,10 +8,12 @@ import com.emotie.api.diary.dto.DiaryCreateRequest;
 import com.emotie.api.diary.dto.DiaryDeleteRequest;
 import com.emotie.api.diary.dto.DiaryUpdateRequest;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @SuppressWarnings("unused")
@@ -19,53 +21,71 @@ import java.util.*;
 @RequiredArgsConstructor
 public class DiaryService {
     private final DiaryRepository diaryRepository;
+    private final EmotionRepository emotionRepository;
 
     public void create(Member user, DiaryCreateRequest request) {
         checkCreateRequestValidity(request);
+        Emotion emotion = getEmotionByEmotion(request.getEmotion());
         diaryRepository.save(
                 Diary.builder()
                         .issuedDate(request.getIssuedDate())
                         .writer(user)
-                        .emotion(request.getEmotion())
+                        .emotion(emotion)
                         .content(request.getContent())
                         .isOpened(request.getIsOpened())
                         .build()
         );
     }
 
-    public Emotion update(Member user, Integer diaryId, DiaryUpdateRequest request) {
+    public String update(Member user, Integer diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
         Emotion originalEmotion = diary.getEmotion();
 
         checkUpdateRequestValidity(user, request, diary);
 
-        diary.setIssuedDate(request.getIssuedDate());
-        diary.setEmotion(request.getEmotion());
-        diary.setContent(request.getContent());
-        diary.setIsOpened(request.getIsOpened());
-        diaryRepository.saveAndFlush(diary);
+        Emotion updatingEmotion = getEmotionByEmotion(request.getEmotion());
 
-        return originalEmotion;
+        updateDiaryWithRequest(diary, request);
+        diaryRepository.saveAndFlush(diary);
+        emotionRepository.saveAndFlush(originalEmotion);
+        emotionRepository.saveAndFlush(updatingEmotion);
+
+        return originalEmotion.getEmotion();
     }
 
-    public List<Emotion> delete(Member user, DiaryDeleteRequest request) {
+    public List<Diary> delete(Member user, DiaryDeleteRequest request) {
         Set<Integer> id = new HashSet<>(request.getId());
         checkDeleteRequestValidity(user, id);
-        LinkedList<Emotion> emotions = new LinkedList<>();
+        LinkedList<Diary> diaries = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
                 (diary) -> {
-                    emotions.add(diary.getEmotion());
+                    diaries.add(diary);
+                    diary.getEmotion().getDiariesList().remove(diary);
+                    emotionRepository.saveAndFlush(diary.getEmotion());
                     diaryRepository.delete(diary);
                 }
         );
 
-        return emotions;
+        return diaries;
     }
 
     private Diary getDiaryById(Integer diaryId) {
         return diaryRepository.findById(diaryId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
         );
+    }
+
+    private Emotion getEmotionByEmotion(String emotion) {
+        return emotionRepository.findByEmotion(emotion).orElseThrow(
+                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
+        );
+    }
+
+    private void updateDiaryWithRequest(Diary diary, DiaryUpdateRequest updateRequest) {
+        diary.rewriteContent(updateRequest.getContent());
+        diary.updateEmotion(getEmotionByEmotion(updateRequest.getEmotion()));
+        diary.updateIssuedDate(updateRequest.getIssuedDate());
+        diary.updateOpenness(updateRequest.getIsOpened());
     }
 
     private void checkCreateRequestValidity(DiaryCreateRequest request) {

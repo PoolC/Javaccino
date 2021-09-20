@@ -35,8 +35,9 @@ public class EmotionDataLoader implements ApplicationRunner {
 
     public static String
             adminEmail = "admin@gmail.com",
-            password =  "password123!";
+            password = "password123!";
     private String introduction = "안녕하세요";
+    private static Member adminMember;
 
     public static ArrayList<String> emotionNames = new ArrayList<>();
     public static ArrayList<String> emotionColors = new ArrayList<>();
@@ -55,28 +56,29 @@ public class EmotionDataLoader implements ApplicationRunner {
 
     }
 
-    private void generateAdmin(){
-
+    private void generateAdmin() {
+        adminMember = Member.builder()
+                .UUID(UUID.randomUUID().toString())
+                .email(adminEmail)
+                .nickname(adminEmail)
+                .passwordHash(passwordHashProvider.encodePassword(password))
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDate.now())
+                .introduction(introduction)
+                .passwordResetToken(null)
+                .passwordResetTokenValidUntil(LocalDateTime.now().minusDays(1))
+                .authorizationToken(null)
+                .authorizationTokenValidUntil(null)
+                .reportCount(0)
+                .roles(MemberRoles.getDefaultFor(MemberRole.ADMIN))
+                .build();
         memberRepository.save(
-                Member.builder()
-                        .UUID(UUID.randomUUID().toString())
-                        .email(adminEmail)
-                        .nickname(adminEmail)
-                        .passwordHash(passwordHashProvider.encodePassword(password))
-                        .gender(Gender.HIDDEN)
-                        .dateOfBirth(LocalDate.now())
-                        .introduction(introduction)
-                        .passwordResetToken(null)
-                        .passwordResetTokenValidUntil(LocalDateTime.now().minusDays(1))
-                        .authorizationToken(null)
-                        .authorizationTokenValidUntil(null)
-                        .reportCount(0)
-                        .roles(MemberRoles.getDefaultFor(MemberRole.ADMIN))
-                        .build());
+                adminMember
+        );
 
     }
 
-    private void generateEmotions(){
+    private void generateEmotions() {
 
         emotionNames.add("설렘|FLUTTER");
         emotionNames.add("질투|JEALOUS");
@@ -96,11 +98,11 @@ public class EmotionDataLoader implements ApplicationRunner {
         emotionColors.add("#ADADAD");
         emotionColors.add("#FFFFFF");
 
-        for (int i = 0; i < 8; i++){
+        for (int i = 0; i < 8; i++) {
             Emotion emotion = Emotion.of(emotionNames.get(i), emotionColors.get(i));
-            if ( i < 7) {
-                Diary diary = new Diary(LocalDate.now(), Member.builder().build(), "s", emotion, false);
-                diary.setEmotion(emotion);
+            emotionRepository.saveAndFlush(emotion);
+            if (i < 7) {
+                Diary diary = Diary.of(LocalDate.now(), adminMember, "s", emotion, false);
                 diaryRepository.save(diary);
                 emotion.getDiariesList().add(diary);
             }
