@@ -71,15 +71,15 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "guestbooks/global_blind/{guestbookId}")
-    public ResponseEntity<Void> globalBlindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
-        guestbookService.toggleGlobalBlind(user, guestbookId);
-        return ResponseEntity.ok().build();
+    @PostMapping(value = "/global_blind/{guestbookId}")
+    public ResponseEntity<GuestbookGlobalBlindResponse> globalBlindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
+        Boolean isGlobalBlinded = guestbookService.toggleGlobalBlind(user, guestbookId);
+        return ResponseEntity.ok(new GuestbookGlobalBlindResponse(isGlobalBlinded));
     }
 
-    @PostMapping(value = "guestbooks/local_blind/{guestbookId}")
-    public ResponseEntity<Void> localBlindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
-        guestbookService.toggleLocalBlind(user, guestbookId);
-        return ResponseEntity.ok().build();
+    @PostMapping(value = "/local_blind/{guestbookId}")
+    public ResponseEntity<GuestbookLocalBlindResponse> localBlindGuestbook(@AuthenticationPrincipal Member user, @PathVariable Integer guestbookId) throws Exception {
+        Boolean isLocalBlinded = guestbookService.toggleLocalBlind(user, guestbookId);
+        return ResponseEntity.ok(new GuestbookLocalBlindResponse(isLocalBlinded));
     }
 }
