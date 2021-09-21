@@ -43,7 +43,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
             createContent = "구독하고 갑ㄴ디ㅏ",
             changedContent = "구독하고 갑니다";
 
-    public static Integer existId, almostReportedId, overReportedId, notExistId = -1;
+    public static Integer existId, almostReportedId, overReportedId, notExistId = -1, globalBlindedId;
     public static Member writer, owner;
     public static Member[] reporters = new Member[Guestbook.reportCountThreshold];
 
@@ -143,8 +143,18 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .isGlobalBlinded(false)
                         .build()).getId();
-        for (int i=0 ; i<Guestbook.reportCountThreshold ; i++){
+        for (int i=0 ; i<10 ; i++){
             guestbookService.toggleReport(reporters[i], overReportedId);
         }
+
+        // 주인장이 직접 가린 방명록
+        globalBlindedId = guestbookRepository.save(
+                Guestbook.builder()
+                        .owner(owner)
+                        .writer(writer)
+                        .content("주인장이 직접 가린 방명록")
+                        .reportCount(0)
+                        .isGlobalBlinded(true)
+                        .build()).getId();
     }
 }
