@@ -33,7 +33,10 @@ public class GuestbookService {
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(user, nickname);
         Member owner = memberService.getMemberByNickname(nickname);
-        return guestbookRepository.findByOwner(owner);
+        if (user.equals(owner)){
+            return guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold);
+        }
+        return guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold);
     }
 
     public void create(Member user, GuestbookCreateRequest request, String nickname) {
@@ -62,9 +65,13 @@ public class GuestbookService {
         Guestbook target = getGuestbookById(guestbookId);
         Optional<MemberReportGuestbook> memberReportGuestbook = memberReportGuestbookRepository.findByMemberAndGuestbook(user, target);
         if (memberReportGuestbook.isPresent()){
+            target.updateReportCount(true);
+            guestbookRepository.saveAndFlush(target);
             memberReportGuestbookRepository.delete(memberReportGuestbook.get());
             return false;
         }
+        target.updateReportCount(false);
+        guestbookRepository.saveAndFlush(target);
         memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target));
         return true;
     }
