@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity(name = "members_local_blind_guestbooks")
 @Table(uniqueConstraints = {
-        @UniqueConstraint(name = "UniqueNumberAndStatus",
+        @UniqueConstraint(name = "UniqueLocalBlind",
                 columnNames = { "member_id", "guestbook_id" }) })
 public class MemberLocalBlindGuestbook {
     @Id
