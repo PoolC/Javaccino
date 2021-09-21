@@ -61,8 +61,8 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200];")
-    public void 방명록_전체_조회_성공_OK() throws Exception {
+    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200]; 일반 사용자: 누적 신고 과다 방명록과 주인장이 직접 가린 방명록은 제외")
+    public void 방명록_전체_조회_성공_OK_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
 
@@ -71,6 +71,22 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId, globalBlindedId);
+    }
+
+    @Test
+    @DisplayName("테스트 01-04: 방명록 전체 조회 성공 [200]; 방명록 주인장: 누적 신고 과다 방명록 제외")
+    public void 방명록_전체_조회_성공_OK_2() throws Exception {
+        // given
+        String accessToken = ownerLogin();
+
+        // when
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId);
+
     }
 
     /*
