@@ -1,8 +1,8 @@
 package com.emotie.api.diary;
 
 import com.emotie.api.AcceptanceTest;
+import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.repository.DiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.*;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -15,19 +15,20 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
+import static com.emotie.api.diary.DiaryDataLoader.invalidEmotion;
 import static com.emotie.api.diary.DiaryDataLoader.testEmotion;
 import static com.emotie.api.member.MemberAcceptanceTest.adminLogin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
-@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters"})
+@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters", "UnnecessaryLocalVariable"})
 @ActiveProfiles({"memberDataLoader", "diaryDataLoader"})
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 public class DiaryApiTest extends AcceptanceTest {
@@ -35,8 +36,12 @@ public class DiaryApiTest extends AcceptanceTest {
     private DiaryRepository diaryRepository;
 
     private final String content = "오늘 잠을 잘 잤다. 좋았다.",
+            updatedContent = "오늘도 잠을 잘 잤다. 또 좋았다.",
             notExistNickname = "공릉동익룡",
             existNickname = "공릉동공룡";
+    private Integer retrieveId = 2,
+            rewriteId = 2,
+            deleteId = 2;
     private final Integer invalidId = Integer.MAX_VALUE;
 
     /* Create: 다이어리 작성 */
@@ -57,6 +62,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(diaryRepository.count()).isEqualTo(0);
     }
 
     @Test
@@ -76,6 +82,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(diaryRepository.count()).isEqualTo(0);
     }
 
     @Test
@@ -95,6 +102,27 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(diaryRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("테스트 03: 다이어리 작성 시 [404]; 존재하지 않는 감정일 경우")
+    public void 작성_실패_BAD_REQUEST_3() {
+        //given
+        String accessToken = authorizedLogin();
+        DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
+                .issuedDate(LocalDate.now())
+                .emotion(invalidEmotion)
+                .content(content)
+                .isOpened(false)
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(diaryRepository.count()).isEqualTo(0);
     }
 
     @Test
@@ -114,21 +142,26 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-//        assertThat(diaryRepository.count()).isGreaterThan(0);
-//        System.out.println("response = " + diaryRepository.count());
-//        System.out.println("diaryRepository.findAll().get(0).getId() = " + diaryRepository.findAll().get(0).getId());
-//        assertThat(diaryRepository.existsById(1)).isTrue();
+        assertThat(diaryRepository.count()).isGreaterThan(0);
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).anySatisfy(
+                it -> assertThat(it).isEqualTo(content)
+        );
+        retrieveId = diaryRepository.findAll().get(0).getId();
+        rewriteId = retrieveId;
+        deleteId = rewriteId;
+/*
+        System.out.println("response = " + diaryRepository.count());
+        System.out.println("diaryRepository.findAll().get(0).getId() = " + diaryRepository.findAll().get(0).getId());
+        assertThat(diaryRepository.existsById(1)).isTrue();
+*/
     }
 
     /* Read: 다이어리 조회 */
     @Test
     @DisplayName("테스트 05: 다이어리 개별 조회 시 [403]; 비공개 게시물의 경우")
     public void 개별_조회_실패_FORBIDDEN() {
-        //given
-        Integer diaryId = 0;
-
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
+        ExtractableResponse<Response> response = diaryReadRequest(retrieveId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -137,11 +170,8 @@ public class DiaryApiTest extends AcceptanceTest {
     @Test
     @DisplayName("테스트 06: 다이어리 개별 조회 시 [404]; 해당 게시물이 없을 경우")
     public void 개별_조회_실패_NOT_FOUND() {
-        //given
-        Integer diaryId = 0;
-
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
+        ExtractableResponse<Response> response = diaryReadRequest(retrieveId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -150,11 +180,8 @@ public class DiaryApiTest extends AcceptanceTest {
     @Test
     @DisplayName("테스트 07: 다이어리 개별 조회 성공 [200]")
     public void 개별_조회_성공_OK() {
-        //given
-        Integer diaryId = 0;
-
         //when
-        ExtractableResponse<Response> response = diaryReadRequest(diaryId);
+        ExtractableResponse<Response> response = diaryReadRequest(retrieveId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -194,19 +221,22 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_BAD_REQUEST_1() {
         //given
         String accessToken = authorizedLogin();
-        Integer diaryId = 2;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
-                .content(content)
+                .content(updatedContent)
                 .emotion(null)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, rewriteId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(diaryRepository.findById(rewriteId)).map(Diary::getContent).get().isEqualTo(content);
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
+                (it) -> assertThat(it).isNotEqualTo(updatedContent)
+        );
     }
 
     @Test
@@ -214,7 +244,6 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_BAD_REQUEST_2() {
         //given
         String accessToken = authorizedLogin();
-        Integer diaryId = 2;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
                 .content(null)
                 .emotion(testEmotion)
@@ -223,10 +252,14 @@ public class DiaryApiTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, rewriteId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+        assertThat(diaryRepository.findById(rewriteId)).map(Diary::getContent).get().isEqualTo(content);
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
+                (it) -> assertThat(it).isNotEqualTo(updatedContent)
+        );
     }
 
     @Test
@@ -234,19 +267,22 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
-        Integer diaryId = 2;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
-                .content(content)
+                .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, rewriteId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(diaryRepository.findById(rewriteId)).map(Diary::getContent).get().isEqualTo(content);
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
+                (it) -> assertThat(it).isNotEqualTo(updatedContent)
+        );
     }
 
     @Test
@@ -254,19 +290,22 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_FORBIDDEN_2() {
         //given
         String accessToken = adminLogin();
-        Integer diaryId = 2;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
-                .content(content)
+                .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, rewriteId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(diaryRepository.findById(rewriteId)).map(Diary::getContent).get().isEqualTo(content);
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
+                (it) -> assertThat(it).isNotEqualTo(updatedContent)
+        );
     }
 
     @Test
@@ -274,19 +313,21 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_실패_게시물_없음() {
         //given
         String accessToken = authorizedLogin();
-        Integer diaryId = invalidId;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
-                .content(content)
+                .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, invalidId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
+                (it) -> assertThat(it).isNotEqualTo(updatedContent)
+        );
     }
 
     @Test
@@ -294,19 +335,19 @@ public class DiaryApiTest extends AcceptanceTest {
     public void 수정_성공_OK() {
         //given
         String accessToken = authorizedLogin();
-        Integer diaryId = 2;
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
-                .content(content)
+                .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
                 .issuedDate(LocalDate.now())
                 .build();
 
         //when
-        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, diaryId);
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, rewriteId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(diaryRepository.findById(rewriteId)).map(Diary::getContent).get().isEqualTo(updatedContent);
     }
 
     /* Delete: 다이어리 삭제 */
@@ -316,7 +357,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = "";
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(2))
+                .id(List.of(deleteId))
                 .build();
 
         //when
@@ -324,7 +365,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-
+        assertThat(diaryRepository.existsById(deleteId)).isTrue();
     }
 
     @Test
@@ -333,7 +374,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = adminLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(2))
+                .id(List.of(deleteId))
                 .build();
 
         //when
@@ -341,6 +382,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(diaryRepository.existsById(deleteId)).isTrue();
     }
 
     @Test
@@ -349,7 +391,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(2, invalidId))
+                .id(List.of(deleteId, invalidId))
                 .build();
 
         //when
@@ -357,6 +399,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+        assertThat(diaryRepository.existsById(deleteId)).isTrue();
     }
 
     @Test
@@ -365,7 +408,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = authorizedLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(2))
+                .id(List.of(deleteId))
                 .build();
 
         //when
@@ -373,6 +416,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(diaryRepository.existsById(deleteId)).isFalse();
     }
 
     /* 기타 */
