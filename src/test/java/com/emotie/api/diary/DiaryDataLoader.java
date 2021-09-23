@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class DiaryDataLoader implements ApplicationRunner {
     private final EmotionRepository emotionRepository;
 
-    public static String testEmotion;
+    public static String testEmotion, invalidEmotion;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -28,6 +28,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                 .color("#FFF27D")
                 .build();
         testEmotion = happy.getEmotion();
+        invalidEmotion = "없음|none";
         emotionRepository.save(happy);
     }
 }
