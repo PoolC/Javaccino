@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/diaries")
@@ -24,7 +23,6 @@ import java.util.NoSuchElementException;
 public class DiaryController {
     private final DiaryService diaryService;
     private final MemberService memberService;
-    private final EmotionRepository emotionRepository;
 
     @PostMapping
     public ResponseEntity<Void> write(
@@ -36,8 +34,11 @@ public class DiaryController {
     }
 
     @GetMapping(value = "/{diaryId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<DiaryReadResponse> read(@PathVariable Integer diaryId) throws Exception {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<DiaryReadResponse> read(
+            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
+    ) throws Exception {
+        Diary diary = diaryService.read(user, diaryId);
+        return ResponseEntity.ok(new DiaryReadResponse(diary));
     }
 
     @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -88,11 +89,5 @@ public class DiaryController {
     @PostMapping(value = "/report/{diaryId}")
     public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
         return ResponseEntity.ok().build();
-    }
-
-    private Emotion getEmotionByEmotion(String emotion) {
-        return emotionRepository.findByEmotion(emotion).orElseThrow(
-                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
-        );
     }
 }
