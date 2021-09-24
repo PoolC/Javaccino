@@ -21,9 +21,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 // TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
-@Entity(name = "members")
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity(name = "members")
 public class Member extends TimestampEntity implements UserDetails {
     @Id
     @Column(name = "id", length = 40)
@@ -75,8 +75,8 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
-    @OneToMany(targetEntity = EmotionScore.class)
-    @MapKey(name = "emotion_id")
+    @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @MapKeyJoinColumn(name = "emotion")
     private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
 
     protected Member() {
@@ -258,9 +258,10 @@ public class Member extends TimestampEntity implements UserDetails {
                 (emotionKey, emotionScoreValue) -> {
                     // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
                     if (emotionKey == emotion) {
-                        emotionScoreValue.deepen(1.0);
+                        emotionScoreValue.addOne();
+                        emotionScoreValue.deepenScore(1.0);
                     } else {
-                        emotionScoreValue.deepen(0.0);
+                        emotionScoreValue.deepenScore(0.0);
                     }
                 }
         );
@@ -273,9 +274,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.emotionScore.forEach(
                 (emotionKey, emotionScoreValue) -> {
                     if (emotionKey == emotion) {
-                        emotionScoreValue.reduce(1.0);
+                        emotionScoreValue.removeOne();
+                        emotionScoreValue.reduceScore(1.0);
                     } else {
-                        emotionScoreValue.reduce(0.0);
+                        emotionScoreValue.reduceScore(0.0);
                     }
                 }
         );

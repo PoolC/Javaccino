@@ -6,6 +6,7 @@ import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.member.repository.MemberRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -34,6 +35,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class DiaryApiTest extends AcceptanceTest {
     @Autowired
     private DiaryRepository diaryRepository;
+
+    @Autowired
+    private MemberRepository memberRepository;
 
     /* Create: 다이어리 작성 */
     @Test

@@ -119,7 +119,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                 .reportCount(0)
                 .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
                 .build();
-        memberRepository.saveAll(List.of(writer, viewer, unauthorized));
+        memberRepository.saveAllAndFlush(List.of(writer, viewer, unauthorized));
     }
 
     private void writeDiaries() {
@@ -132,6 +132,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                         )
         );
+        emotionRepository.saveAndFlush(diaryEmotion);
         diaryRepository.save(
                 Diary.of(
                         LocalDate.now(),
@@ -141,6 +142,11 @@ public class DiaryDataLoader implements ApplicationRunner {
                         false
                 )
         );
+        emotionRepository.saveAndFlush(diaryEmotion);
+        for (int i = 0; i < 2; i++) {
+            writer.deepenEmotionScore(diaryEmotion);
+        }
+        memberRepository.saveAndFlush(writer);
     }
 
     private void setDiaryIndexes() {
