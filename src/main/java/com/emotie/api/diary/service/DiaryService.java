@@ -3,6 +3,7 @@ package com.emotie.api.diary.service;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
+import com.emotie.api.diary.exception.PeekingPrivatePostException;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.DiaryCreateRequest;
 import com.emotie.api.diary.dto.DiaryDeleteRequest;
@@ -13,7 +14,6 @@ import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.*;
 
 @SuppressWarnings("unused")
@@ -35,6 +35,12 @@ public class DiaryService {
                         .isOpened(request.getIsOpened())
                         .build()
         );
+    }
+
+    public Diary read(Member user, Integer diaryId) {
+        Diary diary = getDiaryById(diaryId);
+        checkIsOpened(user, diary);
+        return diary;
     }
 
     public String update(Member user, Integer diaryId, DiaryUpdateRequest request) {
@@ -118,5 +124,9 @@ public class DiaryService {
                         throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다.");
                 }
         );
+    }
+
+    private void checkIsOpened(Member user, Diary diary) {
+        if (!diary.getIsOpened() && !diary.getWriter().equals(user)) throw new PeekingPrivatePostException("비공개 게시물입니다.");
     }
 }
