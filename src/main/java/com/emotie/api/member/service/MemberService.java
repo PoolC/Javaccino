@@ -122,19 +122,20 @@ public class MemberService {
         }
     }
 
-    public void deepenEmotionStatus(Member user, String emotion) {
-        user.deepenEmotionStatus(getEmotionByEmotion(emotion));
+    public void deepenEmotionScore(Member user, String emotion) {
+        user.deepenEmotionScore(getEmotionByEmotion(emotion));
         memberRepository.saveAndFlush(user);
     }
 
-    public void reduceEmotionStatus(Member user, String emotion) {
-        user.reduceEmotionStatus(getEmotionByEmotion(emotion));
+    public void reduceEmotionScore(Member user, String emotion) {
+        user.reduceEmotionScore(getEmotionByEmotion(emotion));
         memberRepository.saveAndFlush(user);
     }
 
-    public void updateEmotionStatus(Member user, String originalEmotion, String updatingEmotion) {
-        user.reduceEmotionStatus(getEmotionByEmotion(originalEmotion));
-        user.deepenEmotionStatus(getEmotionByEmotion(updatingEmotion));
+    public void updateEmotionScore(Member user, String originalEmotion, String updatingEmotion) {
+        user.updateEmotionScore(
+                getEmotionByEmotion(originalEmotion),
+                getEmotionByEmotion(updatingEmotion));
         memberRepository.saveAndFlush(user);
     }
 
