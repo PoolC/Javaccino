@@ -29,7 +29,7 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
     ) throws Exception{
         diaryService.create(user, diaryCreateRequest);
-        memberService.deepenEmotionStatus(user, diaryCreateRequest.getEmotion());
+        memberService.deepenEmotionScore(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
@@ -55,7 +55,7 @@ public class DiaryController {
     ) throws Exception {
         String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
         String updatingEmotion = diaryUpdateRequest.getEmotion();
-        memberService.updateEmotionStatus(user, originalEmotion, updatingEmotion);
+        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
         return ResponseEntity.ok().build();
     }
 
@@ -66,7 +66,7 @@ public class DiaryController {
         List<Diary> diaries = diaryService.delete(user, diaryDeleteRequest);
         diaries.forEach(
                 (it) -> {
-                    memberService.reduceEmotionStatus(user, it.getEmotion().getEmotion());
+                    memberService.reduceEmotionScore(user, it.getEmotion().getEmotion());
                 }
         );
         return ResponseEntity.ok().build();

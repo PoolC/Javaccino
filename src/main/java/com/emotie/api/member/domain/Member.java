@@ -6,7 +6,6 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.diary.domain.EmotionStatus;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -76,14 +75,9 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "emotion_status",
-            joinColumns = @JoinColumn(name = "member_id")
-    )
-    @MapKeyColumn
-    @Column(name = "emotion")
-    private final Map<Emotion, EmotionStatus> emotionStatus = new HashMap<>();
+    @OneToMany(targetEntity = EmotionScore.class)
+    @MapKey(name = "emotion_id")
+    private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
 
     protected Member() {
     }
@@ -103,11 +97,6 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = authorizationTokenValidUntil;
         this.reportCount = reportCount;
         this.roles = roles;
-
-        // TODO: 일단은 0점 & 0점으로 초기화하지만, 따로 방법이 있으면 좋을 듯?
-//        Arrays.stream(Emotion.values()).forEach(
-//                it -> this.emotionStatus.put(it, new EmotionStatus(0.0, 0))
-//        );
     }
 
     public Member(MemberRoles roles) {
@@ -261,35 +250,52 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
-    public void deepenEmotionStatus(Emotion emotion) {
-        this.emotionStatus.forEach(
-                (emotionKey, emotionStatusValue) -> {
+    public void deepenEmotionScore(Emotion emotion) {
+        if (!this.emotionScore.containsKey(emotion)) {
+            initializeEmotionScore(emotion);
+        }
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
                     // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
                     if (emotionKey == emotion) {
-                        emotionStatusValue.deepenScore(1.0);
-                        emotionStatusValue.addOne();
+                        emotionScoreValue.deepen(1.0);
                     } else {
-                        emotionStatusValue.deepenScore(0.0);
+                        emotionScoreValue.deepen(0.0);
                     }
                 }
         );
     }
 
-    public void reduceEmotionStatus(Emotion emotion) {
-        this.emotionStatus.forEach(
-                (emotionKey, emotionStatusValue) -> {
+    public void reduceEmotionScore(Emotion emotion) {
+        if (!this.emotionScore.containsKey(emotion)) {
+            initializeEmotionScore(emotion);
+        }
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
                     if (emotionKey == emotion) {
-                        emotionStatusValue.reduceScore(1.0);
-                        emotionStatusValue.removeOne();
+                        emotionScoreValue.reduce(1.0);
                     } else {
-                        emotionStatusValue.reduceScore(0.0);
+                        emotionScoreValue.reduce(0.0);
                     }
                 }
         );
     }
 
-    public void updateEmotionStatus(Emotion originalEmotion, Emotion updatedEmotion) {
-        reduceEmotionStatus(originalEmotion);
-        deepenEmotionStatus(updatedEmotion);
+    public void updateEmotionScore(Emotion originalEmotion, Emotion updatedEmotion) {
+        reduceEmotionScore(originalEmotion);
+        deepenEmotionScore(updatedEmotion);
+    }
+
+    private void initializeEmotionScore(Emotion emotion, Double value) {
+        EmotionScore emotionScore = EmotionScore.of(
+                this.UUID,
+                emotion,
+                value
+        );
+        this.emotionScore.put(emotion, emotionScore);
+    }
+
+    private void initializeEmotionScore(Emotion emotion) {
+        initializeEmotionScore(emotion, 0.0);
     }
 }
