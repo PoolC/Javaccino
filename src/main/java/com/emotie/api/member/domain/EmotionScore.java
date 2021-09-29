@@ -22,7 +22,7 @@ public class EmotionScore {
     @Column(name = "member_id")
     private String memberId;
 
-    @ManyToOne(targetEntity = Emotion.class, fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+    @ManyToOne(targetEntity = Emotion.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "emotion_id")
     private Emotion emotion;
 

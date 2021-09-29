@@ -6,6 +6,8 @@ import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -37,7 +39,7 @@ public class DiaryApiTest extends AcceptanceTest {
     private DiaryRepository diaryRepository;
 
     @Autowired
-    private MemberRepository memberRepository;
+    private EmotionRepository emotionRepository;
 
     /* Create: 다이어리 작성 */
     @Test
