@@ -172,10 +172,6 @@ public class GuestbookService {
         checkGuestbookIdExists(guestbookId);
     }
 
-    /*
-    기타 메서드
-     */
-
     private Guestbook getGuestbookById(Long guestbookId) {
         return guestbookRepository.findById(guestbookId).orElseThrow(() -> {
             throw new NoSuchElementException("해당 id를 가진 방명록이 없습니다.");
@@ -231,14 +227,14 @@ public class GuestbookService {
         }
     }
 
-    private void checkOwner(Member user, String nickname) {
+    private void checkOwnerByNickname(Member user, String nickname) {
         Member owner = memberService.getMemberByNickname(nickname);
         if (!user.equals(owner)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
         }
     }
 
-    private void checkOwner(Member user, Long guestbookId) {
+    private void checkOwnerById(Member user, Long guestbookId) {
         Member owner = getGuestbookById(guestbookId).getOwner();
         if (!user.equals(owner)) {
             throw new UnauthorizedException("방명록 게시물을 숨길 권한이 없습니다.");
