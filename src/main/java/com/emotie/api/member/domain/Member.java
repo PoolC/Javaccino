@@ -6,6 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -257,5 +258,18 @@ public class Member extends TimestampEntity implements UserDetails {
             return;
         }
         this.reportCount++;
+    }
+
+    // TODO: 자기자신을 팔로우할 수 없는 CannotFollowException과 합칠 수 있을까?
+    public void checkNotOwner(String nickname) {
+        if (this.nickname.equals(nickname)) {
+            throw new MyselfException("자신의 방명록에는 글을 쓸 수 없습니다.");
+        }
+    }
+
+    public void checkOwner(String nickname) {
+        if (!this.nickname.equals(nickname)) {
+            throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
+        }
     }
 }
