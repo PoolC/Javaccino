@@ -1,13 +1,9 @@
 package com.emotie.api.guestbook;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
-import com.emotie.api.common.domain.Postings;
 import com.emotie.api.guestbook.domain.Guestbook;
-import com.emotie.api.guestbook.domain.MemberReportGuestbook;
-import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.guestbook.service.GuestbookService;
-import com.emotie.api.member.MemberDataLoader;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
@@ -43,7 +39,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
             createContent = "구독하고 갑ㄴ디ㅏ",
             changedContent = "구독하고 갑니다";
 
-    public static Integer existId, almostReportedId, overReportedId, notExistId = -1, globalBlindedId;
+    public static Long existId, almostReportedId, overReportedId, notExistId = -1L, globalBlindedId;
     public static Member writer, owner;
     public static Member[] reporters = new Member[Guestbook.reportCountThreshold];
 
@@ -87,7 +83,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
         memberRepository.save(owner);
 
         // 신고자
-        for (int i=0 ; i<Guestbook.reportCountThreshold ; i++){
+        for (int i = 0; i < Guestbook.reportCountThreshold; i++) {
             reporters[i] = Member.builder()
                     .UUID(UUID.randomUUID().toString())
                     .email(i + reporterEmail)
@@ -113,12 +109,12 @@ public class GuestbookDataLoader implements CommandLineRunner {
         // 일반 방명록
         existId = guestbookRepository.save(
                 Guestbook.builder()
-                .owner(owner)
-                .writer(writer)
-                .content("구독하고 갑니다~~")
-                .reportCount(0)
-                .isGlobalBlinded(false)
-                .build()).getId();
+                        .owner(owner)
+                        .writer(writer)
+                        .content("구독하고 갑니다~~")
+                        .reportCount(0)
+                        .isGlobalBlinded(false)
+                        .build()).getId();
         guestbookService.toggleReport(owner, existId);
 
         // 신고 과다 직전 방명록
@@ -130,7 +126,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .isGlobalBlinded(false)
                         .build()).getId();
-        for (int i=0 ; i<Guestbook.reportCountThreshold-1 ; i++){
+        for (int i = 0; i < Guestbook.reportCountThreshold - 1; i++) {
             guestbookService.toggleReport(reporters[i], almostReportedId);
         }
 
@@ -143,7 +139,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .isGlobalBlinded(false)
                         .build()).getId();
-        for (int i=0 ; i<10 ; i++){
+        for (int i = 0; i < 10; i++) {
             guestbookService.toggleReport(reporters[i], overReportedId);
         }
 

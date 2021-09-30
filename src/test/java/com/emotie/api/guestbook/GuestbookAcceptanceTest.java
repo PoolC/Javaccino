@@ -3,7 +3,6 @@ package com.emotie.api.guestbook;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
-import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.guestbook.dto.*;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.guestbook.service.GuestbookService;
@@ -12,10 +11,12 @@ import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.guestbook.GuestbookDataLoader.*;
@@ -453,6 +454,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         assertThat(response.body().as(GuestbookLocalBlindResponse.class))
                 .hasFieldOrPropertyWithValue("isLocalBlinded", false);
     }
+
     /*
         7. 방명록 삭제
      */
@@ -594,7 +596,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -604,7 +606,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookReportRequest(String accessToken, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookReportRequest(String accessToken, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -613,7 +615,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookGlobalBlindRequest(String accessToken, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookGlobalBlindRequest(String accessToken, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -622,7 +624,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookLocalBlindRequest(String accessToken, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookLocalBlindRequest(String accessToken, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -631,7 +633,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookDeleteRequest(String accessToken, Integer guestbookId) {
+    private static ExtractableResponse<Response> guestbookDeleteRequest(String accessToken, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)

@@ -1,20 +1,16 @@
 package com.emotie.api.guestbook.dto;
 
 import com.emotie.api.guestbook.domain.Guestbook;
-import com.emotie.api.member.domain.Member;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Getter
 public class GuestbookResponse {
-    private Integer id;
+    private Long id;
     private String ownerId;
     private String writerId;
     private String content;
@@ -36,7 +32,7 @@ public class GuestbookResponse {
 
     @JsonCreator
     @Builder
-    public GuestbookResponse(@JsonProperty("id") Integer id, @JsonProperty("ownerId") String ownerId, @JsonProperty("writerId") String writerId,
+    public GuestbookResponse(@JsonProperty("id") Long id, @JsonProperty("ownerId") String ownerId, @JsonProperty("writerId") String writerId,
                              @JsonProperty("content") String content, @JsonProperty("reportCount") Integer reportCount,
                              @JsonProperty("createdAt") LocalDateTime createdAt, @JsonProperty("updatedAt") LocalDateTime updatedAt) {
         this.id = id;

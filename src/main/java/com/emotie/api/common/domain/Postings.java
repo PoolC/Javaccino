@@ -1,7 +1,6 @@
 package com.emotie.api.common.domain;
 
 import com.emotie.api.member.domain.Member;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +17,7 @@ public abstract class Postings extends TimestampEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO) // TODO: auto로 해도 되나?
     @Column(name = "id", nullable = false, unique = true)
-    protected Integer id;
+    protected Long id;
 
     @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "writer_id", nullable = false)

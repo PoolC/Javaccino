@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
-public interface GuestbookRepository extends JpaRepository<Guestbook, Integer> {
+public interface GuestbookRepository extends JpaRepository<Guestbook, Long> {
 
     List<Guestbook> findByOwner(Member owner);
 
-    Optional<Guestbook> findById(Integer guestbookId);
+    Optional<Guestbook> findById(Long guestbookId);
 
     @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold AND g.isGlobalBlinded = false")
     List<Guestbook> findForUserByOwner(@Param("owner") Member owner, @Param("reportCountThreshold") Integer reportCountThreshold);
@@ -26,5 +26,5 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Integer> {
     void deleteAllByOwner(Member owner);
 
     @Transactional
-    void deleteById(Integer guestbookId);
+    void deleteById(Long guestbookId);
 }

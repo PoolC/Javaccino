@@ -15,7 +15,6 @@ import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -33,7 +32,7 @@ public class GuestbookService {
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(user, nickname);
         Member owner = memberService.getMemberByNickname(nickname);
-        if (user.equals(owner)){
+        if (user.equals(owner)) {
             return guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold);
         }
         return guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold);
@@ -53,19 +52,19 @@ public class GuestbookService {
         );
     }
 
-    public void update(Member user, GuestbookUpdateRequest request, Integer guestbookId) {
+    public void update(Member user, GuestbookUpdateRequest request, Long guestbookId) {
         checkUpdateRequestValidity(user, request, guestbookId);
         Guestbook guestbook = getGuestbookById(guestbookId);
         guestbook.update(request);
         guestbookRepository.saveAndFlush(guestbook);
     }
 
-    public Boolean toggleReport(Member user, Integer guestbookId) {
+    public Boolean toggleReport(Member user, Long guestbookId) {
         checkToggleReportRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
         Member writer = target.getWriter();
         Optional<MemberReportGuestbook> memberReportGuestbook = memberReportGuestbookRepository.findByMemberAndGuestbook(user, target);
-        if (memberReportGuestbook.isPresent()){
+        if (memberReportGuestbook.isPresent()) {
             target.updateReportCount(true);
             guestbookRepository.saveAndFlush(target);
             writer.updateReportCount(true);
@@ -81,7 +80,7 @@ public class GuestbookService {
         return true;
     }
 
-    public void delete(Member executor, Integer guestbookId) {
+    public void delete(Member executor, Long guestbookId) {
         checkDeleteRequestValidity(executor, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
         memberReportGuestbookRepository.deleteAllByGuestbook(target);
@@ -101,7 +100,7 @@ public class GuestbookService {
         });
     }
 
-    public Boolean toggleGlobalBlind(Member user, Integer guestbookId) {
+    public Boolean toggleGlobalBlind(Member user, Long guestbookId) {
         checkToggleGlobalBlindRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
         target.globalBlind();
@@ -109,11 +108,11 @@ public class GuestbookService {
         return target.getIsGlobalBlinded();
     }
 
-    public Boolean toggleLocalBlind(Member user, Integer guestbookId) {
+    public Boolean toggleLocalBlind(Member user, Long guestbookId) {
         checkToggleLocalBlindRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
         Optional<MemberLocalBlindGuestbook> memberLocalBlindGuestbook = memberLocalBlindGuestbookRepository.findByMemberAndGuestbook(user, target);
-        if (memberLocalBlindGuestbook.isPresent()){
+        if (memberLocalBlindGuestbook.isPresent()) {
             memberLocalBlindGuestbookRepository.delete(memberLocalBlindGuestbook.get());
             return false;
         }
@@ -136,20 +135,20 @@ public class GuestbookService {
         checkNotOwner(user, nickname);
     }
 
-    private void checkUpdateRequestValidity(Member user, GuestbookUpdateRequest request, Integer guestbookId) {
+    private void checkUpdateRequestValidity(Member user, GuestbookUpdateRequest request, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkWriter(user, guestbookId);
         checkNotOverReported(guestbookId);
     }
 
-    private void checkToggleReportRequestValidity(Member user, Integer guestbookId) {
+    private void checkToggleReportRequestValidity(Member user, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkNotWriter(user, guestbookId);
     }
 
-    private void checkDeleteRequestValidity(Member user, Integer guestbookId) {
+    private void checkDeleteRequestValidity(Member user, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkWriterOrOwner(user, guestbookId);
@@ -162,13 +161,13 @@ public class GuestbookService {
         checkOwner(user, nickname);
     }
 
-    private void checkToggleGlobalBlindRequestValidity(Member user, Integer guestbookId) {
+    private void checkToggleGlobalBlindRequestValidity(Member user, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkOwner(user, guestbookId);
     }
 
-    private void checkToggleLocalBlindRequestValidity(Member user, Integer guestbookId) {
+    private void checkToggleLocalBlindRequestValidity(Member user, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
     }
@@ -177,21 +176,21 @@ public class GuestbookService {
     기타 메서드
      */
 
-    private Guestbook getGuestbookById(Integer guestbookId) {
+    private Guestbook getGuestbookById(Long guestbookId) {
         return guestbookRepository.findById(guestbookId).orElseThrow(() -> {
             throw new NoSuchElementException("해당 id를 가진 방명록이 없습니다.");
         });
     }
 
     // TODO: MemberService.isNicknameExists 가 같은 역할을 하는 것 같은데 통일해야 함
-    private void checkNicknameExists(String nickname){
-        if (!memberRepository.existsByNickname(nickname)){
+    private void checkNicknameExists(String nickname) {
+        if (!memberRepository.existsByNickname(nickname)) {
             throw new NoSuchElementException("해당 nickname을 가진 사용자가 없습니다.");
         }
     }
 
-    private void checkGuestbookIdExists(Integer guestbookId){
-        if (!guestbookRepository.existsById(guestbookId)){
+    private void checkGuestbookIdExists(Long guestbookId) {
+        if (!guestbookRepository.existsById(guestbookId)) {
             throw new NoSuchElementException("해당 id를 가진 방명록이 없습니다.");
         }
     }
@@ -204,28 +203,28 @@ public class GuestbookService {
         }
     }
 
-    private void checkWriter(Member user, Integer guestbookId) {
+    private void checkWriter(Member user, Long guestbookId) {
         Member writer = getGuestbookById(guestbookId).getWriter();
         if (!user.equals(writer)) {
             throw new UnauthorizedException("해당 방명록 글의 작성자가 아닙니다.");
         }
     }
 
-    private void checkNotWriter(Member user, Integer guestbookId) {
+    private void checkNotWriter(Member user, Long guestbookId) {
         Member writer = getGuestbookById(guestbookId).getWriter();
         if (user.equals(writer)) {
             throw new MyselfException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
         }
     }
 
-    private void checkWriterOrOwner(Member user, Integer guestbookId) {
+    private void checkWriterOrOwner(Member user, Long guestbookId) {
         Guestbook guestbook = getGuestbookById(guestbookId);
         if (!(user.equals(guestbook.getWriter()) || user.equals(guestbook.getOwner()))) {
             throw new UnauthorizedException("방명록 게시물을 삭제할 권한이 없습니다.");
         }
     }
 
-    private void checkNotOverReported(Integer guestbookId) {
+    private void checkNotOverReported(Long guestbookId) {
         Guestbook guestbook = getGuestbookById(guestbookId);
         if (guestbook.isNotOverReported()) {
             throw new UnauthorizedException("신고를 많이 받아 삭제할 수 없는 방명록입니다.");
@@ -239,7 +238,7 @@ public class GuestbookService {
         }
     }
 
-    private void checkOwner(Member user, Integer guestbookId) {
+    private void checkOwner(Member user, Long guestbookId) {
         Member owner = getGuestbookById(guestbookId).getOwner();
         if (!user.equals(owner)) {
             throw new UnauthorizedException("방명록 게시물을 숨길 권한이 없습니다.");
