@@ -6,9 +6,9 @@ import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.repository.MemberRepository;
+import com.emotie.api.member.domain.EmotionScore;
+import com.emotie.api.member.repository.EmotionScoreRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
-@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters", "UnnecessaryLocalVariable"})
+@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters", "UnnecessaryLocalVariable", "SameParameterValue"})
 @ActiveProfiles({"diaryDataLoader"})
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @Transactional
@@ -40,6 +40,9 @@ public class DiaryApiTest extends AcceptanceTest {
 
     @Autowired
     private EmotionRepository emotionRepository;
+
+    @Autowired
+    private EmotionScoreRepository emotionScoreRepository;
 
     /* Create: 다이어리 작성 */
     @Test
@@ -59,7 +62,8 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(diaryRepository.count()).isEqualTo(diaryCount);
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -79,7 +83,8 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-        assertThat(diaryRepository.count()).isEqualTo(diaryCount);
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -99,7 +104,8 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-        assertThat(diaryRepository.count()).isEqualTo(diaryCount);
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -119,9 +125,11 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(diaryRepository.count()).isEqualTo(diaryCount);
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
+    // TODO: 2021-09-30 점수 업데이트가 저장이 안 됨; 
     @Test
     @DisplayName("테스트 04: 다이어리 작성 성공 [200]")
     public void 작성_성공_OK() {
@@ -139,10 +147,26 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(diaryRepository.count()).isEqualTo(diaryCount + 1);
-        assertThat(diaryRepository.findAll()).map(Diary::getContent).anySatisfy(
-                it -> assertThat(it).isEqualTo(newContent)
-        );
+        assertDiaryAdded(1);
+        assertDiaryContentExists(newContent);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it > basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount + 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().isEqualTo(basicOtherEmotionScore);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+
+        diaryCount += 1;
+        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
+        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
+        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
+        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
     /* Read: 다이어리 조회 */
@@ -241,6 +265,8 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
                 (it) -> assertThat(it).isNotEqualTo(updatedContent)
         );
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -264,6 +290,8 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
                 (it) -> assertThat(it).isNotEqualTo(updatedContent)
         );
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -287,6 +315,8 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
                 (it) -> assertThat(it).isNotEqualTo(updatedContent)
         );
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -310,6 +340,8 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
                 (it) -> assertThat(it).isNotEqualTo(updatedContent)
         );
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -332,11 +364,13 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(diaryRepository.findAll()).map(Diary::getContent).allSatisfy(
                 (it) -> assertThat(it).isNotEqualTo(updatedContent)
         );
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
     @DisplayName("테스트 16: 다이어리 수정 성공 [200]")
-    public void 수정_성공_OK() {
+    public void 수정_성공_OK_1() {
         //given
         String accessToken = writerLogin();
         DiaryUpdateRequest request = DiaryUpdateRequest.builder()
@@ -352,16 +386,56 @@ public class DiaryApiTest extends AcceptanceTest {
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(diaryRepository.findById(closedDiaryId)).map(Diary::getContent).get().isEqualTo(updatedContent);
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
+    }
+
+    @Test
+    @DisplayName("테스트 17: 다이어리 수정 성공; 감정 변화 [200]")
+    public void 수정_성공_OK_2() {
+        //given
+        String accessToken = writerLogin();
+        DiaryUpdateRequest request = DiaryUpdateRequest.builder()
+                .content(originalContent)
+                .emotion(otherEmotion.getEmotion())
+                .isOpened(false)
+                .issuedDate(LocalDate.now())
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = diaryUpdateRequest(accessToken, request, closedDiaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(diaryRepository.findById(closedDiaryId)).map(Diary::getContent).get().isEqualTo(originalContent);
+        assertDiaryNotAdded();
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it < basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it > basicOtherEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount + 1);
+
+        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
+        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
+        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
+        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
     /* Delete: 다이어리 삭제 */
     @Test
-    @DisplayName("테스트 17: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 18: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
     public void 삭제_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(closedDiaryId))
+                .id(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -369,16 +443,18 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-        assertThat(diaryRepository.existsById(closedDiaryId)).isTrue();
+        assertThat(diaryRepository.existsById(openedDiaryId)).isTrue();
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
-    @DisplayName("테스트 18: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
+    @DisplayName("테스트 19: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
     public void 삭제_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(closedDiaryId))
+                .id(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -386,16 +462,18 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-        assertThat(diaryRepository.existsById(closedDiaryId)).isTrue();
+        assertThat(diaryRepository.existsById(openedDiaryId)).isTrue();
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
-    @DisplayName("테스트 19: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
+    @DisplayName("테스트 20: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
     public void 삭제_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(closedDiaryId, invalidId))
+                .id(List.of(openedDiaryId, invalidId))
                 .build();
 
         //when
@@ -403,7 +481,9 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-        assertThat(diaryRepository.existsById(closedDiaryId)).isTrue();
+        assertThat(diaryRepository.existsById(openedDiaryId)).isTrue();
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
     }
 
     @Test
@@ -412,7 +492,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(closedDiaryId))
+                .id(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -420,7 +500,26 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(diaryRepository.existsById(closedDiaryId)).isFalse();
+        assertThat(diaryRepository.existsById(openedDiaryId)).isFalse();
+        assertThat(diaryRepository.count()).isEqualTo(diaryCount - 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it < basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it > basicOtherEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+
+        diaryCount -= 1;
+        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
+        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
+        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
+        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
     /* 기타 */
@@ -776,5 +875,39 @@ public class DiaryApiTest extends AcceptanceTest {
         return loginRequest(request)
                 .as(LoginResponse.class)
                 .getAccessToken();
+    }
+
+    private void assertDiaryNotAdded() {
+        assertThat(diaryRepository.count()).isEqualTo(diaryCount);
+    }
+
+    private void assertDiaryAdded(Integer amount) {
+        assertThat(diaryRepository.count()).isEqualTo(diaryCount + amount);
+    }
+
+    private void assertDiaryContentExists(String content) {
+        assertThat(diaryRepository.findAll()).map(Diary::getContent).anySatisfy(
+                it -> assertThat(it).isEqualTo(content)
+        );
+    }
+
+    private void assertScoreNotUpdated(String userId) {
+        System.out.println("A");
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().isEqualTo(basicDiaryEmotionScore);
+        System.out.println("B");
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount);
+        System.out.println("C");
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().isEqualTo(basicOtherEmotionScore);
+        System.out.println("D");
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+        System.out.println("E");
     }
 }
