@@ -150,7 +150,7 @@ public class MemberService {
         List<Emotion> allEmotion = emotionRepository.findAll();
 
         allEmotion.forEach(
-                (it) -> initializeEmotionScore(user, it)
+                (emotion) -> initializeEmotionScore(user, emotion)
         );
     }
 

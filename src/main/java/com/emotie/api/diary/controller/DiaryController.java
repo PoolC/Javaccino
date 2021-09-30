@@ -65,8 +65,8 @@ public class DiaryController {
     ) throws Exception{
         List<Diary> diaries = diaryService.delete(user, diaryDeleteRequest);
         diaries.forEach(
-                (it) -> {
-                    memberService.reduceEmotionScore(user, it.getEmotion().getEmotion());
+                (diary) -> {
+                    memberService.reduceEmotionScore(user, diary.getEmotion().getEmotion());
                 }
         );
         return ResponseEntity.ok().build();
