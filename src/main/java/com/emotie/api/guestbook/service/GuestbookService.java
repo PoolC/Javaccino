@@ -125,50 +125,42 @@ public class GuestbookService {
     (content null 여부는 Request 검증에서 체크)
      */
     private void checkGetAllBoardsRequestValidity(Member user, String nickname) {
-        memberService.checkLogin(user);
         checkNicknameExists(nickname);
     }
 
     private void checkCreateRequestValidity(Member user, GuestbookCreateRequest request, String nickname) {
-        memberService.checkLogin(user);
         checkNicknameExists(nickname);
         checkNotOwner(user, nickname);
     }
 
     private void checkUpdateRequestValidity(Member user, GuestbookUpdateRequest request, Long guestbookId) {
-        memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkWriter(user, guestbookId);
         checkNotOverReported(guestbookId);
     }
 
     private void checkToggleReportRequestValidity(Member user, Long guestbookId) {
-        memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkNotWriter(user, guestbookId);
     }
 
     private void checkDeleteRequestValidity(Member user, Long guestbookId) {
-        memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkWriterOrOwner(user, guestbookId);
         checkNotOverReported(guestbookId);
     }
 
     private void checkClearRequestValidity(Member user, String nickname) {
-        memberService.checkLogin(user);
         checkNicknameExists(nickname);
         checkOwnerByNickname(user, nickname);
     }
 
     private void checkToggleGlobalBlindRequestValidity(Member user, Long guestbookId) {
-        memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
         checkOwnerById(user, guestbookId);
     }
 
     private void checkToggleLocalBlindRequestValidity(Member user, Long guestbookId) {
-        memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
     }
 
