@@ -1,6 +1,5 @@
 package com.emotie.api.member.service;
 
-import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -126,17 +124,14 @@ public class MemberService {
 
     private void checkUpdateRequestValidity(Member member, MemberUpdateRequest request) {
         request.checkPasswordMatches();
-        checkLogin(member);
     }
 
     private void checkFollowToggleRequestValidity(Member member, String nickname) {
-        checkLogin(member);
         checkAuthorized(member);
         checkNicknameIsFollowable(member, nickname);
     }
 
     private void checkDeleteRequestValidity(Member executor, String nickname) {
-        checkLogin(executor);
 
         // 이 부분에서 유저의 존재성 역시 검증함.
         Member user = getMemberByNickname(nickname);
@@ -154,16 +149,9 @@ public class MemberService {
     }
 
     private void checkEmailUnique(String email) {
-            if (isEmailExists(email)) {
-                throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
-            }
+        if (isEmailExists(email)) {
+            throw new DuplicatedMemberException("이미 가입한 이메일입니다.");
         }
-
-    public void checkLogin(Member member) {
-        Optional.ofNullable(member)
-                .orElseThrow(() -> {
-                    throw new UnauthenticatedException("로그인하지 않았습니다.");
-                });
     }
 
     private void checkAuthorized(Member member) {
