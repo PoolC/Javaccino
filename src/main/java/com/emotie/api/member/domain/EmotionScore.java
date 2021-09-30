@@ -49,6 +49,7 @@ public class EmotionScore {
 
     public void reduceScore(Double amount) {
         this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * amount;
+        if (this.score < 0) this.score = 0.0;
     }
 
     public void addOne() {

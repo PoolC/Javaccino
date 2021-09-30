@@ -251,13 +251,10 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     public void deepenEmotionScore(Emotion emotion) {
-        if (!this.emotionScore.containsKey(emotion)) {
-            initializeEmotionScore(emotion);
-        }
         this.emotionScore.forEach(
                 (emotionKey, emotionScoreValue) -> {
                     // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
-                    if (emotionKey == emotion) {
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
                         emotionScoreValue.addOne();
                         emotionScoreValue.deepenScore(1.0);
                     } else {
@@ -268,12 +265,9 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     public void reduceEmotionScore(Emotion emotion) {
-        if (!this.emotionScore.containsKey(emotion)) {
-            initializeEmotionScore(emotion);
-        }
         this.emotionScore.forEach(
                 (emotionKey, emotionScoreValue) -> {
-                    if (emotionKey == emotion) {
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
                         emotionScoreValue.removeOne();
                         emotionScoreValue.reduceScore(1.0);
                     } else {
@@ -283,21 +277,16 @@ public class Member extends TimestampEntity implements UserDetails {
         );
     }
 
+    public void initializeEmotionScore(Emotion emotion, EmotionScore emotionScore) {
+        this.emotionScore.put(emotion, emotionScore);
+    }
+
     public void updateEmotionScore(Emotion originalEmotion, Emotion updatedEmotion) {
         reduceEmotionScore(originalEmotion);
         deepenEmotionScore(updatedEmotion);
     }
 
-    private void initializeEmotionScore(Emotion emotion, Double value) {
-        EmotionScore emotionScore = EmotionScore.of(
-                this.UUID,
-                emotion,
-                value
-        );
-        this.emotionScore.put(emotion, emotionScore);
-    }
-
-    private void initializeEmotionScore(Emotion emotion) {
-        initializeEmotionScore(emotion, 0.0);
+    public Boolean isEmotionScoreInitialized(Emotion emotion) {
+        return this.emotionScore.containsKey(emotion);
     }
 }

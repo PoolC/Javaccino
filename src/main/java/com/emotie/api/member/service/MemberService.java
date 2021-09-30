@@ -6,6 +6,7 @@ import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
+import com.emotie.api.member.domain.EmotionScore;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
@@ -14,10 +15,13 @@ import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.dto.PasswordCheckRequest;
 import com.emotie.api.member.dto.PasswordUpdateRequest;
 import com.emotie.api.member.exception.CannotFollowException;
+import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
+import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -26,6 +30,7 @@ import java.util.UUID;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final EmotionRepository emotionRepository;
+    private final EmotionScoreRepository emotionScoreRepository;
 
     private final PasswordHashProvider passwordHashProvider;
 
@@ -56,23 +61,24 @@ public class MemberService {
 
     public void create(MemberCreateRequest request) {
         checkCreateRequestValidity(request);
-        memberRepository.save(
-                Member.builder()
-                        .UUID(UUID.randomUUID().toString())
-                        .email(request.getEmail())
-                        .nickname(request.getNickname())
-                        .passwordHash(passwordHashProvider.encodePassword(request.getPassword()))
-                        .gender(request.getGender())
-                        .dateOfBirth(request.getDateOfBirth())
-                        .introduction("자기 소개를 작성해서 사람들에게 당신을 알려주세요!")
-                        .passwordResetToken(null)
-                        .passwordResetTokenValidUntil(null)
-                        .authorizationToken(null)
-                        .authorizationTokenValidUntil(null)
-                        .reportCount(0)
-                        .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
-                        .build()
-        );
+        Member user = Member.builder()
+                .UUID(UUID.randomUUID().toString())
+                .email(request.getEmail())
+                .nickname(request.getNickname())
+                .passwordHash(passwordHashProvider.encodePassword(request.getPassword()))
+                .gender(request.getGender())
+                .dateOfBirth(request.getDateOfBirth())
+                .introduction("자기 소개를 작성해서 사람들에게 당신을 알려주세요!")
+                .passwordResetToken(null)
+                .passwordResetTokenValidUntil(null)
+                .authorizationToken(null)
+                .authorizationTokenValidUntil(null)
+                .reportCount(0)
+                .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
+                .build();
+        memberRepository.save(user);
+
+        initializeEmotionScore(user);
     }
 
     public void update(Member member, MemberUpdateRequest request) {
@@ -135,7 +141,28 @@ public class MemberService {
     public void updateEmotionScore(Member user, String originalEmotion, String updatingEmotion) {
         user.updateEmotionScore(
                 getEmotionByEmotion(originalEmotion),
-                getEmotionByEmotion(updatingEmotion));
+                getEmotionByEmotion(updatingEmotion)
+        );
+        memberRepository.saveAndFlush(user);
+    }
+
+    private void initializeEmotionScore(Member user) {
+        List<Emotion> allEmotion = emotionRepository.findAll();
+
+        allEmotion.forEach(
+                (it) -> initializeEmotionScore(user, it)
+        );
+    }
+
+    private void initializeEmotionScore(Member user, Emotion emotion) {
+        EmotionScore emotionScore = EmotionScore.of(
+                user.getUUID(),
+                emotion,
+                0.0
+        );
+        emotionScoreRepository.save(emotionScore);
+
+        user.initializeEmotionScore(emotion, emotionScore);
         memberRepository.saveAndFlush(user);
     }
 
@@ -208,6 +235,12 @@ public class MemberService {
 
         if (roles.hasRole(MemberRole.WITHDRAWAL)) {
             throw new CannotFollowException("해당 사용자는 탈퇴한 회원이라, 팔로우 신청할 수 없습니다.");
+        }
+    }
+
+    private void checkUpdatingEmotionScoreValidity(Member user, Emotion emotion) {
+        if (!user.isEmotionScoreInitialized(emotion)) {
+            throw new EmotionScoreNotInitializedException("감정 점수가 초기화 되어 있지 않습니다.");
         }
     }
 
