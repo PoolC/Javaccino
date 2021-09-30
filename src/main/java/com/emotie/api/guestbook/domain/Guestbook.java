@@ -6,12 +6,8 @@ import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -46,7 +42,7 @@ public class Guestbook extends Postings {
     }
 
     public Boolean isNotOverReported() {
-        return (this.getReportCount() >= reportCountThreshold);
+        return (this.reportCount >= this.reportCountThreshold);
     }
 
     public void update(GuestbookUpdateRequest request) {
@@ -55,13 +51,14 @@ public class Guestbook extends Postings {
 
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
+            if (this.reportCount == 0) throw new IllegalStateException("신고 카운트는 음수가 될 수 없습니다");
             this.reportCount--;
             return;
         }
         this.reportCount++;
     }
 
-    public void globalBlind(){
+    public void globalBlind() {
         this.isGlobalBlinded = !this.isGlobalBlinded;
     }
 }

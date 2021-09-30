@@ -6,14 +6,10 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
-import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 import org.springframework.lang.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -254,12 +250,12 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
-    // TODO: Exception?
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
-            this.reportCount++;
+            if (this.reportCount == 0) throw new IllegalStateException("신고 카운트는 음수가 될 수 없습니다");
+            this.reportCount--;
             return;
         }
-        this.reportCount--;
+        this.reportCount++;
     }
 }
