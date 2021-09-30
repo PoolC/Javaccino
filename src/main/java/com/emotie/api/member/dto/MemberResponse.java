@@ -19,7 +19,7 @@ public class MemberResponse {
 
     @JsonCreator
     @Builder
-    public MemberResponse(@JsonProperty("name") String nickname, @JsonProperty("gender") Gender gender, @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("email") String email, @JsonProperty("introduction") String introduction) {
+    protected MemberResponse(@JsonProperty("name") String nickname, @JsonProperty("gender") Gender gender, @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("email") String email, @JsonProperty("introduction") String introduction) {
         this.nickname = nickname;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
