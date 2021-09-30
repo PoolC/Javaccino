@@ -5,10 +5,8 @@ import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.domain.Gender;
-import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.domain.MemberRole;
-import com.emotie.api.member.domain.MemberRoles;
+import com.emotie.api.member.domain.*;
+import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
@@ -28,6 +26,7 @@ public class DiaryDataLoader implements ApplicationRunner {
     private final EmotionRepository emotionRepository;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final EmotionScoreRepository emotionScoreRepository;
     private final PasswordHashProvider passwordHashProvider;
 
     public static String testEmotion, invalidEmotion;
@@ -43,22 +42,24 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final String password = "random-password";
 
     private static Member writer, viewer, unauthorized;
+    public static String writerId;
 
     public static final String originalContent = "오늘 잠을 잘 잤다. 좋았다.",
             updatedContent = "어제도 잠을 잘 잤다. 좋았었다.",
             newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
     public static final Integer invalidId = Integer.MAX_VALUE;
 
-    public static Emotion diaryEmotion;
-
+    public static Emotion diaryEmotion, otherEmotion;
     public static Integer openedDiaryId, closedDiaryId;
-
     public static Long diaryCount;
+
+    public static Double basicDiaryEmotionScore, basicOtherEmotionScore;
+    public static Integer basicDiaryEmotionCount, basicOtherEmotionCount;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        registerMembers();
         createEmotions();
+        registerMembers();
         writeDiaries();
         setDiaryIndexes();
     }
@@ -71,6 +72,12 @@ public class DiaryDataLoader implements ApplicationRunner {
         testEmotion = diaryEmotion.getEmotion();
         invalidEmotion = "없음|none";
         emotionRepository.save(diaryEmotion);
+
+        otherEmotion = Emotion.builder()
+                .emotion("슬픔|SAD")
+                .color("#9FA7EF")
+                .build();
+        emotionRepository.save(otherEmotion);
     }
 
     private void registerMembers() {
@@ -120,6 +127,26 @@ public class DiaryDataLoader implements ApplicationRunner {
                 .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
                 .build();
         memberRepository.saveAllAndFlush(List.of(writer, viewer, unauthorized));
+
+        List<Emotion> allEmotion = emotionRepository.findAll();
+
+        List.of(writer, viewer, unauthorized).forEach(
+                (user) ->
+                allEmotion.forEach(
+                        (emotion) -> {
+                            EmotionScore emotionScore = EmotionScore.of(
+                                    user.getUUID(),
+                                    emotion,
+                                    0.0
+                            );
+                            emotionScoreRepository.save(emotionScore);
+
+                            user.initializeEmotionScore(emotion, emotionScore);
+                            memberRepository.saveAndFlush(user);
+                        }
+                )
+        );
+        writerId = writer.getUUID();
     }
 
     private void writeDiaries() {
@@ -147,6 +174,10 @@ public class DiaryDataLoader implements ApplicationRunner {
             writer.deepenEmotionScore(diaryEmotion);
         }
         memberRepository.saveAndFlush(writer);
+        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
+        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
+        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
+        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
     private void setDiaryIndexes() {
