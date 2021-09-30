@@ -158,13 +158,13 @@ public class GuestbookService {
     private void checkClearRequestValidity(Member user, String nickname) {
         memberService.checkLogin(user);
         checkNicknameExists(nickname);
-        checkOwner(user, nickname);
+        checkOwnerByNickname(user, nickname);
     }
 
     private void checkToggleGlobalBlindRequestValidity(Member user, Long guestbookId) {
         memberService.checkLogin(user);
         checkGuestbookIdExists(guestbookId);
-        checkOwner(user, guestbookId);
+        checkOwnerById(user, guestbookId);
     }
 
     private void checkToggleLocalBlindRequestValidity(Member user, Long guestbookId) {
