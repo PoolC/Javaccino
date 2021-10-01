@@ -2,17 +2,15 @@ package com.emotie.api.guestbook.domain;
 
 import com.emotie.api.member.domain.Member;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-@Getter
 @NoArgsConstructor
 @Entity(name = "members_report_guestbooks")
 @Table(uniqueConstraints = {
         @UniqueConstraint(name = "UniqueReport",
-                columnNames = { "member_id", "guestbook_id" }) })
+                columnNames = {"member_id", "guestbook_id"})})
 public class MemberReportGuestbook {
     @Id
     @GeneratedValue
