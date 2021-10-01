@@ -17,11 +17,11 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Long> {
     Optional<Guestbook> findById(Long guestbookId);
 
     // TODO: Pagination
-    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold AND g.isGlobalBlinded = false")
+    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold AND g.isGlobalBlinded = false ORDER BY g.createdAt")
     List<Guestbook> findForUserByOwner(@Param("owner") Member owner, @Param("reportCountThreshold") Integer reportCountThreshold);
 
     // TODO: Pagination
-    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold")
+    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold ORDER BY g.createdAt")
     List<Guestbook> findForOwnerByOwner(@Param("owner") Member owner, @Param("reportCountThreshold") Integer reportCountThreshold);
 
     @Transactional
