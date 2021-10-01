@@ -15,6 +15,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Entity(name = "guestbooks")
 public class Guestbook extends Postings {
+    // TODO: Fetch EAGER 모두 fetchjoin으로 해결할 수 있나?
     @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
