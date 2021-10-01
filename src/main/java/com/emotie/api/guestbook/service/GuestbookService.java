@@ -27,6 +27,7 @@ public class GuestbookService {
     private final MemberReportGuestbookRepository memberReportGuestbookRepository;
     private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
+    // TODO: Pagination
     public List<Guestbook> getAllBoards(Member user, String nickname) {
         checkGetAllBoardsRequestValidity(nickname);
         Member owner = memberService.getMemberByNickname(nickname);

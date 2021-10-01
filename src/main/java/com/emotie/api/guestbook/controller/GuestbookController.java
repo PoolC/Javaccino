@@ -27,6 +27,7 @@ public class GuestbookController {
             @AuthenticationPrincipal Member user, @PathVariable String nickname
     ) throws Exception {
         List<GuestbookResponse> guestbooks = new ArrayList<>();
+        // TODO: 이 부분을 여기 둘지 서비스단에 옮길지 논의
         guestbooks = guestbookService.getAllBoards(user, nickname).stream()
                 .map(GuestbookResponse::of)
                 .collect(Collectors.toList());
