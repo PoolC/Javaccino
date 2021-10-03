@@ -141,7 +141,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
         Member member = (Member) o;
         return getUUID().equals(member.getUUID());
     }
