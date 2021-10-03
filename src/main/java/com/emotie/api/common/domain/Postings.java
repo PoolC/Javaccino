@@ -23,7 +23,7 @@ public abstract class Postings extends TimestampEntity {
     @Column(name = "id", nullable = false, unique = true)
     protected Integer id;
 
-    @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Member.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
     protected Member writer;
 
