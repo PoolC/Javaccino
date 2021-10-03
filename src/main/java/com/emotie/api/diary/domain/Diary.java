@@ -36,7 +36,7 @@ public class Diary extends Postings {
         this.isOpened = isOpened;
         this.reportCount = 0;
 
-        emotion.getDiariesList().add(this);
+
     }
 
     public static Diary of(

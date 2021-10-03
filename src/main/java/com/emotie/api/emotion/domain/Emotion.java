@@ -2,13 +2,13 @@ package com.emotie.api.emotion.domain;
 
 
 import com.emotie.api.common.domain.TimestampEntity;
-import com.emotie.api.diary.domain.Diary;
 import lombok.Builder;
 import lombok.Getter;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity(name = "emotions")
 @Getter
@@ -27,9 +27,6 @@ public class Emotion extends TimestampEntity {
 
     @Column(name = "priority")
     private Integer priority;
-
-    @OneToMany(mappedBy = "emotion")
-    private List<Diary> diariesList = new ArrayList<>();
 
     protected Emotion() {
     }

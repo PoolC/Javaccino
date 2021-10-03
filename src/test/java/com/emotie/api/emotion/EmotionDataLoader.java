@@ -104,7 +104,7 @@ public class EmotionDataLoader implements ApplicationRunner {
             if (i < 7) {
                 Diary diary = Diary.of(LocalDate.now(), adminMember, "s", emotion, false);
                 diaryRepository.save(diary);
-                emotion.getDiariesList().add(diary);
+
             }
             emotionRepository.saveAndFlush(emotion);
         }
@@ -114,10 +114,6 @@ public class EmotionDataLoader implements ApplicationRunner {
 
         deletingFailEmotionId = emotionRepository.findByEmotion("지침|TIRED").orElseThrow().getId();
         deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정|NONE").orElseThrow().getId();
-        System.out.println("deletingFailEmotionId = " + deletingFailEmotionId);
-        System.out.println("emotionRepository.findByEmotion(\"지침|TIRED\").orElseThrow().getDiariesList().size() = " + emotionRepository.findById(deletingFailEmotionId).orElseThrow().getDiariesList().size());
-        System.out.println("deletingSuccessEmotionId = " + deletingSuccessEmotionId);
-        System.out.println(" emotionRepository.findByEmotion(\"무감정|NONE\").orElseThrow().getDiariesList().size() = " + emotionRepository.findById(deletingSuccessEmotionId).orElseThrow().getDiariesList().size());
 
     }
 }

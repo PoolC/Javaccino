@@ -66,8 +66,6 @@ public class DiaryService {
         id.stream().map(this::getDiaryById).forEach(
                 (diary) -> {
                     diaries.add(diary);
-                    diary.getEmotion().getDiariesList().remove(diary);
-                    emotionRepository.saveAndFlush(diary.getEmotion());
                     diaryRepository.delete(diary);
                 }
         );
