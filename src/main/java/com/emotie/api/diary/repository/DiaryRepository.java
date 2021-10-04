@@ -8,15 +8,4 @@ import java.util.List;
 
 public interface DiaryRepository extends JpaRepository<Diary, Integer> {
     List<Diary> findByEmotion(Emotion Emotion);
-//    List<Diaries> findAfterDate(Date startDate);
-//
-//    List<Diaries> findBeforeDate(Date endDate);
-//
-//    List<Diaries> findByEmotionId(Integer emotionId);
-//
-//    List<Diaries> findByKeywords(List<String> keywords);
-//
-//    List<Diaries> findExceptKeywords(List<String> keywords);
-//
-//    List<Diaries> findByOpenness(Boolean openness);
 }
