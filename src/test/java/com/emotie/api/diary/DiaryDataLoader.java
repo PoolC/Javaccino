@@ -152,7 +152,6 @@ public class DiaryDataLoader implements ApplicationRunner {
     private void writeDiaries() {
         diaryRepository.save(
                 Diary.of(
-                        LocalDate.now(),
                         writer,
                         originalContent,
                         diaryEmotion,
@@ -162,7 +161,6 @@ public class DiaryDataLoader implements ApplicationRunner {
         emotionRepository.saveAndFlush(diaryEmotion);
         diaryRepository.save(
                 Diary.of(
-                        LocalDate.now(),
                         writer,
                         originalContent,
                         diaryEmotion,

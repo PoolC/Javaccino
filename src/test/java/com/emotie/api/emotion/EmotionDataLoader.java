@@ -102,7 +102,7 @@ public class EmotionDataLoader implements ApplicationRunner {
             Emotion emotion = Emotion.of(emotionNames.get(i), emotionColors.get(i));
             emotionRepository.saveAndFlush(emotion);
             if (i < 7) {
-                Diary diary = Diary.of(LocalDate.now(), adminMember, "s", emotion, false);
+                Diary diary = Diary.of(adminMember, "s", emotion, false);
                 diaryRepository.save(diary);
 
             }
