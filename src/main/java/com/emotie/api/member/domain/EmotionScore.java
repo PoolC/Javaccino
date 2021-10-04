@@ -57,7 +57,7 @@ public class EmotionScore {
     }
 
     public void removeOne() {
-        if (this.count <= 0) throw new IndexOutOfBoundsException("글의 개수가 음수가 될 수는 없습니다.");
+        if (this.count <= 0) throw new ArithmeticException("글의 개수가 음수가 될 수는 없습니다.");
         this.count--;
     }
 }
