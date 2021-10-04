@@ -48,6 +48,7 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    @Deprecated
     @PutMapping(value = "/{diaryId}")
     public ResponseEntity<Void> update(
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
