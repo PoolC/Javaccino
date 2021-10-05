@@ -48,9 +48,9 @@ public class Guestbook extends Postings {
         this.content = request.getContent();
     }
 
+    // TODO: Reportable 인터페이스로 Member와 Postings를 묶을까?
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
-            // TODO: 예외 바꾸기
             if (this.reportCount <= 0) throw new ArithmeticException("신고 카운트는 음수가 될 수 없습니다");
             this.reportCount--;
             return;
