@@ -18,6 +18,8 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.guestbook.GuestbookDataLoader.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,7 +71,10 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // when
         ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
-
+        List<GuestbookResponse> gl = response.body().jsonPath().getList("data", GuestbookResponse.class);
+        for (GuestbookResponse g : gl) {
+            System.out.println(g.getContent());
+        }
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId, globalBlindedId);

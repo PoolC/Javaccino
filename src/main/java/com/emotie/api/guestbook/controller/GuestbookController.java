@@ -4,13 +4,15 @@ import com.emotie.api.guestbook.dto.*;
 import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,16 +20,15 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/guestbooks")
 @RequiredArgsConstructor
+// TODO: 서비스단에서 DTO를 반환하도록
 public class GuestbookController {
     private final GuestbookService guestbookService;
-
+    
     @GetMapping(value = "/user/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
-            @AuthenticationPrincipal Member user, @PathVariable String nickname
+            @AuthenticationPrincipal Member user, @PathVariable String nickname, @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) throws Exception {
-        List<GuestbookResponse> guestbooks = new ArrayList<>();
-        // TODO: 이 부분을 여기 둘지 서비스단에 옮길지 논의
-        guestbooks = guestbookService.getAllBoards(user, nickname).stream()
+        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, pageable).stream()
                 .map(GuestbookResponse::of)
                 .collect(Collectors.toList());
 

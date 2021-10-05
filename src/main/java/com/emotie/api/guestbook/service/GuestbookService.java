@@ -12,6 +12,7 @@ import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,14 +28,14 @@ public class GuestbookService {
     private final MemberReportGuestbookRepository memberReportGuestbookRepository;
     private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
-    // TODO: Pagination
-    public List<Guestbook> getAllBoards(Member user, String nickname) {
+    public List<Guestbook> getAllBoards(Member user, String nickname, Pageable pageable) {
         checkGetAllBoardsRequestValidity(nickname);
         Member owner = memberService.getMemberByNickname(nickname);
+        // TODO: 코드 간결하게 바꾸기 가능?
         if (user.equals(owner)) {
-            return guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold);
+            return guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold, pageable);
         }
-        return guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold);
+        return guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold, pageable);
     }
 
     public void create(Member user, GuestbookCreateRequest request, String nickname) {

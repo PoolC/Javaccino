@@ -152,5 +152,16 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .isGlobalBlinded(true)
                         .build()).getId();
+        for (int i = 0; i < 50; i++) {
+            guestbookRepository.save(
+                    Guestbook.builder()
+                            .owner(owner)
+                            .writer(writer)
+                            .content(i + "번째 방명록 글")
+                            .reportCount(0)
+                            .isGlobalBlinded(false)
+                            .build());
+        }
+
     }
 }
