@@ -46,7 +46,7 @@ public abstract class Postings extends TimestampEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Member)) return false;
         Postings posting = (Postings) o;
         return getId().equals(posting.getId());
     }

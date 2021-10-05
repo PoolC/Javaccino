@@ -140,7 +140,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Member)) return false;
         Member member = (Member) o;
         return getUUID().equals(member.getUUID());
     }
@@ -253,7 +253,6 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
-            // TODO: 예외 바꾸기
             if (this.reportCount <= 0) throw new ArithmeticException("신고 카운트는 음수가 될 수 없습니다");
             this.reportCount--;
             return;
