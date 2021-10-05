@@ -152,7 +152,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .reportCount(0)
                         .isGlobalBlinded(true)
                         .build()).getId();
-        for (int i = 0; i < 50; i++) {
+        for (int i = 49; i >= 0; i--) {
             guestbookRepository.save(
                     Guestbook.builder()
                             .owner(owner)

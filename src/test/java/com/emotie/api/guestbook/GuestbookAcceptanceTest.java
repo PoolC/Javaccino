@@ -4,9 +4,6 @@ import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.guestbook.dto.*;
-import com.emotie.api.guestbook.repository.GuestbookRepository;
-import com.emotie.api.guestbook.service.GuestbookService;
-import com.emotie.api.member.repository.MemberRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -18,8 +15,6 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
-
 import static com.emotie.api.auth.AuthAcceptanceTest.authorizedLogin;
 import static com.emotie.api.guestbook.GuestbookDataLoader.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,9 +25,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class GuestbookAcceptanceTest extends AcceptanceTest {
 
-    GuestbookRepository guestbookRepository;
-    MemberRepository memberRepository;
-    GuestbookService guestbookService;
+    public static Integer pageSize = 15;
 
     /*
         1. 방명록 전체 조회
@@ -44,7 +37,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -57,7 +50,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistNickname); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistNickname, 0, pageSize); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -70,11 +63,8 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
-        List<GuestbookResponse> gl = response.body().jsonPath().getList("data", GuestbookResponse.class);
-        for (GuestbookResponse g : gl) {
-            System.out.println(g.getContent());
-        }
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
+
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId, globalBlindedId);
@@ -87,7 +77,25 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId);
+
+    }
+
+    @Test
+    @DisplayName("테스트 01-05: 페이지네이션 성공 [200]; 방명록 주인장: 누적 신고 과다 방명록 제외")
+    public void 방명록_전체_조회_페이지네이션_성공_OK_2() throws Exception {
+        // given
+        String accessToken = ownerLogin();
+
+        // when
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 1, pageSize);
+        for (GuestbookResponse g : response.body().jsonPath().getList("data", GuestbookResponse.class)) {
+            System.out.println(g.getContent());
+        }
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -582,11 +590,11 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         private methods
      */
-    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String nickname) {
+    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String nickname, Integer page, Integer size) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().get("/guestbooks/user/{nickname}", nickname)
+                .when().get("/guestbooks/user/{nickname}?page={page}&size={size}", nickname, page, size)
                 .then().log().all()
                 .extract();
     }

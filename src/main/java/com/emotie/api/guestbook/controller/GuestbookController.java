@@ -4,9 +4,6 @@ import com.emotie.api.guestbook.dto.*;
 import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,12 +20,12 @@ import java.util.stream.Collectors;
 // TODO: 서비스단에서 DTO를 반환하도록
 public class GuestbookController {
     private final GuestbookService guestbookService;
-    
+
     @GetMapping(value = "/user/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
-            @AuthenticationPrincipal Member user, @PathVariable String nickname, @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+            @AuthenticationPrincipal Member user, @PathVariable String nickname, @RequestParam Integer page, @RequestParam Integer size
     ) throws Exception {
-        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, pageable).stream()
+        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, page, size).stream()
                 .map(GuestbookResponse::of)
                 .collect(Collectors.toList());
 
