@@ -253,7 +253,8 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updateReportCount(Boolean isReported) {
         if (isReported) {
-            if (this.reportCount <= 0) throw new IllegalStateException("신고 카운트는 음수가 될 수 없습니다");
+            // TODO: 예외 바꾸기
+            if (this.reportCount <= 0) throw new ArithmeticException("신고 카운트는 음수가 될 수 없습니다");
             this.reportCount--;
             return;
         }
