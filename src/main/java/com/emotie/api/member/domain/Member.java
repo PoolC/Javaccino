@@ -68,10 +68,10 @@ public class Member extends TimestampEntity implements UserDetails {
     private MemberRoles roles;
 
     // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private final List<Member> followers = new ArrayList<>();
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private final List<Member> followees = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
