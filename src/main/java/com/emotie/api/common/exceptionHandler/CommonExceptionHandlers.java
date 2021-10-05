@@ -3,9 +3,12 @@ package com.emotie.api.common.exceptionHandler;
 import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.common.exception.NotSameException;
+import com.emotie.api.diary.exception.PeekingPrivatePostException;
 import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
+import com.emotie.api.diary.exception.DuplicatedArgumentsException;
 import com.emotie.api.member.exception.CannotFollowException;
+import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +43,7 @@ public class CommonExceptionHandlers {
                 .body(Collections.singletonMap("message", e.getMessage()));
     }
 
-    @ExceptionHandler({UnauthorizedException.class})
+    @ExceptionHandler({UnauthorizedException.class, PeekingPrivatePostException.class})
     public ResponseEntity<Map<String, String>> forbiddenHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Collections.singletonMap("message", e.getMessage()));
@@ -54,7 +57,8 @@ public class CommonExceptionHandlers {
 
     @ExceptionHandler({
             ExpiredTokenException.class, WrongTokenException.class, DuplicatedException.class,
-            CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class
+            CannotFollowException.class, DuplicatedEmotionException.class, EmotionDeleteConflictException.class,
+            IndexOutOfBoundsException.class, DuplicatedArgumentsException.class, EmotionScoreNotInitializedException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

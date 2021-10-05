@@ -6,6 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -17,14 +18,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-@Entity(name = "members")
+// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity(name = "members")
 public class Member extends TimestampEntity implements UserDetails {
     @Id
     @Column(name = "id", length = 40)
@@ -75,6 +74,10 @@ public class Member extends TimestampEntity implements UserDetails {
     @Column(name = "withdrawal_date")
     @Nullable
     private LocalDateTime withdrawalDate = null;
+
+    @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @MapKeyJoinColumn(name = "emotion")
+    private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
 
     protected Member() {
     }
@@ -138,7 +141,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null) return false;
         Member member = (Member) o;
         return getUUID().equals(member.getUUID());
     }
@@ -162,7 +165,6 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordResetToken = passwordResetToken;
         this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
-
 
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
         checkPasswordResetToken(passwordResetToken);
@@ -188,8 +190,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public boolean isFollowedBy(Member member) {
         return this.followers.contains(member);
     }
-    // 사용자가 누군가를 팔로우한다는 것은
 
+    // 사용자가 누군가를 팔로우한다는 것은
     public void follow(Member member) {
         // 사용자의 팔로이에 그 사람이 추가 되고
         this.followees.add(member);
@@ -246,5 +248,45 @@ public class Member extends TimestampEntity implements UserDetails {
         this.nickname = request.getNickname();
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
+    }
+
+    public void deepenEmotionScore(Emotion emotion) {
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
+                    // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
+                        emotionScoreValue.addOne();
+                        emotionScoreValue.deepenScore(1.0);
+                    } else {
+                        emotionScoreValue.deepenScore(0.0);
+                    }
+                }
+        );
+    }
+
+    public void reduceEmotionScore(Emotion emotion) {
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
+                        emotionScoreValue.removeOne();
+                        emotionScoreValue.reduceScore(1.0);
+                    } else {
+                        emotionScoreValue.reduceScore(0.0);
+                    }
+                }
+        );
+    }
+
+    public void initializeEmotionScore(Emotion emotion, EmotionScore emotionScore) {
+        this.emotionScore.put(emotion, emotionScore);
+    }
+
+    public void updateEmotionScore(Emotion originalEmotion, Emotion updatedEmotion) {
+        reduceEmotionScore(originalEmotion);
+        deepenEmotionScore(updatedEmotion);
+    }
+
+    public Boolean isEmotionScoreInitialized(Emotion emotion) {
+        return this.emotionScore.containsKey(emotion);
     }
 }
