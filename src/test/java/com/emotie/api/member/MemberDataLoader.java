@@ -26,14 +26,18 @@ public class MemberDataLoader implements CommandLineRunner {
             unauthorizedEmail = "anfro2520@gmail.com",
             expelledEmail = "expelled@gmail.com",
             adminEmail = "admin@gmail.com",
-            followerEmail = "follower@gmail.com",
+            followeeEmail = "follower@gmail.com",
             getAuthorizationTokenEmail = "authorizationToken@gmail.com",
             expiredAuthorizationTokenEmail = "expiredAuthorizationToken@gmail.com",
             getPasswordResetTokenEmail = "passwordResetToken@gmail.com",
             expiredPasswordResetTokenEmail = "expiredPasswordResetToken@gmail.com",
             notExistEmail = "notExist@gmail.com",
             password = "password123!", wrongPassword = "wrongPassword",
-            resetPassword = "resetPassword123!";
+            resetPassword = "resetPassword123!",
+            authorizedMemberUuid = UUID.randomUUID().toString(),
+            unAuthorizedMemberUuid = UUID.randomUUID().toString(),
+            followeeMemberUuid = UUID.randomUUID().toString(),
+            notExistMemberUuid = "notExistMemberUuid";
 
     public static String authorizationToken = "authorization_token", passwordResetToken = "password_reset_token";
 
@@ -44,7 +48,7 @@ public class MemberDataLoader implements CommandLineRunner {
     public void run(String... args) {
         memberRepository.save(
                 Member.builder()
-                        .UUID(UUID.randomUUID().toString())
+                        .UUID(authorizedMemberUuid)
                         .email(authorizedEmail)
                         .nickname(authorizedNickname)
                         .passwordHash(passwordHashProvider.encodePassword(password))
@@ -60,7 +64,7 @@ public class MemberDataLoader implements CommandLineRunner {
                         .build());
         memberRepository.save(
                 Member.builder()
-                        .UUID(UUID.randomUUID().toString())
+                        .UUID(unAuthorizedMemberUuid)
                         .email(unauthorizedEmail)
                         .nickname(unauthorizedEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
@@ -92,9 +96,9 @@ public class MemberDataLoader implements CommandLineRunner {
                         .build());
         memberRepository.save(
                 Member.builder()
-                        .UUID(UUID.randomUUID().toString())
-                        .email(followerEmail)
-                        .nickname(followerEmail)
+                        .UUID(followeeMemberUuid)
+                        .email(followeeEmail)
+                        .nickname(followeeEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
                         .gender(Gender.HIDDEN)
                         .dateOfBirth(LocalDate.now())

@@ -64,12 +64,12 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @Embedded
     private MemberRoles roles;
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    private final List<Member> followers = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.EAGER)
-    private final List<Member> followees = new ArrayList<>();
+//
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    private final List<Member> followers = new ArrayList<>();
+//
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    private final List<Member> followees = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
@@ -182,28 +182,28 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
-    public boolean isFollowing(Member member) {
-        return this.followees.contains(member);
-    }
-
-    @SuppressWarnings("unused")
-    public boolean isFollowedBy(Member member) {
-        return this.followers.contains(member);
-    }
-
-    // 사용자가 누군가를 팔로우한다는 것은
-    public void follow(Member member) {
-        // 사용자의 팔로이에 그 사람이 추가 되고
-        this.followees.add(member);
-
-        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
-        member.followers.add(this);
-    }
-
-    public void unfollow(Member member) {
-        this.followees.remove(member);
-        member.followers.remove(member);
-    }
+//    public boolean isFollowing(Member member) {
+//        return this.followees.contains(member);
+//    }
+//
+//    @SuppressWarnings("unused")
+//    public boolean isFollowedBy(Member member) {
+//        return this.followers.contains(member);
+//    }
+//
+//    // 사용자가 누군가를 팔로우한다는 것은
+//    public void follow(Member member) {
+//        // 사용자의 팔로이에 그 사람이 추가 되고
+//        this.followees.add(member);
+//
+//        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
+//        member.followers.add(this);
+//    }
+//
+//    public void unfollow(Member member) {
+//        this.followees.remove(member);
+//        member.followers.remove(member);
+//    }
 
     private void checkAuthorizationToken(String authorizationToken) {
         checkTokenExpired(this.authorizationTokenValidUntil);
