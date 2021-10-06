@@ -11,13 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 @RestController
 @RequestMapping("/guestbooks")
 @RequiredArgsConstructor
-// TODO: 서비스단에서 DTO를 반환하도록
 public class GuestbookController {
     private final GuestbookService guestbookService;
 
@@ -25,9 +23,7 @@ public class GuestbookController {
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
             @AuthenticationPrincipal Member user, @PathVariable String nickname, @RequestParam Integer page, @RequestParam Integer size
     ) throws Exception {
-        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, page, size).stream()
-                .map(GuestbookResponse::of)
-                .collect(Collectors.toList());
+        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, page, size);
 
         GuestbooksResponse response = new GuestbooksResponse(guestbooks);
         return ResponseEntity.ok().body(response);

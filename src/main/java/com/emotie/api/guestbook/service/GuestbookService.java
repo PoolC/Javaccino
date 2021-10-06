@@ -4,6 +4,7 @@ import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
 import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookResponse;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.guestbook.repository.MemberLocalBlindGuestbookRepository;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,15 +32,20 @@ public class GuestbookService {
     private final MemberReportGuestbookRepository memberReportGuestbookRepository;
     private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
-    public List<Guestbook> getAllBoards(Member user, String nickname, Integer page, Integer size) {
+    public List<GuestbookResponse> getAllBoards(Member user, String nickname, Integer page, Integer size) {
         checkGetAllBoardsRequestValidity(nickname);
         Member owner = memberService.getMemberByNickname(nickname);
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         // TODO: 코드 간결하게 바꾸기 가능?
+        List<Guestbook> guestbooks;
         if (user.equals(owner)) {
-            return guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold, pageable);
+            guestbooks = guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold, pageable);
         }
-        return guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold, pageable);
+        guestbooks = guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold, pageable);
+        List<GuestbookResponse> guestbookResponses = guestbooks.stream()
+                .map(GuestbookResponse::of)
+                .collect(Collectors.toList());
+        return guestbookResponses;
     }
 
     public void create(Member user, GuestbookCreateRequest request, String nickname) {
