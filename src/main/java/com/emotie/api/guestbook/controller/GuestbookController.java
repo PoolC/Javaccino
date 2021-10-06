@@ -10,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 @RestController
@@ -23,9 +22,7 @@ public class GuestbookController {
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
             @AuthenticationPrincipal Member user, @PathVariable String nickname, @RequestParam Integer page, @RequestParam Integer size
     ) throws Exception {
-        List<GuestbookResponse> guestbooks = guestbookService.getAllBoards(user, nickname, page, size);
-
-        GuestbooksResponse response = new GuestbooksResponse(guestbooks);
+        GuestbooksResponse response = new GuestbooksResponse(guestbookService.getAllBoards(user, nickname, page, size));
         return ResponseEntity.ok().body(response);
     }
 

@@ -11,30 +11,27 @@ import java.time.LocalDateTime;
 @Getter
 public class GuestbookResponse {
     private Long id;
-    private String writerId;
+    private String nickname;
     private String content;
-    private Integer reportCount;
-    private LocalDateTime createdAt;
+    private LocalDateTime date;
 
     public static GuestbookResponse of(Guestbook guestbook) {
         return GuestbookResponse.builder()
                 .id(guestbook.getId())
-                .writerId(guestbook.getWriter().getUUID())
+                .nickname(guestbook.getWriter().getNickname())
                 .content(guestbook.getContent())
-                .reportCount(guestbook.getReportCount())
-                .createdAt(guestbook.getCreatedAt())
+                .date(guestbook.getCreatedAt())
                 .build();
     }
 
     @JsonCreator
     @Builder
-    public GuestbookResponse(@JsonProperty("id") Long id, @JsonProperty("writerId") String writerId,
-                             @JsonProperty("content") String content, @JsonProperty("reportCount") Integer reportCount,
-                             @JsonProperty("createdAt") LocalDateTime createdAt) {
+    public GuestbookResponse(@JsonProperty("id") Long id, @JsonProperty("nickname") String nickname,
+                             @JsonProperty("content") String content,
+                             @JsonProperty("date") LocalDateTime date) {
         this.id = id;
-        this.writerId = writerId;
+        this.nickname = nickname;
         this.content = content;
-        this.reportCount = reportCount;
-        this.createdAt = createdAt;
+        this.date = date;
     }
 }

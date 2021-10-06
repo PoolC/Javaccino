@@ -7,10 +7,10 @@ import java.util.List;
 
 @Getter
 public class GuestbooksResponse {
-    private final List<GuestbookResponse> data;
+    private final List<GuestbookResponse> guestbooks;
 
     @JsonCreator
-    public GuestbooksResponse(List<GuestbookResponse> data) {
-        this.data = data;
+    public GuestbooksResponse(List<GuestbookResponse> guestbooks) {
+        this.guestbooks = guestbooks;
     }
 }
