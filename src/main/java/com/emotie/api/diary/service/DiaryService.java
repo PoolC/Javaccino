@@ -3,6 +3,7 @@ package com.emotie.api.diary.service;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
+import com.emotie.api.diary.dto.DiaryReadResponse;
 import com.emotie.api.diary.exception.PeekingPrivatePostException;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.DiaryCreateRequest;
@@ -35,9 +36,9 @@ public class DiaryService {
         );
     }
 
-    public Diary read(Member user, Integer diaryId) {
+    public DiaryReadResponse read(Member user, Integer diaryId) {
         Diary diary = getDiaryById(diaryId);
-        return diary.read(user);
+        return new DiaryReadResponse(diary.read(user));
     }
 
     @Deprecated
@@ -57,18 +58,18 @@ public class DiaryService {
         return originalEmotion.getEmotion();
     }
 
-    public List<Diary> delete(Member user, DiaryDeleteRequest request) {
+    public List<String> delete(Member user, DiaryDeleteRequest request) {
         Set<Integer> id = new HashSet<>(request.getId());
         checkDeleteListValidity(user, id);
-        LinkedList<Diary> diaries = new LinkedList<>();
+        LinkedList<String> emotions = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
                 (diary) -> {
-                    diaries.add(diary);
+                    emotions.add(diary.getEmotion().getEmotion());
                     diaryRepository.delete(diary);
                 }
         );
 
-        return diaries;
+        return emotions;
     }
 
     private Diary getDiaryById(Integer diaryId) {

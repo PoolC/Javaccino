@@ -37,8 +37,7 @@ public class DiaryController {
     public ResponseEntity<DiaryReadResponse> read(
             @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
     ) throws Exception {
-        Diary diary = diaryService.read(user, diaryId);
-        return ResponseEntity.ok(new DiaryReadResponse(diary));
+        return ResponseEntity.ok(diaryService.read(user, diaryId));
     }
 
     @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -64,11 +63,9 @@ public class DiaryController {
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception{
-        List<Diary> diaries = diaryService.delete(user, diaryDeleteRequest);
-        diaries.forEach(
-                (diary) -> {
-                    memberService.reduceEmotionScore(user, diary.getEmotion().getEmotion());
-                }
+        List<String> reducingEmotionNames = diaryService.delete(user, diaryDeleteRequest);
+        reducingEmotionNames.forEach(
+                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
         );
         return ResponseEntity.ok().build();
     }
