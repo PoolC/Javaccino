@@ -423,7 +423,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = "";
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -442,7 +442,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = viewerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -461,7 +461,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId, invalidId))
+                .diaryId(List.of(openedDiaryId, invalidId))
                 .build();
 
         //when
@@ -480,7 +480,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when

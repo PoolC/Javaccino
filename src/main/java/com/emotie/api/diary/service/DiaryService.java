@@ -59,7 +59,7 @@ public class DiaryService {
     }
 
     public List<String> delete(Member user, DiaryDeleteRequest request) {
-        Set<Integer> id = new HashSet<>(request.getId());
+        Set<Integer> id = new HashSet<>(request.getDiaryId());
         checkDeleteListValidity(user, id);
         LinkedList<String> emotions = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
