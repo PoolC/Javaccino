@@ -750,7 +750,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(Integer diaryId) {
+    private static ExtractableResponse<Response> diaryReadRequest(Long diaryId) {
         return RestAssured
                 .given().log().all()
                 .when().get("/diaries/{diaryId}", diaryId)
@@ -758,7 +758,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(String accessToken, Integer diaryId) {
+    private static ExtractableResponse<Response> diaryReadRequest(String accessToken, Long diaryId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -800,7 +800,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     private static ExtractableResponse<Response> diaryUpdateRequest(
-            String accessToken, DiaryUpdateRequest request, Integer diaryId
+            String accessToken, DiaryUpdateRequest request, Long diaryId
     ) {
         return RestAssured
                 .given().log().all()

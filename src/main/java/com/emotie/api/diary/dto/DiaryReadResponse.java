@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 public class DiaryReadResponse {
-    private final Integer diaryId;
+    private final Long diaryId;
     private final String nickname;
     private final EmotionResponse emotion;
     private final String date;

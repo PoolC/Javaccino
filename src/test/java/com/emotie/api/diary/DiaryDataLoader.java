@@ -47,10 +47,10 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final String originalContent = "오늘 잠을 잘 잤다. 좋았다.",
             updatedContent = "어제도 잠을 잘 잤다. 좋았었다.",
             newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
-    public static final Integer invalidId = Integer.MAX_VALUE;
+    public static final Long invalidId = Long.MAX_VALUE;
 
     public static Emotion diaryEmotion, otherEmotion;
-    public static Integer openedDiaryId, closedDiaryId;
+    public static Long openedDiaryId, closedDiaryId;
     public static Long diaryCount;
 
     public static Double basicDiaryEmotionScore, basicOtherEmotionScore;

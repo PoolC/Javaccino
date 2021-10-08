@@ -31,7 +31,7 @@ public class DiaryController {
 
     @GetMapping(value = "/{diaryId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadResponse> read(
-            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId
+            @AuthenticationPrincipal Member user, @PathVariable Long diaryId
     ) throws Exception {
         return ResponseEntity.ok(diaryService.read(user, diaryId));
     }
@@ -46,7 +46,7 @@ public class DiaryController {
     @Deprecated
     @PutMapping(value = "/{diaryId}")
     public ResponseEntity<Void> update(
-            @AuthenticationPrincipal Member user, @PathVariable Integer diaryId,
+            @AuthenticationPrincipal Member user, @PathVariable Long diaryId,
             @RequestBody @Valid DiaryUpdateRequest diaryUpdateRequest
     ) throws Exception {
         String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);

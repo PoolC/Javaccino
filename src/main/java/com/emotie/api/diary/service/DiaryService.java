@@ -35,13 +35,13 @@ public class DiaryService {
         );
     }
 
-    public DiaryReadResponse read(Member user, Integer diaryId) {
+    public DiaryReadResponse read(Member user, Long diaryId) {
         Diary diary = getDiaryById(diaryId);
         return new DiaryReadResponse(diary.read(user));
     }
 
     @Deprecated
-    public String update(Member user, Integer diaryId, DiaryUpdateRequest request) {
+    public String update(Member user, Long diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
         Emotion originalEmotion = diary.getEmotion();
 
@@ -58,7 +58,7 @@ public class DiaryService {
     }
 
     public List<String> delete(Member user, DiaryDeleteRequest request) {
-        Set<Integer> id = new HashSet<>(request.getDiaryId());
+        Set<Long> id = new HashSet<>(request.getDiaryId());
         checkDeleteListValidity(user, id);
         LinkedList<String> emotions = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
@@ -71,7 +71,7 @@ public class DiaryService {
         return emotions;
     }
 
-    private Diary getDiaryById(Integer diaryId) {
+    private Diary getDiaryById(Long diaryId) {
         return diaryRepository.findById(diaryId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
         );
@@ -89,7 +89,7 @@ public class DiaryService {
         diary.updateOpenness(updateRequest.getIsOpened());
     }
 
-    private void checkDeleteListValidity(Member user, Set<Integer> id) {
+    private void checkDeleteListValidity(Member user, Set<Long> id) {
         id.forEach(
                 (diaryId) -> {
                     Diary diary = getDiaryById(diaryId);
