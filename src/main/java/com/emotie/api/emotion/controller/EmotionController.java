@@ -1,22 +1,19 @@
 package com.emotie.api.emotion.controller;
 
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.dto.EmotionCreateRequest;
-import com.emotie.api.emotion.dto.EmotionResponse;
+import com.emotie.api.emotion.dto.EmotionResponseUnused;
 import com.emotie.api.emotion.dto.EmotionUpdateRequest;
 import com.emotie.api.emotion.dto.EmotionsResponse;
 import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
-import com.sun.mail.iap.Response;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.xml.stream.events.Comment;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -30,8 +27,8 @@ public class EmotionController {
 
     @GetMapping()
     public ResponseEntity<EmotionsResponse> getAllEmotions(){
-        List<EmotionResponse> emotions = emotionService.getAllEmotions().stream()
-                .map(EmotionResponse::new)
+        List<EmotionResponseUnused> emotions = emotionService.getAllEmotions().stream()
+                .map(EmotionResponseUnused::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new EmotionsResponse(emotions));
     }

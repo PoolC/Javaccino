@@ -1,11 +1,9 @@
 package com.emotie.api.diary.dto;
 
 import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.dto.EmotionResponse;
 import lombok.Getter;
 
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @Getter
