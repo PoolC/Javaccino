@@ -23,7 +23,7 @@ public class DiaryReadResponse {
         this.diaryId = diary.getId();
         this.nickname = diary.getWriter().getNickname();
         this.emotion = new EmotionResponse(diary.getEmotion());
-        this.date = diary.getCreatedAt().format(DateTimeFormatter.ISO_DATE);
+        this.date = diary.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME);
         this.content = diary.getContent();
         this.isOpened = diary.getIsOpened();
     }
