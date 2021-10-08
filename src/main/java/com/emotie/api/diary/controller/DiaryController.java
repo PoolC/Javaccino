@@ -1,11 +1,7 @@
 package com.emotie.api.diary.controller;
 
-import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.service.DiaryService;
-import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +23,7 @@ public class DiaryController {
     @PostMapping
     public ResponseEntity<Void> write(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
-    ) throws Exception{
+    ) throws Exception {
         diaryService.create(user, diaryCreateRequest);
         memberService.deepenEmotionScore(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
@@ -62,7 +58,7 @@ public class DiaryController {
     @DeleteMapping
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
-    ) throws Exception{
+    ) throws Exception {
         List<String> reducingEmotionNames = diaryService.delete(user, diaryDeleteRequest);
         reducingEmotionNames.forEach(
                 (emotionName) -> memberService.reduceEmotionScore(user, emotionName)

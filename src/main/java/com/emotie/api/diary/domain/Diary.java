@@ -3,22 +3,20 @@ package com.emotie.api.diary.domain;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.exception.PeekingPrivatePostException;
-import com.emotie.api.member.domain.Member;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDate;
 
 @Getter
 @NoArgsConstructor
 @Entity(name = "emodiaries")
 public class Diary extends Postings {
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="emotion_tag_id")
+    @JoinColumn(name = "emotion_tag_id")
     private Emotion emotion;
 
     @Column(name = "is_opened", nullable = false)
@@ -43,9 +41,13 @@ public class Diary extends Postings {
         return new Diary(writer, content, emotion, isOpened);
     }
 
-    public void updateEmotion(Emotion updatingEmotion) { this.emotion = updatingEmotion; }
+    public void updateEmotion(Emotion updatingEmotion) {
+        this.emotion = updatingEmotion;
+    }
 
-    public void updateOpenness(Boolean updatingOpenness) { this.isOpened = updatingOpenness; }
+    public void updateOpenness(Boolean updatingOpenness) {
+        this.isOpened = updatingOpenness;
+    }
 
     public Diary read(Member user) {
         checkIsOpened(user);
