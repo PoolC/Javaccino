@@ -22,8 +22,7 @@ public class GuestbookController {
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
             @AuthenticationPrincipal Member user, @PathVariable String nickname, @RequestParam Integer page, @RequestParam Integer size
     ) throws Exception {
-        GuestbooksResponse response = new GuestbooksResponse(guestbookService.getAllBoards(user, nickname, page, size));
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok(new GuestbooksResponse(guestbookService.getAllBoards(user, nickname, page, size)));
     }
 
     @PostMapping(value = "/user/{nickname}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -34,6 +33,7 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
+    @Deprecated
     @PutMapping(value = "/{guestbookId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> updateGuestbook(
             @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookUpdateRequest request, @PathVariable Long guestbookId

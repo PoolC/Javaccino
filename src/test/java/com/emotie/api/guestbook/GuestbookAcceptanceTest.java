@@ -609,6 +609,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
+    @Deprecated
     private static ExtractableResponse<Response> guestbookUpdateRequest(String accessToken, GuestbookUpdateRequest request, Long guestbookId) {
         return RestAssured
                 .given().log().all()

@@ -62,6 +62,7 @@ public class GuestbookService {
         );
     }
 
+    @Deprecated
     public void update(Member user, GuestbookUpdateRequest request, Long guestbookId) {
         checkUpdateRequestValidity(user, guestbookId);
         Guestbook guestbook = getGuestbookById(guestbookId);

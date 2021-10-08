@@ -23,8 +23,5 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Long> {
     List<Guestbook> findForOwnerByOwner(Member owner, Integer reportCountThreshold, Pageable pageable);
 
     @Transactional
-    void deleteAllByOwner(Member owner);
-
-    @Transactional
     void deleteById(Long guestbookId);
 }
