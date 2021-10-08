@@ -6,21 +6,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 public class GuestbookResponse {
     private Long guestbookId;
     private String nickname;
     private String content;
-    private LocalDateTime date;
+    private String date;
 
     public static GuestbookResponse of(Guestbook guestbook) {
         return GuestbookResponse.builder()
                 .guestbookId(guestbook.getId())
                 .nickname(guestbook.getWriter().getNickname())
                 .content(guestbook.getContent())
-                .date(guestbook.getCreatedAt())
+                .date(guestbook.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME))
                 .build();
     }
 
@@ -28,7 +28,7 @@ public class GuestbookResponse {
     @Builder
     public GuestbookResponse(@JsonProperty("guestbookId") Long guestbookId, @JsonProperty("nickname") String nickname,
                              @JsonProperty("content") String content,
-                             @JsonProperty("date") LocalDateTime date) {
+                             @JsonProperty("date") String date) {
         this.guestbookId = guestbookId;
         this.nickname = nickname;
         this.content = content;
