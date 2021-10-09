@@ -3,7 +3,6 @@ package com.emotie.api.emotion.dto;
 import com.emotie.api.emotion.domain.Emotion;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
 import lombok.Getter;
 
 @Getter

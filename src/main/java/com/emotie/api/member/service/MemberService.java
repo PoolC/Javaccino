@@ -58,9 +58,9 @@ public class MemberService {
         });
     }
 
-    public Member getMemberByUuid(String uuid) {
-        return memberRepository.findById(uuid).orElseThrow(() -> {
-            throw new NoSuchElementException("해당 id를 가진 사용자가 없습니다. " + uuid);
+    public Member getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> {
+            throw new NoSuchElementException("해당 id를 가진 사용자가 없습니다. " + memberId);
         });
     }
 
@@ -104,11 +104,11 @@ public class MemberService {
         member.updatePassword(passwordHash);
     }
 
-    public Boolean toggleFollowUnfollow(Member fromMember, String toMemberUuid){
-        Member toMember = getMemberByUuid(toMemberUuid);
-        checkFollowToggleRequestValidity(fromMember,toMember);
+    public Boolean toggleFollowUnfollow(Member fromMember, String toMemberId) {
+        Member toMember = getMemberById(toMemberId);
+        checkFollowToggleRequestValidity(fromMember, toMember);
         Optional<Follow> follow = followRepository.findFollowByFromMemberAndToMember(fromMember, toMember);
-        if(follow.isPresent()){
+        if (follow.isPresent()) {
             followRepository.delete(follow.get());
             return false;
         }
@@ -117,26 +117,9 @@ public class MemberService {
         return true;
     }
 
-//    public Boolean toggleFollowUnfollow(Member user, String followerNickname) {
-//        checkFollowToggleRequestValidity(user, followerNickname);
-//        Member follower = getMemberByNickname(followerNickname);
-//
-//        if (user.isFollowing(follower)) {
-//            user.unfollow(follower);
-//            memberRepository.saveAndFlush(user);
-//            memberRepository.saveAndFlush(follower);
-//            return false;
-//        }
-//
-//        user.follow(follower);
-//        memberRepository.saveAndFlush(user);
-//        memberRepository.saveAndFlush(follower);
-//        return true;
-//    }
-
-    public void delete(Member executor, String uuid) {
-        checkDeleteRequestValidity(executor, uuid);
-        Member user = getMemberByUuid(uuid);
+    public void delete(Member executor, String memberId) {
+        checkDeleteRequestValidity(executor, memberId);
+        Member user = getMemberById(memberId);
 
         // 행위자가 자신과 같으면, 유예 기간이 있고, 아니면 추방
         if (executor.equals(user)) {
@@ -209,9 +192,9 @@ public class MemberService {
         checkToMemberIsFollowable(fromMember, toMember);
     }
 
-    private void checkDeleteRequestValidity(Member executor, String uuid) {
+    private void checkDeleteRequestValidity(Member executor, String memberId) {
         // 이 부분에서 유저의 존재성 역시 검증함.
-        Member user = getMemberByUuid(uuid);
+        Member user = getMemberById(memberId);
 
         // 관리자가 아닐 때는 본인이어야 함.
         if (!executor.getRoles().isAdmin() && !executor.equals(user)) {
