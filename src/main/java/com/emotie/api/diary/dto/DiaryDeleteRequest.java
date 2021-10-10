@@ -10,13 +10,13 @@ import java.util.List;
 @Getter
 public class DiaryDeleteRequest {
 
-    private final List<Integer> id;
+    private final List<Long> diaryId;
 
     @Builder
     @JsonCreator
     public DiaryDeleteRequest(
-            @JsonProperty(value = "id", required = true) List<Integer> id
+            @JsonProperty(value = "diaryId", required = true) List<Long> diaryId
     ) {
-        this.id = id;
+        this.diaryId = diaryId;
     }
 }

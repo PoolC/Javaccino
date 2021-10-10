@@ -21,7 +21,7 @@ public abstract class Postings extends TimestampEntity {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
-    protected Integer id;
+    protected Long id;
 
     @ManyToOne(targetEntity = Member.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "writer_id", nullable = false)
