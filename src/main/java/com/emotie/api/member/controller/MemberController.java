@@ -56,17 +56,17 @@ public class MemberController {
     }
 
 
-    @PostMapping(value = "/follow/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/follow/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MemberFollowResponse> toggleMemberFollow(
-            @AuthenticationPrincipal Member user, @PathVariable String nickname
+            @AuthenticationPrincipal Member user, @PathVariable String memberId
     ) throws Exception {
-        Boolean isFollowing = memberService.toggleFollowUnfollow(user, nickname);
+        Boolean isFollowing = memberService.toggleFollowUnfollow(user, memberId);
         return ResponseEntity.ok(new MemberFollowResponse(isFollowing));
     }
 
-    @DeleteMapping("/{nickname}")
-    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal Member executor, @PathVariable String nickname) throws Exception {
-        memberService.delete(executor, nickname);
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal Member executor, @PathVariable String memberId) throws Exception {
+        memberService.delete(executor, memberId);
         return ResponseEntity.ok().build();
     }
 }

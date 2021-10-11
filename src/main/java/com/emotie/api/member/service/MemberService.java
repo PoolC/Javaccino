@@ -6,10 +6,7 @@ import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.domain.EmotionScore;
-import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.domain.MemberRole;
-import com.emotie.api.member.domain.MemberRoles;
+import com.emotie.api.member.domain.*;
 import com.emotie.api.member.dto.MemberCreateRequest;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.dto.PasswordCheckRequest;
@@ -17,12 +14,14 @@ import com.emotie.api.member.dto.PasswordUpdateRequest;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
 import com.emotie.api.member.repository.EmotionScoreRepository;
+import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,7 +30,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final EmotionRepository emotionRepository;
     private final EmotionScoreRepository emotionScoreRepository;
-
+    private final FollowRepository followRepository;
     private final PasswordHashProvider passwordHashProvider;
 
     public Member getMemberByEmail(String email) {
@@ -56,6 +55,12 @@ public class MemberService {
     public Member getMemberByNickname(String nickname) {
         return memberRepository.findByEmail(nickname).orElseThrow(() -> {
             throw new NoSuchElementException("해당 닉네임을 가진 사용자가 없습니다.");
+        });
+    }
+
+    public Member getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> {
+            throw new NoSuchElementException("해당 id를 가진 사용자가 없습니다. " + memberId);
         });
     }
 
@@ -99,26 +104,22 @@ public class MemberService {
         member.updatePassword(passwordHash);
     }
 
-    public Boolean toggleFollowUnfollow(Member user, String followerNickname) {
-        checkFollowToggleRequestValidity(user, followerNickname);
-        Member follower = getMemberByNickname(followerNickname);
-
-        if (user.isFollowing(follower)) {
-            user.unfollow(follower);
-            memberRepository.saveAndFlush(user);
-            memberRepository.saveAndFlush(follower);
+    public Boolean toggleFollowUnfollow(Member fromMember, String toMemberId) {
+        Member toMember = getMemberById(toMemberId);
+        checkFollowToggleRequestValidity(fromMember, toMember);
+        Optional<Follow> follow = followRepository.findFollowByFromMemberAndToMember(fromMember, toMember);
+        if (follow.isPresent()) {
+            followRepository.delete(follow.get());
             return false;
         }
-
-        user.follow(follower);
-        memberRepository.saveAndFlush(user);
-        memberRepository.saveAndFlush(follower);
+        Follow newFollow = Follow.builder().fromMember(fromMember).toMember(toMember).build();
+        followRepository.save(newFollow);
         return true;
     }
 
-    public void delete(Member executor, String nickname) {
-        checkDeleteRequestValidity(executor, nickname);
-        Member user = getMemberByNickname(nickname);
+    public void delete(Member executor, String memberId) {
+        checkDeleteRequestValidity(executor, memberId);
+        Member user = getMemberById(memberId);
 
         // 행위자가 자신과 같으면, 유예 기간이 있고, 아니면 추방
         if (executor.equals(user)) {
@@ -186,14 +187,14 @@ public class MemberService {
         request.checkPasswordMatches();
     }
 
-    private void checkFollowToggleRequestValidity(Member member, String nickname) {
-        checkAuthorized(member);
-        checkNicknameIsFollowable(member, nickname);
+    private void checkFollowToggleRequestValidity(Member fromMember, Member toMember) {
+        checkAuthorized(fromMember);
+        checkToMemberIsFollowable(fromMember, toMember);
     }
 
-    private void checkDeleteRequestValidity(Member executor, String nickname) {
+    private void checkDeleteRequestValidity(Member executor, String memberId) {
         // 이 부분에서 유저의 존재성 역시 검증함.
-        Member user = getMemberByNickname(nickname);
+        Member user = getMemberById(memberId);
 
         // 관리자가 아닐 때는 본인이어야 함.
         if (!executor.getRoles().isAdmin() && !executor.equals(user)) {
@@ -221,10 +222,9 @@ public class MemberService {
         if (member1.equals(member2)) throw new CannotFollowException("자기 자신을 팔로우할 수는 없습니다.");
     }
 
-    private void checkNicknameIsFollowable(Member user, String nickname) {
-        Member follower = getMemberByNickname(nickname);
-        MemberRoles roles = follower.getRoles();
-        checkDifferent(user, follower);
+    private void checkToMemberIsFollowable(Member fromMember, Member toMember) {
+        MemberRoles roles = toMember.getRoles();
+        checkDifferent(fromMember, toMember);
         if (!roles.isAcceptedMember()) {
             throw new CannotFollowException("해당 사용자는 아직 인증되지 않아, 팔로우 신청할 수 없습니다.");
         }
