@@ -51,7 +51,6 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
-                .issuedDate(LocalDate.now())
                 .emotion(null)
                 .content(newContent)
                 .isOpened(false)
@@ -72,7 +71,6 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
-                .issuedDate(LocalDate.now())
                 .emotion(testEmotion)
                 .content(" ")
                 .isOpened(false)
@@ -93,7 +91,6 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = "";
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
-                .issuedDate(LocalDate.now())
                 .emotion(testEmotion)
                 .content(newContent)
                 .isOpened(false)
@@ -114,7 +111,6 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
-                .issuedDate(LocalDate.now())
                 .emotion(invalidEmotion)
                 .content(newContent)
                 .isOpened(false)
@@ -136,7 +132,6 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryCreateRequest diaryCreateRequest = DiaryCreateRequest.builder()
-                .issuedDate(LocalDate.now())
                 .emotion(testEmotion)
                 .content(newContent)
                 .isOpened(false)
@@ -253,7 +248,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(updatedContent)
                 .emotion(null)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -278,7 +272,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(null)
                 .emotion(testEmotion)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -303,7 +296,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -328,7 +320,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -353,7 +344,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -377,7 +367,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(updatedContent)
                 .emotion(testEmotion)
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -399,7 +388,6 @@ public class DiaryApiTest extends AcceptanceTest {
                 .content(originalContent)
                 .emotion(otherEmotion.getEmotion())
                 .isOpened(false)
-                .issuedDate(LocalDate.now())
                 .build();
 
         //when
@@ -435,7 +423,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = "";
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -454,7 +442,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = viewerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -473,7 +461,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId, invalidId))
+                .diaryId(List.of(openedDiaryId, invalidId))
                 .build();
 
         //when
@@ -492,7 +480,7 @@ public class DiaryApiTest extends AcceptanceTest {
         //given
         String accessToken = writerLogin();
         DiaryDeleteRequest request = DiaryDeleteRequest.builder()
-                .id(List.of(openedDiaryId))
+                .diaryId(List.of(openedDiaryId))
                 .build();
 
         //when
@@ -762,7 +750,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(Integer diaryId) {
+    private static ExtractableResponse<Response> diaryReadRequest(Long diaryId) {
         return RestAssured
                 .given().log().all()
                 .when().get("/diaries/{diaryId}", diaryId)
@@ -770,7 +758,7 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadRequest(String accessToken, Integer diaryId) {
+    private static ExtractableResponse<Response> diaryReadRequest(String accessToken, Long diaryId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -812,7 +800,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     private static ExtractableResponse<Response> diaryUpdateRequest(
-            String accessToken, DiaryUpdateRequest request, Integer diaryId
+            String accessToken, DiaryUpdateRequest request, Long diaryId
     ) {
         return RestAssured
                 .given().log().all()

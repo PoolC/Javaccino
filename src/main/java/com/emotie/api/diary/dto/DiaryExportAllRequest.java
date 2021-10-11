@@ -5,5 +5,6 @@ import lombok.Builder;
 public class DiaryExportAllRequest {
 
     @Builder
-    public DiaryExportAllRequest() {}
+    public DiaryExportAllRequest() {
+    }
 }

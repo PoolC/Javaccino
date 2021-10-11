@@ -3,12 +3,12 @@ package com.emotie.api.diary.service;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.diary.exception.PeekingPrivatePostException;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.diary.dto.DiaryCreateRequest;
 import com.emotie.api.diary.dto.DiaryDeleteRequest;
+import com.emotie.api.diary.dto.DiaryReadResponse;
 import com.emotie.api.diary.dto.DiaryUpdateRequest;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +35,13 @@ public class DiaryService {
         );
     }
 
-    public Diary read(Member user, Integer diaryId) {
+    public DiaryReadResponse read(Member user, Long diaryId) {
         Diary diary = getDiaryById(diaryId);
-        return diary.read(user);
+        return new DiaryReadResponse(diary.read(user));
     }
 
     @Deprecated
-    public String update(Member user, Integer diaryId, DiaryUpdateRequest request) {
+    public String update(Member user, Long diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
         Emotion originalEmotion = diary.getEmotion();
 
@@ -57,21 +57,21 @@ public class DiaryService {
         return originalEmotion.getEmotion();
     }
 
-    public List<Diary> delete(Member user, DiaryDeleteRequest request) {
-        Set<Integer> id = new HashSet<>(request.getId());
+    public List<String> delete(Member user, DiaryDeleteRequest request) {
+        Set<Long> id = new HashSet<>(request.getDiaryId());
         checkDeleteListValidity(user, id);
-        LinkedList<Diary> diaries = new LinkedList<>();
+        LinkedList<String> emotions = new LinkedList<>();
         id.stream().map(this::getDiaryById).forEach(
                 (diary) -> {
-                    diaries.add(diary);
+                    emotions.add(diary.getEmotion().getEmotion());
                     diaryRepository.delete(diary);
                 }
         );
 
-        return diaries;
+        return emotions;
     }
 
-    private Diary getDiaryById(Integer diaryId) {
+    private Diary getDiaryById(Long diaryId) {
         return diaryRepository.findById(diaryId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
         );
@@ -89,7 +89,7 @@ public class DiaryService {
         diary.updateOpenness(updateRequest.getIsOpened());
     }
 
-    private void checkDeleteListValidity(Member user, Set<Integer> id) {
+    private void checkDeleteListValidity(Member user, Set<Long> id) {
         id.forEach(
                 (diaryId) -> {
                     Diary diary = getDiaryById(diaryId);
