@@ -538,7 +538,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = "";
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -552,7 +552,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -566,7 +566,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -580,7 +580,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
@@ -594,7 +594,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, authorizedMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
@@ -608,15 +608,15 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().as(MemberFollowResponse.class))
                 .hasFieldOrPropertyWithValue("isFollowing", true);
         assertThat(followRepository.findAll().size()).isEqualTo(1);
-        assertThat(followRepository.findAll().get(0).getFromMember().getUUID()).isEqualTo(authorizedMemberUuid);
-        assertThat(followRepository.findAll().get(0).getToMember().getUUID()).isEqualTo(followeeMemberUuid);
+        assertThat(followRepository.findAll().get(0).getFromMember().getUUID()).isEqualTo(authorizedMemberId);
+        assertThat(followRepository.findAll().get(0).getToMember().getUUID()).isEqualTo(followeeMemberId);
     }
 
     @Test
@@ -627,7 +627,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberUuid);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -647,7 +647,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = "";
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberUuid);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -661,7 +661,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberUuid);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -675,7 +675,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, notExistMemberUuid);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, notExistMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -689,7 +689,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken,unAuthorizedMemberUuid);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -707,7 +707,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = adminLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, unAuthorizedMemberUuid);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -772,21 +772,21 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     private ExtractableResponse<Response> memberFollowRequest(
-            String accessToken, String uuid
+            String accessToken, String memberId
     ) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().post("/members/follow/{uuid}", uuid)
+                .when().post("/members/follow/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }
 
-    private ExtractableResponse<Response> memberWithdrawalRequest(String accessToken, String uuid) {
+    private ExtractableResponse<Response> memberWithdrawalRequest(String accessToken, String memberId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().delete("/members/{uuid}", uuid)
+                .when().delete("/members/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }

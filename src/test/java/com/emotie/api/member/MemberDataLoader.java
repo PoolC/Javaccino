@@ -34,10 +34,10 @@ public class MemberDataLoader implements CommandLineRunner {
             notExistEmail = "notExist@gmail.com",
             password = "password123!", wrongPassword = "wrongPassword",
             resetPassword = "resetPassword123!",
-            authorizedMemberUuid = UUID.randomUUID().toString(),
-            unAuthorizedMemberUuid = UUID.randomUUID().toString(),
-            followeeMemberUuid = UUID.randomUUID().toString(),
-            notExistMemberUuid = "notExistMemberUuid";
+            authorizedMemberId = UUID.randomUUID().toString(),
+            unAuthorizedMemberId = UUID.randomUUID().toString(),
+            followeeMemberId = UUID.randomUUID().toString(),
+            notExistMemberId = "notExistMemberUuid";
 
     public static String authorizationToken = "authorization_token", passwordResetToken = "password_reset_token";
 
@@ -48,7 +48,7 @@ public class MemberDataLoader implements CommandLineRunner {
     public void run(String... args) {
         memberRepository.save(
                 Member.builder()
-                        .UUID(authorizedMemberUuid)
+                        .UUID(authorizedMemberId)
                         .email(authorizedEmail)
                         .nickname(authorizedNickname)
                         .passwordHash(passwordHashProvider.encodePassword(password))
@@ -64,7 +64,7 @@ public class MemberDataLoader implements CommandLineRunner {
                         .build());
         memberRepository.save(
                 Member.builder()
-                        .UUID(unAuthorizedMemberUuid)
+                        .UUID(unAuthorizedMemberId)
                         .email(unauthorizedEmail)
                         .nickname(unauthorizedEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
@@ -96,7 +96,7 @@ public class MemberDataLoader implements CommandLineRunner {
                         .build());
         memberRepository.save(
                 Member.builder()
-                        .UUID(followeeMemberUuid)
+                        .UUID(followeeMemberId)
                         .email(followeeEmail)
                         .nickname(followeeEmail)
                         .passwordHash(passwordHashProvider.encodePassword(password))
