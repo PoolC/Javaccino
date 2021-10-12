@@ -268,7 +268,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     /*
-        4. 방명록 신고하기(toggle)
+        4. 방명록 신고하기
      */
     @Test
     @DisplayName("테스트 04-01: 방명록 신고 실패 [403]; 로그인하지 않았을 때")
@@ -340,137 +340,10 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     /*
-    5. 주인장이 방명록 가리기(Global Blind) (toggle)
+        5. 방명록 삭제
      */
     @Test
-    @DisplayName("테스트 05-01: Global 방명록 가리기 실패 [403]; 방명록 주인장이 아닐 때")
-    public void GLOBAL_방명록_가리기_실패_FORBIDDEN() throws Exception {
-
-        // given
-        String accessToken = authorizedLogin(); ///
-
-        // when
-        ExtractableResponse<Response> response = guestbookGlobalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 05-02: Global 방명록 가리기 실패 [404]; 해당 guestbookId가 없을 때")
-    public void GLOBAL_방명록_가리기_실패_NOT_FOUND() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookGlobalBlindRequest(accessToken, notExistId); ///
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-    }
-
-    @Test
-    @DisplayName("테스트 05-03: Global 방명록 가리기 성공 [200]; isGlobalBlinded = true")
-    public void GLOBAL_방명록_가리기_실패_OK_1() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookGlobalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookGlobalBlindResponse.class))
-                .hasFieldOrPropertyWithValue("isGlobalBlinded", true);
-    }
-
-    @Test
-    @DisplayName("테스트 05-04: Global 방명록 가리기 성공 [200]; isGlobalBlinded = false")
-    public void GLOBAL_방명록_가리기_실패_OK_2() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookGlobalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookGlobalBlindResponse.class))
-                .hasFieldOrPropertyWithValue("isGlobalBlinded", false);
-    }
-
-
-    /*
-    6. 사용자가 방명록 가리기(Local Blind) (toggle)
-     */
-    @Test
-    @DisplayName("테스트 06-01: Local 방명록 가리기 실패 [403]; 로그인하지 않았을 때")
-    public void LOCAL_방명록_가리기_실패_FORBIDDEN() throws Exception {
-
-        // given
-        String accessToken = ""; ///
-
-        // when
-        ExtractableResponse<Response> response = guestbookLocalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 06-02: Local 방명록 가리기 실패 [404]; 해당 guestbookId가 없을 때")
-    public void LOCAL_방명록_가리기_실패_NOT_FOUND() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookLocalBlindRequest(accessToken, notExistId); ///
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-    }
-
-    @Test
-    @DisplayName("테스트 06-03: Local 방명록 가리기 성공 [200]; isLocalBlinded = true")
-    public void LOCAL_방명록_가리기_실패_OK_1() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookLocalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookLocalBlindResponse.class))
-                .hasFieldOrPropertyWithValue("isLocalBlinded", true);
-    }
-
-    @Test
-    @DisplayName("테스트 06-04: Local 방명록 가리기 성공 [200]; isLocalBlinded = false")
-    public void LOCAL_방명록_가리기_실패_OK_2() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookLocalBlindRequest(accessToken, existId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookLocalBlindResponse.class))
-                .hasFieldOrPropertyWithValue("isLocalBlinded", false);
-    }
-
-    /*
-        7. 방명록 삭제
-     */
-    @Test
-    @DisplayName("테스트 07-01: 방명록 삭제 실패 [403]; 방명록 주인장이나 작성자가 아닐 때")
+    @DisplayName("테스트 05-01: 방명록 삭제 실패 [403]; 방명록 주인장이나 작성자가 아닐 때")
     public void 방명록_삭제_실패_FORBIDDEN_1() throws Exception {
 
         // given
@@ -484,7 +357,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 07-02: 방명록 삭제 실패 [403]; 일정 횟수 이상 신고된 방명록일 때")
+    @DisplayName("테스트 05-02: 방명록 삭제 실패 [403]; 일정 횟수 이상 신고된 방명록일 때")
     public void 방명록_삭제_실패_FORBIDDEN_2() throws Exception {
 
         // given
@@ -498,7 +371,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 07-03: 방명록 삭제 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 05-03: 방명록 삭제 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
@@ -512,7 +385,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 07-04: 방명록 삭제 성공 [200]; 작성자가 삭제")
+    @DisplayName("테스트 05-04: 방명록 삭제 성공 [200]; 작성자가 삭제")
     public void 방명록_삭제_성공_OK_1() throws Exception {
 
         // given
@@ -526,7 +399,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 07-05: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
+    @DisplayName("테스트 05-05: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
     public void 방명록_삭제_성공_OK_2() throws Exception {
 
         // given
@@ -540,10 +413,10 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     /*
-        8. 방명록 전체 삭제
+        6. 방명록 전체 삭제
      */
     @Test
-    @DisplayName("테스트 08-01: 방명록 전체 삭제 실패 [403]; 방명록 주인장이 아닐 때")
+    @DisplayName("테스트 06-01: 방명록 전체 삭제 실패 [403]; 방명록 주인장이 아닐 때")
     public void 방명록_전체_삭제_실패_FORBIDDEN() throws Exception {
 
         // given
@@ -557,7 +430,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 08-02: 방명록 전체 삭제 실패 [404]; 해당 memberId가 없을 때")
+    @DisplayName("테스트 06-02: 방명록 전체 삭제 실패 [404]; 해당 memberId가 없을 때")
     public void 방명록_전체_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
@@ -571,7 +444,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 08-03: 방명록 전체 삭제 성공 [200];")
+    @DisplayName("테스트 06-03: 방명록 전체 삭제 성공 [200];")
     public void 방명록_전체_삭제_성공_OK() throws Exception {
 
         // given
@@ -618,29 +491,12 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookReportRequest(String accessToken, Long guestbookId) {
+    private static ExtractableResponse<Response> guestbookReportRequest(String accessToken, GuestbookReportRequest request, Long guestbookId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
+                .body(request).contentType(APPLICATION_JSON_VALUE)
                 .when().post("/guestbooks/report/{guestbookId}", guestbookId)
-                .then().log().all()
-                .extract();
-    }
-
-    private static ExtractableResponse<Response> guestbookGlobalBlindRequest(String accessToken, Long guestbookId) {
-        return RestAssured
-                .given().log().all()
-                .auth().oauth2(accessToken)
-                .when().post("/guestbooks/global_blind/{guestbookId}", guestbookId)
-                .then().log().all()
-                .extract();
-    }
-
-    private static ExtractableResponse<Response> guestbookLocalBlindRequest(String accessToken, Long guestbookId) {
-        return RestAssured
-                .given().log().all()
-                .auth().oauth2(accessToken)
-                .when().post("/guestbooks/local_blind/{guestbookId}", guestbookId)
                 .then().log().all()
                 .extract();
     }

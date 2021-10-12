@@ -2,6 +2,7 @@ package com.emotie.api.guestbook;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.guestbook.domain.Guestbook;
+import com.emotie.api.guestbook.dto.GuestbookReportRequest;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Gender;
@@ -39,7 +40,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
             createContent = "구독하고 갑ㄴ디ㅏ",
             changedContent = "구독하고 갑니다";
 
-    public static Long existId, almostReportedId, overReportedId, notExistId = -1L, globalBlindedId;
+    public static Long existId, almostReportedId, overReportedId, notExistId = -1L, ownerReportedId;
     public static Member writer, owner;
     public static Member[] reporters = new Member[Guestbook.reportCountThreshold];
 
@@ -113,9 +114,8 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .writer(writer)
                         .content("구독하고 갑니다~~")
                         .reportCount(0)
-                        .isGlobalBlinded(false)
+                        .isOwnerReported(false)
                         .build()).getId();
-        guestbookService.toggleReport(owner, existId);
 
         // 신고 과다 직전 방명록
         almostReportedId = guestbookRepository.save(
@@ -124,10 +124,10 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .writer(writer)
                         .content("신고 직전의 게시물")
                         .reportCount(0)
-                        .isGlobalBlinded(false)
+                        .isOwnerReported(false)
                         .build()).getId();
         for (int i = 0; i < Guestbook.reportCountThreshold - 1; i++) {
-            guestbookService.toggleReport(reporters[i], almostReportedId);
+            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason("신고 테스트를 하고 싶어서").build(), almostReportedId);
         }
 
         // 신고 과다 방명록
@@ -137,21 +137,24 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .writer(writer)
                         .content("신고가 너무 많아서 숨겨지게 될 방명록")
                         .reportCount(0)
-                        .isGlobalBlinded(false)
+                        .isOwnerReported(false)
                         .build()).getId();
-        for (int i = 0; i < 10; i++) {
-            guestbookService.toggleReport(reporters[i], overReportedId);
+        for (int i = 0; i < Guestbook.reportCountThreshold; i++) {
+            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason("신고 테스트를 하고 싶어서").build(), overReportedId);
         }
 
         // 주인장이 직접 가린 방명록
-        globalBlindedId = guestbookRepository.save(
+        ownerReportedId = guestbookRepository.save(
                 Guestbook.builder()
                         .owner(owner)
                         .writer(writer)
-                        .content("주인장이 직접 가린 방명록")
+                        .content("주인장이 신고한 방명록")
                         .reportCount(0)
-                        .isGlobalBlinded(true)
+                        .isOwnerReported(false)
                         .build()).getId();
+        guestbookService.report(owner, GuestbookReportRequest.builder().reason("주인장 신고 테스트를 하고 싶어서").build(), ownerReportedId);
+
+        // 페이지네이션 테스트
         for (int i = 49; i >= 0; i--) {
             guestbookRepository.save(
                     Guestbook.builder()
@@ -159,7 +162,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
                             .writer(writer)
                             .content(i + "번째 방명록 글")
                             .reportCount(0)
-                            .isGlobalBlinded(false)
+                            .isOwnerReported(false)
                             .build());
         }
 

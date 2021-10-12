@@ -74,10 +74,4 @@ public class Guestbook extends Postings {
             throw new UnauthorizedException("방명록 게시물을 삭제할 권한이 없습니다.");
         }
     }
-
-    public void checkOwner(Member user) {
-        if (!this.owner.equals(user)) {
-            throw new UnauthorizedException("방명록 게시물을 숨길 권한이 없습니다.");
-        }
-    }
 }
