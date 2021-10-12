@@ -4,6 +4,7 @@ import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.guestbook.domain.MemberLocalBlindGuestbook;
 import com.emotie.api.guestbook.domain.MemberReportGuestbook;
 import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookReportRequest;
 import com.emotie.api.guestbook.dto.GuestbookResponse;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
@@ -40,11 +41,9 @@ public class GuestbookService {
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE, Sort.by("createdAt").descending());
         // TODO: 코드 간결하게 바꾸기 가능?
         List<Guestbook> guestbooks;
-        if (user.equals(owner)) {
-            guestbooks = guestbookRepository.findForOwnerByOwner(owner, Guestbook.reportCountThreshold, pageable);
-        }
-        guestbooks = guestbookRepository.findForUserByOwner(owner, Guestbook.reportCountThreshold, pageable);
-        List<GuestbookResponse> guestbookResponses = guestbooks.stream()
+        List<GuestbookResponse> guestbookResponses;
+        guestbooks = guestbookRepository.findByOwner(owner, Guestbook.reportCountThreshold, pageable);
+        guestbookResponses = guestbooks.stream()
                 .map(GuestbookResponse::of)
                 .collect(Collectors.toList());
         return guestbookResponses;
@@ -72,23 +71,14 @@ public class GuestbookService {
         guestbookRepository.saveAndFlush(guestbook);
     }
 
-    public Boolean toggleReport(Member user, Long guestbookId) {
+    public void report(Member user, GuestbookReportRequest request, Long guestbookId) {
         checkToggleReportRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
-        Member writer = target.getWriter();
-        Optional<MemberReportGuestbook> memberReportGuestbook = memberReportGuestbookRepository.findByMemberAndGuestbook(user, target);
-        if (memberReportGuestbook.isPresent()) {
-            target.updateReportCount(true);
-            guestbookRepository.saveAndFlush(target);
-            memberRepository.saveAndFlush(writer);
-            memberReportGuestbookRepository.delete(memberReportGuestbook.get());
-            return false;
+        if (user.equals(target.getOwner())) {
+            target.ownerReport();
         }
-        target.updateReportCount(false);
         guestbookRepository.saveAndFlush(target);
-        memberRepository.saveAndFlush(writer);
-        memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target));
-        return true;
+        memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target, request.getReason()));
     }
 
     public void delete(Member executor, Long guestbookId) {
@@ -111,6 +101,7 @@ public class GuestbookService {
         });
     }
 
+    @Deprecated
     public Boolean toggleGlobalBlind(Member user, Long guestbookId) {
         checkToggleGlobalBlindRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
@@ -119,6 +110,7 @@ public class GuestbookService {
         return target.getIsGlobalBlinded();
     }
 
+    @Deprecated
     public Boolean toggleLocalBlind(Member user, Long guestbookId) {
         checkToggleLocalBlindRequestValidity(guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
