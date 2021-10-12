@@ -55,4 +55,11 @@ public abstract class Postings extends TimestampEntity {
     public int hashCode() {
         return Objects.hash(getId());
     }
+
+    public void addReportCount() {
+        this.reportCount++;
+        if (this.reportCount > reportCountThreshold) {
+            this.writer.addReportCount();
+        }
+    }
 }

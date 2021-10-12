@@ -48,7 +48,8 @@ public class Guestbook extends Postings {
     }
 
     public void ownerReport() {
-        this.isOwnerReported = !this.isOwnerReported;
+        this.isOwnerReported = true;
+        this.writer.addReportCount();
     }
 
     public void checkNotOverReported() {

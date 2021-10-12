@@ -251,6 +251,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.dateOfBirth = request.getDateOfBirth();
     }
 
+    public void addReportCount() {
+        this.reportCount++;
+    }
+
     // TODO: 자기자신을 팔로우할 수 없는 CannotFollowException과 합칠 수 있을까?
     public void checkNotOwner(String memberId) {
         if (this.UUID.equals(memberId)) {

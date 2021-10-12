@@ -71,6 +71,7 @@ public class GuestbookService {
         if (user.equals(target.getOwner())) {
             target.ownerReport();
         }
+        target.addReportCount();
         guestbookRepository.saveAndFlush(target);
         memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target, request.getReason()));
     }
