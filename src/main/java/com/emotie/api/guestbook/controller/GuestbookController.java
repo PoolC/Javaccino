@@ -18,18 +18,18 @@ import javax.validation.Valid;
 public class GuestbookController {
     private final GuestbookService guestbookService;
 
-    @GetMapping(value = "/user/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
-            @AuthenticationPrincipal Member user, @PathVariable String nickname, @RequestParam Integer page, @RequestParam Integer size
+            @AuthenticationPrincipal Member user, @PathVariable String memberId, @RequestParam Integer page, @RequestParam Integer size
     ) throws Exception {
-        return ResponseEntity.ok(new GuestbooksResponse(guestbookService.getAllBoards(user, nickname, page, size)));
+        return ResponseEntity.ok(new GuestbooksResponse(guestbookService.getAllBoards(user, memberId, page, size)));
     }
 
-    @PostMapping(value = "/user/{nickname}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/user/{memberId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createGuestbook(
-            @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookCreateRequest request, @PathVariable String nickname
+            @AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookCreateRequest request, @PathVariable String memberId
     ) throws Exception {
-        guestbookService.create(user, request, nickname);
+        guestbookService.create(user, request, memberId);
         return ResponseEntity.ok().build();
     }
 
@@ -54,9 +54,9 @@ public class GuestbookController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping(value = "/user/{nickname}")
-    public ResponseEntity<Void> clearGuestbook(@AuthenticationPrincipal Member user, @PathVariable String nickname) throws Exception {
-        guestbookService.clear(user, nickname);
+    @DeleteMapping(value = "/user/{memberId}")
+    public ResponseEntity<Void> clearGuestbook(@AuthenticationPrincipal Member user, @PathVariable String memberId) throws Exception {
+        guestbookService.clear(user, memberId);
         return ResponseEntity.ok().build();
     }
 

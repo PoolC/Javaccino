@@ -37,20 +37,20 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 01-02: 방명록 전체 조회 실패 [404]; 해당하는 회원이 없을 때")
+    @DisplayName("테스트 01-02: 방명록 전체 조회 실패 [404]; memberId에 해당하는 회원이 없을 때")
     public void 방명록_전체_조회_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistNickname, 0, pageSize); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, "", 0, pageSize); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -63,7 +63,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -77,7 +77,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -92,7 +92,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, ownerNickname, 1, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
         for (GuestbookResponse g : response.body().jsonPath().getList("data", GuestbookResponse.class)) {
             System.out.println(g.getContent());
         }
@@ -116,7 +116,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, ownerNickname);
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, owner.getUUID());
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -132,7 +132,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, ownerNickname);
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, owner.getUUID());
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
@@ -148,14 +148,14 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, writerNickname); ///
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, writer.getUUID()); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 02-04: 방명록 작성 실패 [404]; nickname에 해당하는 회원이 없을 때")
+    @DisplayName("테스트 02-04: 방명록 작성 실패 [404]; memberId에 해당하는 회원이 없을 때")
     public void 방명록_작성_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = writerLogin();
@@ -164,7 +164,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, notExistNickname); ///
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, ""); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -180,7 +180,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, ownerNickname);
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, owner.getUUID());
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -552,21 +552,21 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin(); ///
 
         // when
-        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, writerNickname);
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, writer.getUUID());
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 08-02: 방명록 전체 삭제 실패 [404]; 해당 nickname이 없을 때")
+    @DisplayName("테스트 08-02: 방명록 전체 삭제 실패 [404]; 해당 memberId가 없을 때")
     public void 방명록_전체_삭제_실패_NOT_FOUND() throws Exception {
 
         // given
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, notExistNickname); ///
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, ""); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -580,7 +580,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, ownerNickname);
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, owner.getUUID());
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -590,21 +590,21 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         private methods
      */
-    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String nickname, Integer page, Integer size) {
+    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String memberId, Integer page, Integer size) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().get("/guestbooks/user/{nickname}?page={page}&size={size}", nickname, page, size)
+                .when().get("/guestbooks/user/{memberId}?page={page}&size={size}", memberId, page, size)
                 .then().log().all()
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookCreateRequest(String accessToken, GuestbookCreateRequest request, String nickname) {
+    private static ExtractableResponse<Response> guestbookCreateRequest(String accessToken, GuestbookCreateRequest request, String memberId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
                 .body(request).contentType(APPLICATION_JSON_VALUE)
-                .when().post("/guestbooks/user/{nickname}", nickname)
+                .when().post("/guestbooks/user/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }
@@ -656,11 +656,11 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> guestbookDeleteAllRequest(String accessToken, String nickname) {
+    private static ExtractableResponse<Response> guestbookDeleteAllRequest(String accessToken, String memberId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().delete("/guestbooks/user/{nickname}", nickname)
+                .when().delete("/guestbooks/user/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }

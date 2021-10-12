@@ -261,14 +261,14 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     // TODO: 자기자신을 팔로우할 수 없는 CannotFollowException과 합칠 수 있을까?
-    public void checkNotOwner(String nickname) {
-        if (this.nickname.equals(nickname)) {
+    public void checkNotOwner(String memberId) {
+        if (this.UUID.equals(memberId)) {
             throw new MyselfException("자신의 방명록에는 글을 쓸 수 없습니다.");
         }
     }
 
-    public void checkOwner(String nickname) {
-        if (!this.nickname.equals(nickname)) {
+    public void checkOwner(String memberId) {
+        if (!this.UUID.equals(memberId)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
         }
     }

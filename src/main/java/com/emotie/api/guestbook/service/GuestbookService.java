@@ -32,9 +32,9 @@ public class GuestbookService {
     private final MemberReportGuestbookRepository memberReportGuestbookRepository;
     private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
-    public List<GuestbookResponse> getAllBoards(Member user, String nickname, Integer page, Integer size) {
-        checkGetAllBoardsRequestValidity(nickname);
-        Member owner = memberService.getMemberByNickname(nickname);
+    public List<GuestbookResponse> getAllBoards(Member user, String memberId, Integer page, Integer size) {
+        checkGetAllBoardsRequestValidity(memberId);
+        Member owner = memberService.getMemberById(memberId);
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
         // TODO: 코드 간결하게 바꾸기 가능?
         List<Guestbook> guestbooks;
@@ -48,9 +48,9 @@ public class GuestbookService {
         return guestbookResponses;
     }
 
-    public void create(Member user, GuestbookCreateRequest request, String nickname) {
-        checkCreateRequestValidity(user, nickname);
-        Member owner = memberService.getMemberByNickname(nickname);
+    public void create(Member user, GuestbookCreateRequest request, String memberId) {
+        checkCreateRequestValidity(user, memberId);
+        Member owner = memberService.getMemberById(memberId);
         guestbookRepository.save(
                 Guestbook.builder()
                         .owner(owner)
@@ -100,9 +100,9 @@ public class GuestbookService {
     }
 
     // TODO: cascade 자동으로 할수있는지 확인
-    public void clear(Member user, String nickname) {
-        checkClearRequestValidity(user, nickname);
-        Member owner = memberService.getMemberByNickname(nickname);
+    public void clear(Member user, String memberId) {
+        checkClearRequestValidity(user, memberId);
+        Member owner = memberService.getMemberById(memberId);
         List<Guestbook> guestbookList = guestbookRepository.findByOwner(owner);
         guestbookList.stream().forEach(guestbook -> {
             memberReportGuestbookRepository.deleteAllByGuestbook(guestbook);
@@ -135,13 +135,13 @@ public class GuestbookService {
     유효성 검사 메서드
     (content null 여부는 Request 검증에서 체크)
      */
-    private void checkGetAllBoardsRequestValidity(String nickname) {
-        memberService.getMemberByNickname(nickname);
+    private void checkGetAllBoardsRequestValidity(String memberId) {
+        memberService.getMemberById(memberId);
     }
 
-    private void checkCreateRequestValidity(Member user, String nickname) {
-        memberService.getMemberByNickname(nickname);
-        user.checkNotOwner(nickname);
+    private void checkCreateRequestValidity(Member user, String memberId) {
+        memberService.getMemberById(memberId);
+        user.checkNotOwner(memberId);
     }
 
     private void checkUpdateRequestValidity(Member user, Long guestbookId) {
@@ -161,9 +161,9 @@ public class GuestbookService {
         guestbook.checkNotOverReported();
     }
 
-    private void checkClearRequestValidity(Member user, String nickname) {
-        memberService.getMemberByNickname(nickname);
-        user.checkOwner(nickname);
+    private void checkClearRequestValidity(Member user, String memberId) {
+        memberService.getMemberById(memberId);
+        user.checkOwner(memberId);
     }
 
     private void checkToggleGlobalBlindRequestValidity(Member user, Long guestbookId) {
