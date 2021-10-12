@@ -32,10 +32,12 @@ public class GuestbookService {
     private final MemberReportGuestbookRepository memberReportGuestbookRepository;
     private final MemberLocalBlindGuestbookRepository memberLocalBlindGuestbookRepository;
 
-    public List<GuestbookResponse> getAllBoards(Member user, String memberId, Integer page, Integer size) {
+    public static final Integer PAGE_SIZE = 10;
+
+    public List<GuestbookResponse> getAllBoards(Member user, String memberId, Integer page) {
         checkGetAllBoardsRequestValidity(memberId);
         Member owner = memberService.getMemberById(memberId);
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE, Sort.by("createdAt").descending());
         // TODO: 코드 간결하게 바꾸기 가능?
         List<Guestbook> guestbooks;
         if (user.equals(owner)) {

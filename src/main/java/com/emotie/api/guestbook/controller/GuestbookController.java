@@ -20,9 +20,9 @@ public class GuestbookController {
 
     @GetMapping(value = "/user/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<GuestbooksResponse> getAllGuestbooks(
-            @AuthenticationPrincipal Member user, @PathVariable String memberId, @RequestParam Integer page, @RequestParam Integer size
+            @AuthenticationPrincipal Member user, @PathVariable String memberId, @RequestParam Integer page
     ) throws Exception {
-        return ResponseEntity.ok(new GuestbooksResponse(guestbookService.getAllBoards(user, memberId, page, size)));
+        return ResponseEntity.ok(new GuestbooksResponse(guestbookService.getAllBoards(user, memberId, page)));
     }
 
     @PostMapping(value = "/user/{memberId}", consumes = MediaType.APPLICATION_JSON_VALUE)

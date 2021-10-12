@@ -25,8 +25,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class GuestbookAcceptanceTest extends AcceptanceTest {
 
-    public static Integer pageSize = 15;
-
     /*
         1. 방명록 전체 조회
      */
@@ -37,7 +35,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -50,7 +48,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistMemberId, 0, pageSize); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistMemberId, 1); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -63,7 +61,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -77,7 +75,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -92,7 +90,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 2, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 2);
         for (GuestbookResponse g : response.body().jsonPath().getList("data", GuestbookResponse.class)) {
             System.out.println(g.getContent());
         }
@@ -590,11 +588,11 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     /*
         private methods
      */
-    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String memberId, Integer page, Integer size) {
+    private static ExtractableResponse<Response> getAllGuestbookRequest(String accessToken, String memberId, Integer page) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().get("/guestbooks/user/{memberId}?page={page}&size={size}", memberId, page, size)
+                .when().get("/guestbooks/user/{memberId}?page={page}&size={size}", memberId, page)
                 .then().log().all()
                 .extract();
     }
