@@ -80,14 +80,12 @@ public class GuestbookService {
         if (memberReportGuestbook.isPresent()) {
             target.updateReportCount(true);
             guestbookRepository.saveAndFlush(target);
-            writer.updateReportCount(true);
             memberRepository.saveAndFlush(writer);
             memberReportGuestbookRepository.delete(memberReportGuestbook.get());
             return false;
         }
         target.updateReportCount(false);
         guestbookRepository.saveAndFlush(target);
-        writer.updateReportCount(false);
         memberRepository.saveAndFlush(writer);
         memberReportGuestbookRepository.save(new MemberReportGuestbook(user, target));
         return true;
