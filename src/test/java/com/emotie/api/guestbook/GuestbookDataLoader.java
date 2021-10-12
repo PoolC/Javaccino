@@ -33,7 +33,7 @@ public class GuestbookDataLoader implements CommandLineRunner {
             writerNickname = "Writer Kim",
             ownerNickname = "Owner Park",
             reporterNickname = "reporter no. ",
-            notExistNickname = "Not exist nickname",
+            notExistMemberId = "not exist memberId",
             guestbookPassword = "qhdks1!",
             introduction = "We are Guestbook test users",
             createContent = "구독하고 갑ㄴ디ㅏ",

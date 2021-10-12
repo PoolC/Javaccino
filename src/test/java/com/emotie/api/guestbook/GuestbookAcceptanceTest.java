@@ -50,7 +50,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, "", 0, pageSize); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistMemberId, 0, pageSize); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -63,7 +63,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -77,7 +77,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -92,7 +92,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1, pageSize);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 2, pageSize);
         for (GuestbookResponse g : response.body().jsonPath().getList("data", GuestbookResponse.class)) {
             System.out.println(g.getContent());
         }
@@ -164,7 +164,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
                 .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, ""); ///
+        ExtractableResponse<Response> response = guestbookCreateRequest(accessToken, guestbookCreateRequest, notExistMemberId); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -566,7 +566,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ownerLogin();
 
         // when
-        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, ""); ///
+        ExtractableResponse<Response> response = guestbookDeleteAllRequest(accessToken, notExistMemberId); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
