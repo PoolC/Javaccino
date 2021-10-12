@@ -119,7 +119,7 @@ public class GuestbookService {
 
     private void checkDeleteRequestValidity(Member user, Long guestbookId) {
         Guestbook guestbook = getGuestbookById(guestbookId);
-        guestbook.checkWriterOrOwner(user);
+        guestbook.checkWriter(user);
         guestbook.checkNotOverReported();
     }
 

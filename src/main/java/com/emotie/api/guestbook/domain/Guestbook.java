@@ -68,10 +68,4 @@ public class Guestbook extends Postings {
             throw new MyselfException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
         }
     }
-
-    public void checkWriterOrOwner(Member user) {
-        if (!(this.writer.equals(user) || this.owner.equals(user))) {
-            throw new UnauthorizedException("방명록 게시물을 삭제할 권한이 없습니다.");
-        }
-    }
 }

@@ -398,20 +398,6 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
-    @Test
-    @DisplayName("테스트 05-05: 방명록 삭제 성공 [200]; 방명록 주인장이 삭제")
-    public void 방명록_삭제_성공_OK_2() throws Exception {
-
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = guestbookDeleteRequest(accessToken, almostReportedId);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
     /*
         6. 방명록 전체 삭제
      */
