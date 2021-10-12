@@ -1,6 +1,9 @@
 package com.emotie.api.guestbook.controller;
 
-import com.emotie.api.guestbook.dto.*;
+import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookReportRequest;
+import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
+import com.emotie.api.guestbook.dto.GuestbooksResponse;
 import com.emotie.api.guestbook.service.GuestbookService;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
@@ -43,9 +46,9 @@ public class GuestbookController {
     }
 
     @PostMapping(value = "/report/{guestbookId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<GuestbookReportResponse> toggleGuestbookReport(@AuthenticationPrincipal Member user, @PathVariable Long guestbookId) throws Exception {
-        Boolean isReported = guestbookService.toggleReport(user, guestbookId);
-        return ResponseEntity.ok(new GuestbookReportResponse(isReported));
+    public ResponseEntity<Void> toggleGuestbookReport(@AuthenticationPrincipal Member user, @RequestBody @Valid GuestbookReportRequest request, @PathVariable Long guestbookId) throws Exception {
+        guestbookService.report(user, request, guestbookId);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping(value = "/{guestbookId}")

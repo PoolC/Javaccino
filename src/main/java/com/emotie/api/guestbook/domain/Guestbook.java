@@ -19,18 +19,18 @@ public class Guestbook extends Postings {
     @JoinColumn(name = "owner_id", nullable = false)
     private Member owner;
 
-    @Column(name = "is_global_blinded", nullable = false)
-    private Boolean isGlobalBlinded;
+    @Column(name = "is_owner_reported", nullable = false)
+    private Boolean isOwnerReported;
 
     @Builder
     public Guestbook(
-            Member owner, Member writer, String content, Integer reportCount, Boolean isGlobalBlinded
+            Member owner, Member writer, String content, Integer reportCount, Boolean isOwnerReported
     ) {
         this.owner = owner;
         this.writer = writer;
         this.content = content;
         this.reportCount = reportCount;
-        this.isGlobalBlinded = isGlobalBlinded;
+        this.isOwnerReported = isOwnerReported;
     }
 
     @Override
@@ -47,18 +47,8 @@ public class Guestbook extends Postings {
         this.content = request.getContent();
     }
 
-    // TODO: Reportable 인터페이스로 Member와 Postings를 묶을까?
-    public void updateReportCount(Boolean isReported) {
-        if (isReported) {
-            if (this.reportCount <= 0) throw new ArithmeticException("신고 카운트는 음수가 될 수 없습니다");
-            this.reportCount--;
-            return;
-        }
-        this.reportCount++;
-    }
-
-    public void globalBlind() {
-        this.isGlobalBlinded = !this.isGlobalBlinded;
+    public void ownerReport() {
+        this.isOwnerReported = !this.isOwnerReported;
     }
 
     public void checkNotOverReported() {
@@ -79,7 +69,6 @@ public class Guestbook extends Postings {
         }
     }
 
-    // 로직 수정?
     public void checkWriterOrOwner(Member user) {
         if (!(this.writer.equals(user) || this.owner.equals(user))) {
             throw new UnauthorizedException("방명록 게시물을 삭제할 권한이 없습니다.");

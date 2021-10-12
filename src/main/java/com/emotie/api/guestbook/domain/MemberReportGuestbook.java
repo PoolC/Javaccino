@@ -24,11 +24,15 @@ public class MemberReportGuestbook {
     @JoinColumn(name = "guestbook_id")
     private Guestbook guestbook;
 
+    @Column(name = "reason", nullable = false)
+    protected String reason;
+
     @Builder
     public MemberReportGuestbook(
-            Member member, Guestbook guestbook
+            Member member, Guestbook guestbook, String reason
     ) {
         this.member = member;
         this.guestbook = guestbook;
+        this.reason = reason;
     }
 }

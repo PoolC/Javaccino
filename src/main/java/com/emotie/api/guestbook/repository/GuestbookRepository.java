@@ -16,11 +16,9 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Long> {
 
     Optional<Guestbook> findById(Long guestbookId);
 
-    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold AND g.isGlobalBlinded = false")
-    List<Guestbook> findForUserByOwner(Member owner, Integer reportCountThreshold, Pageable pageable);
-
-    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold")
-    List<Guestbook> findForOwnerByOwner(Member owner, Integer reportCountThreshold, Pageable pageable);
+    // TODO: MemberReportGuestbook과 join해서 쿼리단에서 개별 신고된 게시물 거를 수 있도록
+    @Query(value = "SELECT g FROM guestbooks g WHERE g.owner = :owner AND g.reportCount < :reportCountThreshold AND g.isOwnerReported = false")
+    List<Guestbook> findByOwner(Member owner, Integer reportCountThreshold, Pageable pageable);
 
     @Transactional
     void deleteById(Long guestbookId);
