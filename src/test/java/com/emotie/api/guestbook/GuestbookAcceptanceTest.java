@@ -592,7 +592,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().get("/guestbooks/user/{memberId}?page={page}&size={size}", memberId, page)
+                .when().get("/guestbooks/user/{memberId}?page={page}", memberId, page)
                 .then().log().all()
                 .extract();
     }
