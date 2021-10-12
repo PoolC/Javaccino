@@ -5,6 +5,7 @@ import com.emotie.api.guestbook.domain.Guestbook;
 import com.emotie.api.guestbook.dto.GuestbookReportRequest;
 import com.emotie.api.guestbook.repository.GuestbookRepository;
 import com.emotie.api.guestbook.service.GuestbookService;
+import com.emotie.api.member.MemberDataLoader;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.domain.MemberRole;
@@ -38,10 +39,11 @@ public class GuestbookDataLoader implements CommandLineRunner {
             guestbookPassword = "qhdks1!",
             introduction = "We are Guestbook test users",
             createContent = "구독하고 갑ㄴ디ㅏ",
-            changedContent = "구독하고 갑니다";
+            changedContent = "구독하고 갑니다",
+            reportReason = "신고 테스트를 하고 싶어서";
 
-    public static Long existId, almostReportedId, overReportedId, notExistId = -1L, ownerReportedId;
-    public static Member writer, owner;
+    public static Long existId, almostReportedId, overReportedId, notExistId = -1L, authReportedId, ownerReportedId;
+    public static Member writer, owner, auth;
     public static Member[] reporters = new Member[Guestbook.reportCountThreshold];
 
     @Override
@@ -82,6 +84,8 @@ public class GuestbookDataLoader implements CommandLineRunner {
                 .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
                 .build();
         memberRepository.save(owner);
+
+        auth = memberRepository.findByEmail(MemberDataLoader.authorizedEmail).get();
 
         // 신고자
         for (int i = 0; i < Guestbook.reportCountThreshold; i++) {
@@ -127,8 +131,31 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .isOwnerReported(false)
                         .build()).getId();
         for (int i = 0; i < Guestbook.reportCountThreshold - 1; i++) {
-            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason("신고 테스트를 하고 싶어서").build(), almostReportedId);
+            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason(reportReason).build(), almostReportedId);
         }
+
+        // auth 유저가 신고한 방명록
+        authReportedId = guestbookRepository.save(
+                Guestbook.builder()
+                        .owner(owner)
+                        .writer(writer)
+                        .content("auth가 신고한 방명록")
+                        .reportCount(0)
+                        .isOwnerReported(false)
+                        .build()).getId();
+        guestbookService.report(auth, GuestbookReportRequest.builder().reason("auth " + reportReason).build(), authReportedId);
+
+        // 주인장이 신고한 방명록
+        ownerReportedId = guestbookRepository.save(
+                Guestbook.builder()
+                        .owner(owner)
+                        .writer(writer)
+                        .content("주인장이 신고한 방명록")
+                        .reportCount(0)
+                        .isOwnerReported(false)
+                        .build()).getId();
+        guestbookService.report(owner, GuestbookReportRequest.builder().reason("주인장 " + reportReason).build(), ownerReportedId);
+
 
         // 신고 과다 방명록
         overReportedId = guestbookRepository.save(
@@ -140,19 +167,8 @@ public class GuestbookDataLoader implements CommandLineRunner {
                         .isOwnerReported(false)
                         .build()).getId();
         for (int i = 0; i < Guestbook.reportCountThreshold; i++) {
-            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason("신고 테스트를 하고 싶어서").build(), overReportedId);
+            guestbookService.report(reporters[i], GuestbookReportRequest.builder().reason(reportReason).build(), overReportedId);
         }
-
-        // 주인장이 직접 가린 방명록
-        ownerReportedId = guestbookRepository.save(
-                Guestbook.builder()
-                        .owner(owner)
-                        .writer(writer)
-                        .content("주인장이 신고한 방명록")
-                        .reportCount(0)
-                        .isOwnerReported(false)
-                        .build()).getId();
-        guestbookService.report(owner, GuestbookReportRequest.builder().reason("주인장 신고 테스트를 하고 싶어서").build(), ownerReportedId);
 
         // 페이지네이션 테스트
         for (int i = 49; i >= 0; i--) {

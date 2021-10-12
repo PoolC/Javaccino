@@ -3,7 +3,10 @@ package com.emotie.api.guestbook;
 import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
-import com.emotie.api.guestbook.dto.*;
+import com.emotie.api.guestbook.dto.GuestbookCreateRequest;
+import com.emotie.api.guestbook.dto.GuestbookReportRequest;
+import com.emotie.api.guestbook.dto.GuestbookResponse;
+import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -55,7 +58,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200]; 일반 사용자: 누적 신고 과다 방명록과 주인장이 직접 가린 방명록은 제외")
+    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200]; 본인 신고, 주인장 신고, 신고누적 방명록 제외")
     public void 방명록_전체_조회_성공_OK_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
@@ -65,27 +68,12 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId, globalBlindedId);
+        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(authReportedId, ownerReportedId, overReportedId);
     }
 
     @Test
-    @DisplayName("테스트 01-04: 방명록 전체 조회 성공 [200]; 방명록 주인장: 누적 신고 과다 방명록 제외")
-    public void 방명록_전체_조회_성공_OK_2() throws Exception {
-        // given
-        String accessToken = ownerLogin();
-
-        // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
-
-        // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId);
-
-    }
-
-    @Test
-    @DisplayName("테스트 01-05: 페이지네이션 성공 [200]; 방명록 주인장: 누적 신고 과다 방명록 제외")
-    public void 방명록_전체_조회_페이지네이션_성공_OK_2() throws Exception {
+    @DisplayName("테스트 01-04: 페이지네이션 성공 [200];")
+    public void 방명록_전체_조회_페이지네이션_성공_OK() throws Exception {
         // given
         String accessToken = ownerLogin();
 
@@ -275,68 +263,95 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     public void 방명록_신고_실패_FORBIDDEN() throws Exception {
         // given
         String accessToken = ""; ///
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason(reportReason)
+                .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 04-02: 방명록 신고 실패 [404]; 해당 guestbookId가 없을 때")
+    @DisplayName("테스트 04-02: 방명록 신고 실패 [400]; reason이 null 또는 공백일 때")
+    public void 방명록_신고_성공_OK() throws Exception {
+        // given
+        String accessToken = authorizedLogin();
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason("") ///
+                .build();
+
+        // when
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, existId);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @DisplayName("테스트 04-03: 방명록 신고 실패 [404]; 해당 guestbookId가 없을 때")
     public void 방명록_신고_실패_NOT_FOUND() throws Exception {
         // given
         String accessToken = authorizedLogin();
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason(reportReason)
+                .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, notExistId); ///
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, notExistId); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 04-03: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
+    @DisplayName("테스트 04-04: 방명록 신고 실패 [409]; 본인이 작성한 방명록을 신고하려 할 때")
     public void 방명록_신고_실패_CONFLICT() throws Exception {
         // given
         String accessToken = writerLogin(); ///
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason("작성자 " + reportReason)
+                .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 04-04: 방명록 신고 성공 [200]; isReported = true")
-    public void 방명록_신고_성공_OK() throws Exception {
+    @DisplayName("테스트 04-05: 방명록 신고 성공 [200]; 일반 사용자가 신고할 때")
+    public void 방명록_신고_성공_OK_1() throws Exception {
         // given
         String accessToken = authorizedLogin();
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason(reportReason)
+                .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookReportResponse.class))
-                .hasFieldOrPropertyWithValue("isReported", true);
     }
 
     @Test
-    @DisplayName("테스트 04-05: 방명록 신고 취소 성공 [200]; isReported = false")
-    public void 방명록_신고_취소_성공_OK() throws Exception {
+    @DisplayName("테스트 04-06: 방명록 신고 성공 [200]; 방명록 주인장이 신고할 때")
+    public void 방명록_신고_성공_OK_2() throws Exception {
         // given
         String accessToken = ownerLogin();
+        GuestbookReportRequest guestbookReportRequest = GuestbookReportRequest.builder()
+                .reason("주인장 " + reportReason)
+                .build();
 
         // when
-        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, existId);
+        ExtractableResponse<Response> response = guestbookReportRequest(accessToken, guestbookReportRequest, existId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(GuestbookReportResponse.class))
-                .hasFieldOrPropertyWithValue("isReported", false);
     }
 
     /*
