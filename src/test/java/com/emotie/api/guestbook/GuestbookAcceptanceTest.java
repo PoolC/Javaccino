@@ -58,24 +58,40 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200]; 본인 신고, 주인장 신고, 신고누적 방명록 제외")
+    @DisplayName("테스트 01-03: 방명록 전체 조회 성공 [200]; tester: 본인 신고, 주인장 신고, 신고누적 방명록 제외")
     public void 방명록_전체_조회_성공_OK_1() throws Exception {
         // given
-        String accessToken = authorizedLogin();
+        String accessToken = testerLogin();
 
         // when
         ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(authReportedId, ownerReportedId, overReportedId);
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").doesNotContain(testerReportedId, ownerReportedId, overReportedId);
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(almostReportedId);
     }
 
     @Test
-    @DisplayName("테스트 01-04: 페이지네이션 성공 [200];")
+    @DisplayName("테스트 01-04: 방명록 전체 조회 성공 [200]; writer: 주인장 신고, 신고누적 방명록 제외")
+    public void 방명록_전체_조회_성공_OK_2() throws Exception {
+        // given
+        String accessToken = writerLogin();
+
+        // when
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").doesNotContain(ownerReportedId, overReportedId);
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(testerReportedId, almostReportedId);
+    }
+
+    @Test
+    @DisplayName("테스트 01-05: 페이지네이션 성공 [200]; 2페이지")
     public void 방명록_전체_조회_페이지네이션_성공_OK() throws Exception {
         // given
-        String accessToken = ownerLogin();
+        String accessToken = authorizedLogin();
 
         // when
         ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 2);
@@ -85,7 +101,6 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().getList("data", GuestbookResponse.class)).extracting("id").doesNotContain(overReportedId);
 
     }
 
@@ -534,6 +549,17 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
     private static String ownerLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(ownerEmail)
+                .password(guestbookPassword)
+                .build();
+
+        return loginRequest(request)
+                .as(LoginResponse.class)
+                .getAccessToken();
+    }
+
+    private static String testerLogin() {
+        LoginRequest request = LoginRequest.builder()
+                .email(testerEmail)
                 .password(guestbookPassword)
                 .build();
 
