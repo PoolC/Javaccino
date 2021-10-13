@@ -69,7 +69,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").doesNotContain(testerReportedId, ownerReportedId, overReportedId);
-        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(almostReportedId);
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(existId, almostReportedId);
     }
 
     @Test
@@ -84,7 +84,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").doesNotContain(ownerReportedId, overReportedId);
-        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(testerReportedId, almostReportedId);
+        assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(existId, testerReportedId, almostReportedId);
     }
 
     @Test
