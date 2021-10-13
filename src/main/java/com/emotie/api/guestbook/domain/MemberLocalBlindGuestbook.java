@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Deprecated
 @NoArgsConstructor
 @Entity(name = "members_local_blind_guestbooks")
 @Table(uniqueConstraints = {
