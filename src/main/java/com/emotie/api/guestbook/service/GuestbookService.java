@@ -33,14 +33,10 @@ public class GuestbookService {
         checkGetAllBoardsRequestValidity(memberId);
         Member owner = memberService.getMemberById(memberId);
         Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE, Sort.by("createdAt").descending());
-        // TODO: 코드 간결하게 바꾸기 가능?
-        List<Guestbook> guestbooks;
-        List<GuestbookResponse> guestbookResponses;
-        guestbooks = guestbookRepository.findByOwner(user, owner, Guestbook.reportCountThreshold, pageable);
-        guestbookResponses = guestbooks.stream()
+        List<Guestbook> guestbooks = guestbookRepository.findByOwner(user, owner, Guestbook.reportCountThreshold, pageable);
+        return guestbooks.stream()
                 .map(GuestbookResponse::of)
                 .collect(Collectors.toList());
-        return guestbookResponses;
     }
 
     public void create(Member user, GuestbookCreateRequest request, String memberId) {
