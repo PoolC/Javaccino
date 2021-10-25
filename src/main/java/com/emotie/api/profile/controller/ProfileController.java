@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProfileController {
 
 
-    @GetMapping("/{uuid}")
-    public ResponseEntity<Void> getProfile(@AuthenticationPrincipal Member user, @PathVariable Integer uuid){
+    @GetMapping("/{memberId}")
+    public ResponseEntity<Void> getProfile(@AuthenticationPrincipal Member user, @PathVariable Integer memberId){
 
     return null;
     }
