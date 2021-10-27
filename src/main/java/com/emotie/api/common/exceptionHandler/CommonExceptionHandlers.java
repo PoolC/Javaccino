@@ -15,6 +15,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.NoSuchElementException;
 public class CommonExceptionHandlers {
     @ExceptionHandler({
             IllegalArgumentException.class, NotSameException.class, MethodArgumentNotValidException.class,
-            MismatchedInputException.class, RequestRejectedException.class
+            MismatchedInputException.class, RequestRejectedException.class, ConstraintViolationException.class
     })
     public ResponseEntity<Map<String, String>> BadRequestHandler(Exception e) {
         Map<String, String> errors = new HashMap<>();
