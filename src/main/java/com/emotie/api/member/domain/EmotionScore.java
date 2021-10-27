@@ -1,7 +1,6 @@
 package com.emotie.api.member.domain;
 
 import com.emotie.api.emotion.domain.Emotion;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -45,6 +44,7 @@ public class EmotionScore {
 
     public void deepenScore(Double amount) {
         this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * amount;
+        if (this.score > 1) this.score = 1.0;
     }
 
     public void reduceScore(Double amount) {
