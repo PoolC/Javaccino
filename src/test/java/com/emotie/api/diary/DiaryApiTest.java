@@ -200,10 +200,10 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02.05: 다이어리 전체 조회 시 [400]; 페이지 인덱스가 너무 크거나 작을 경우; 즉, 페이지 인덱스가 없을 경우")
+    @DisplayName("테스트 03.01: 다이어리 전체 조회 시 [400]; 페이지 인덱스가 너무 크거나 작을 경우; 즉, 페이지 인덱스가 없을 경우")
     public void 전체_조회_실패_NOT_FOUND_1() {
         //given
-        Integer pageNumber = Integer.MAX_VALUE;
+        Integer pageNumber = -2;
         String accessToken = viewerLogin();
         String memberId = writerId;
 
@@ -215,7 +215,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02.06: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
+    @DisplayName("테스트 03.02: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
     public void 전체_조회_실패_NOT_FOUND_2() {
         //given
         Integer pageNumber = 0;
@@ -230,7 +230,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02.07: 다이어리 전체 조회 성공 [200]; 일반적인 경우")
+    @DisplayName("테스트 03.03: 다이어리 전체 조회 성공 [200]; 일반적인 경우")
     public void 전체_조회_성공_OK_1() {
         //given
         Integer pageNumber = 0;
@@ -247,7 +247,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02.08: 다이어리 전체 조회 성공 [200]; 작성자의 경우")
+    @DisplayName("테스트 03.04: 다이어리 전체 조회 성공 [200]; 작성자의 경우")
     public void 전체_조회_성공_OK_2() {
         //given
         Integer pageNumber = 0;
@@ -262,7 +262,7 @@ public class DiaryApiTest extends AcceptanceTest {
         assertWellPaged(response, "94");
 
         //given
-        pageNumber = 9;
+        pageNumber = 6;
 
         //when
         response = diaryReadAllRequest(accessToken, memberId, pageNumber);
@@ -272,9 +272,26 @@ public class DiaryApiTest extends AcceptanceTest {
         assertWellPaged(response, "1");
     }
 
+    @Test
+    @DisplayName("테스트 03.05: 다이어리 전체 조회 성공 [200]; 일반적이지는 않으나, 유효한 값이라서 비어있는 리스트를 반환할 때")
+    public void 전체_조회_성공_OK_3() {
+        //given
+        Integer pageNumber = Integer.MAX_VALUE - 1;
+        String accessToken = viewerLogin();
+        String memberId = writerId;
+
+        //when
+        ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).isEmpty();
+    }
+
     /* Update: 다이어리 수정 */
     @Test
-    @DisplayName("테스트 03.01: 다이어리 수정 시 [400]; 감정이 정해지지 않았을 경우")
+    @DisplayName("테스트 04.01: 다이어리 수정 시 [400]; 감정이 정해지지 않았을 경우")
     public void 수정_실패_BAD_REQUEST_1() {
         //given
         String accessToken = writerLogin();
@@ -298,7 +315,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.02: 다이어리 수정 시 [400]; 내용이 null일 경우")
+    @DisplayName("테스트 04.02: 다이어리 수정 시 [400]; 내용이 null일 경우")
     public void 수정_실패_BAD_REQUEST_2() {
         //given
         String accessToken = writerLogin();
@@ -322,7 +339,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.03: 다이어리 수정 시 [403]; 로그인 되어 있지 않았을 경우")
+    @DisplayName("테스트 04.03: 다이어리 수정 시 [403]; 로그인 되어 있지 않았을 경우")
     public void 수정_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -346,7 +363,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.04: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
+    @DisplayName("테스트 04.04: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
     public void 수정_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -370,7 +387,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.05: 다이어리 수정 시 [404]; 해당 다이어리가 없음")
+    @DisplayName("테스트 04.05: 다이어리 수정 시 [404]; 해당 다이어리가 없음")
     public void 수정_실패_게시물_없음() {
         //given
         String accessToken = writerLogin();
@@ -393,7 +410,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.06: 다이어리 수정 성공 [200]")
+    @DisplayName("테스트 04.06: 다이어리 수정 성공 [200]")
     public void 수정_성공_OK_1() {
         //given
         String accessToken = writerLogin();
@@ -414,7 +431,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.07: 다이어리 수정 성공; 감정 변화 [200]")
+    @DisplayName("테스트 04.07: 다이어리 수정 성공; 감정 변화 [200]")
     public void 수정_성공_OK_2() {
         //given
         String accessToken = writerLogin();
@@ -438,7 +455,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Delete: 다이어리 삭제 */
     @Test
-    @DisplayName("테스트 04.01: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 05.01: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
     public void 삭제_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -457,7 +474,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 04.02: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
+    @DisplayName("테스트 05.02: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
     public void 삭제_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -476,7 +493,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 04.03: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
+    @DisplayName("테스트 05.03: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
     public void 삭제_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
@@ -495,7 +512,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 04.04: 다이어리 삭제 성공 [200]")
+    @DisplayName("테스트 05.04: 다이어리 삭제 성공 [200]")
     public void 삭제_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -519,7 +536,7 @@ public class DiaryApiTest extends AcceptanceTest {
     /* 기타 */
     /* 다이어리 신고 */
     @Test
-    @DisplayName("테스트 36: 다이어리 신고 시 [403]; 로그인하지 않음")
+    @DisplayName("테스트 06.01: 다이어리 신고 시 [403]; 로그인하지 않음")
     public void 다이어리_신고_실패_FORBIDDEN() {
         //given
         String accessToken = "";
@@ -533,7 +550,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05.01: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 06.02: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_신고_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
@@ -547,7 +564,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05.02: 다이어리 신고 성공 [200]; Not Report -> Report")
+    @DisplayName("테스트 06.03: 다이어리 신고 성공 [200]; Not Report -> Report")
     public void 다이어리_신고_성공_OK_1() {
         //given
         String accessToken = viewerLogin();
@@ -563,7 +580,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05.03: 다이어리 신고 성공 [200]; Report -> Not Report")
+    @DisplayName("테스트 06.04: 다이어리 신고 성공 [200]; Report -> Not Report")
     public void 다이어리_신고_성공_OK_2() {
         //given
         String accessToken = viewerLogin();
