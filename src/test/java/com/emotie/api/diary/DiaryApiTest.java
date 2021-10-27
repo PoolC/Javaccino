@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 // TODO: 2021-08-06 실제로 단위 테스트 구현하기
-@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters", "UnnecessaryLocalVariable", "SameParameterValue"})
+@SuppressWarnings({"FieldCanBeLocal", "NonAsciiCharacters", "UnnecessaryLocalVariable", "SameParameterValue", "WrapperTypeMayBePrimitive"})
 @ActiveProfiles({"diaryDataLoader"})
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 @Transactional
@@ -212,6 +212,15 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+
+        //given
+        pageNumber = Integer.MAX_VALUE - 1;
+
+        //when
+        response = diaryReadAllRequest(accessToken, memberId, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
@@ -262,7 +271,7 @@ public class DiaryApiTest extends AcceptanceTest {
         assertWellPaged(response, "94");
 
         //given
-        pageNumber = 6;
+        pageNumber = 9;
 
         //when
         response = diaryReadAllRequest(accessToken, memberId, pageNumber);
@@ -276,9 +285,11 @@ public class DiaryApiTest extends AcceptanceTest {
     @DisplayName("테스트 03.05: 다이어리 전체 조회 성공 [200]; 일반적이지는 않으나, 유효한 값이라서 비어있는 리스트를 반환할 때")
     public void 전체_조회_성공_OK_3() {
         //given
-        Integer pageNumber = Integer.MAX_VALUE - 1;
+        Integer pageNumber = Integer.MAX_VALUE / PAGE_SIZE - 1;
         String accessToken = viewerLogin();
         String memberId = writerId;
+
+        System.out.println(pageNumber);
 
         //when
         ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);

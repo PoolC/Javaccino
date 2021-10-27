@@ -50,7 +50,7 @@ public class DiaryDataLoader implements ApplicationRunner {
             updatedContent = "어제도 잠을 잘 잤다. 좋았었다.",
             newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
     public static final Long invalidId = Long.MAX_VALUE;
-    public static final int PAGE_SIZE = 15;
+    public static final int PAGE_SIZE = 10;
 
     public static Emotion diaryEmotion, otherEmotion;
     public static Long openedDiaryId, closedDiaryId;
