@@ -38,16 +38,19 @@ public class DiaryDataLoader implements ApplicationRunner {
             viewerNickname = "공릉동익룡",
             unauthorizedNickname = "공릉동도롱뇽",
             notExistNickname = "공릉동용용";
+
     private static final String introduction = "사람들에게 자신을 소개해 보세요!";
     public static final String password = "random-password";
 
     private static Member writer, viewer, unauthorized;
     public static String writerId;
+    public static final String notExistMemberId = "notExist!#";
 
     public static final String originalContent = "오늘 잠을 잘 잤다. 좋았다.",
             updatedContent = "어제도 잠을 잘 잤다. 좋았었다.",
             newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
     public static final Long invalidId = Long.MAX_VALUE;
+    public static final int PAGE_SIZE = 10;
 
     public static Emotion diaryEmotion, otherEmotion;
     public static Long openedDiaryId, closedDiaryId;
@@ -61,7 +64,7 @@ public class DiaryDataLoader implements ApplicationRunner {
         createEmotions();
         registerMembers();
         writeDiaries();
-        setDiaryIndexes();
+        countDiaries();
     }
 
     private void createEmotions() {
@@ -150,27 +153,62 @@ public class DiaryDataLoader implements ApplicationRunner {
     }
 
     private void writeDiaries() {
+        Diary openedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                true
+        );
         diaryRepository.save(
-                Diary.of(
-                        writer,
-                        originalContent,
-                        diaryEmotion,
-                        true
-                        )
+                openedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
+        openedDiaryId = openedDiary.getId();
+
+        Diary closedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                false
+        );
         diaryRepository.save(
-                Diary.of(
-                        writer,
-                        originalContent,
-                        diaryEmotion,
-                        false
-                )
+            closedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
+        closedDiaryId = closedDiary.getId();
+
         for (int i = 0; i < 2; i++) {
             writer.deepenEmotionScore(diaryEmotion);
         }
+
+        for (int i = 0; i < 95; i++) {
+            Boolean openFlag = (i % 3 == 0);
+            if (i % 2 == 0) {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                otherEmotion,
+                                openFlag
+                        )
+                );
+                emotionRepository.saveAndFlush(otherEmotion);
+                writer.deepenEmotionScore(otherEmotion);
+            } else {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                diaryEmotion,
+                                openFlag
+                        )
+                );
+                emotionRepository.saveAndFlush(diaryEmotion);
+                writer.deepenEmotionScore(diaryEmotion);
+            }
+
+        }
+
         memberRepository.saveAndFlush(writer);
         basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
         basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
@@ -178,13 +216,7 @@ public class DiaryDataLoader implements ApplicationRunner {
         basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
-    private void setDiaryIndexes() {
-        diaryRepository.findAll().forEach(
-                (it) -> {
-                    if (it.getIsOpened()) openedDiaryId = it.getId();
-                    else closedDiaryId = it.getId();
-                }
-        );
+    private void countDiaries() {
         diaryCount = diaryRepository.count();
     }
 }

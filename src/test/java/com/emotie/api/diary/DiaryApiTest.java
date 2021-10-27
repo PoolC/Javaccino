@@ -6,6 +6,7 @@ import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.EmotionScore;
 import com.emotie.api.member.repository.EmotionScoreRepository;
@@ -46,7 +47,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* Create: 다이어리 작성 */
     @Test
-    @DisplayName("테스트 01: 다이어리 작성 시 [400]; 감정이 정해지지 않았을 경우")
+    @DisplayName("테스트 01.01: 다이어리 작성 시 [400]; 감정이 정해지지 않았을 경우")
     public void 작성_실패_BAD_REQUEST_1() {
         //given
         String accessToken = writerLogin();
@@ -66,7 +67,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 02: 다이어리 작성 시 [400]; 내용이 null일 경우")
+    @DisplayName("테스트 01.02: 다이어리 작성 시 [400]; 내용이 null일 경우")
     public void 작성_실패_BAD_REQUEST_2() {
         //given
         String accessToken = writerLogin();
@@ -86,7 +87,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03: 다이어리 작성 시 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 01.03: 다이어리 작성 시 [403]; 로그인하지 않았을 경우")
     public void 작성_실패_FORBIDDEN() {
         //given
         String accessToken = "";
@@ -106,7 +107,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03: 다이어리 작성 시 [404]; 존재하지 않는 감정일 경우")
+    @DisplayName("테스트 01.04: 다이어리 작성 시 [404]; 존재하지 않는 감정일 경우")
     public void 작성_실패_BAD_REQUEST_3() {
         //given
         String accessToken = writerLogin();
@@ -127,7 +128,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     // TODO: 2021-09-30 점수 업데이트가 저장이 안 됨; 
     @Test
-    @DisplayName("테스트 04: 다이어리 작성 성공 [200]")
+    @DisplayName("테스트 01.05: 다이어리 작성 성공 [200]")
     public void 작성_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -140,33 +141,21 @@ public class DiaryApiTest extends AcceptanceTest {
         //when
         ExtractableResponse<Response> response = diaryCreateRequest(accessToken, diaryCreateRequest);
 
+        System.out.println(basicOtherEmotionScore);
+
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertDiaryAdded(1);
         assertDiaryContentExists(newContent);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().satisfies(it -> assertThat(it > basicDiaryEmotionScore).isTrue());
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicDiaryEmotionCount + 1);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().isEqualTo(basicOtherEmotionScore);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+        assertDiaryEmotionScoreIncreased();
 
         diaryCount += 1;
-        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
-        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
-        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
-        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
+        updateFields();
     }
 
     /* Read: 다이어리 조회 */
     @Test
-    @DisplayName("테스트 05: 다이어리 개별 조회 시 [403]; 비공개 게시물의 경우")
+    @DisplayName("테스트 02.01: 다이어리 개별 조회 시 [403]; 비공개 게시물의 경우")
     public void 개별_조회_실패_FORBIDDEN() {
         //when
         ExtractableResponse<Response> response = diaryReadRequest(closedDiaryId);
@@ -176,7 +165,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 06: 다이어리 개별 조회 시 [404]; 해당 게시물이 없을 경우")
+    @DisplayName("테스트 02.02: 다이어리 개별 조회 시 [404]; 해당 게시물이 없을 경우")
     public void 개별_조회_실패_NOT_FOUND() {
         //when
         ExtractableResponse<Response> response = diaryReadRequest(invalidId);
@@ -186,18 +175,18 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 07: 다이어리 개별 조회 성공 [200]; 일반적인 경우")
+    @DisplayName("테스트 02.03: 다이어리 개별 조회 성공 [200]; 일반적인 경우")
     public void 개별_조회_성공_OK() {
         //when
         ExtractableResponse<Response> response = diaryReadRequest(openedDiaryId);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().get("content").equals(originalContent)).isTrue();
+        assertThat(response.body().as(DiaryReadResponse.class)).hasFieldOrPropertyWithValue("content", originalContent);
     }
 
     @Test
-    @DisplayName("테스트 08: 다이어리 개별 조회 성공 [200]; 본인이 본인의 게시물 중 private 게시물을 보는 경우")
+    @DisplayName("테스트 02.04: 다이어리 개별 조회 성공 [200]; 본인이 본인의 게시물 중 private 게시물을 보는 경우")
     public void 개별_조회_성공_OK_2() {
         //given
         String accessToken = writerLogin();
@@ -207,40 +196,85 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().get("content").equals(originalContent)).isTrue();
+        assertThat(response.body().as(DiaryReadResponse.class)).hasFieldOrPropertyWithValue("content", originalContent);
     }
 
     @Test
-    @DisplayName("테스트 09: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
-    public void 전체_조회_실패_NOT_FOUND() {
+    @DisplayName("테스트 02.05: 다이어리 전체 조회 시 [400]; 페이지 인덱스가 너무 크거나 작을 경우; 즉, 페이지 인덱스가 없을 경우")
+    public void 전체_조회_실패_NOT_FOUND_1() {
         //given
-        Integer pageNumber = 0;
-        String nickname = notExistNickname;
+        Integer pageNumber = Integer.MAX_VALUE;
+        String accessToken = viewerLogin();
+        String memberId = writerId;
 
         //when
-        ExtractableResponse<Response> response = diaryReadAllRequest(nickname, pageNumber);
+        ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @DisplayName("테스트 02.06: 다이어리 전체 조회 시 [404]; 해당하는 회원이 없을 경우")
+    public void 전체_조회_실패_NOT_FOUND_2() {
+        //given
+        Integer pageNumber = 0;
+        String accessToken = viewerLogin();
+        String memberId = notExistMemberId;
+
+        //when
+        ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 10: 다이어리 전체 조회 성공 [200]")
-    public void 전체_조회_성공_OK() {
+    @DisplayName("테스트 02.07: 다이어리 전체 조회 성공 [200]; 일반적인 경우")
+    public void 전체_조회_성공_OK_1() {
         //given
         Integer pageNumber = 0;
-        String nickname = writerNickname;
+        String accessToken = viewerLogin();
+        String memberId = writerId;
 
         //when
-        ExtractableResponse<Response> response = diaryReadAllRequest(nickname, pageNumber);
+        ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertWellPaged(response, "90");
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).allMatch(DiaryReadResponse::getIsOpened);
+    }
+
+    @Test
+    @DisplayName("테스트 02.08: 다이어리 전체 조회 성공 [200]; 작성자의 경우")
+    public void 전체_조회_성공_OK_2() {
+        //given
+        Integer pageNumber = 0;
+        String accessToken = writerLogin();
+        String memberId = writerId;
+
+        //when
+        ExtractableResponse<Response> response = diaryReadAllRequest(accessToken, memberId, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertWellPaged(response, "94");
+
+        //given
+        pageNumber = 9;
+
+        //when
+        response = diaryReadAllRequest(accessToken, memberId, pageNumber);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertWellPaged(response, "1");
     }
 
     /* Update: 다이어리 수정 */
     @Test
-    @DisplayName("테스트 11: 다이어리 수정 시 [400]; 감정이 정해지지 않았을 경우")
+    @DisplayName("테스트 03.01: 다이어리 수정 시 [400]; 감정이 정해지지 않았을 경우")
     public void 수정_실패_BAD_REQUEST_1() {
         //given
         String accessToken = writerLogin();
@@ -264,7 +298,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 12: 다이어리 수정 시 [400]; 내용이 null일 경우")
+    @DisplayName("테스트 03.02: 다이어리 수정 시 [400]; 내용이 null일 경우")
     public void 수정_실패_BAD_REQUEST_2() {
         //given
         String accessToken = writerLogin();
@@ -288,7 +322,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 13: 다이어리 수정 시 [403]; 로그인 되어 있지 않았을 경우")
+    @DisplayName("테스트 03.03: 다이어리 수정 시 [403]; 로그인 되어 있지 않았을 경우")
     public void 수정_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -312,7 +346,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 14: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
+    @DisplayName("테스트 03.04: 다이어리 수정 시 [403]; 수정을 요청한 사람이 작성자와 다름")
     public void 수정_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -336,7 +370,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 15: 다이어리 수정 시 [404]; 해당 다이어리가 없음")
+    @DisplayName("테스트 03.05: 다이어리 수정 시 [404]; 해당 다이어리가 없음")
     public void 수정_실패_게시물_없음() {
         //given
         String accessToken = writerLogin();
@@ -359,7 +393,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 16: 다이어리 수정 성공 [200]")
+    @DisplayName("테스트 03.06: 다이어리 수정 성공 [200]")
     public void 수정_성공_OK_1() {
         //given
         String accessToken = writerLogin();
@@ -380,7 +414,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 17: 다이어리 수정 성공; 감정 변화 [200]")
+    @DisplayName("테스트 03.07: 다이어리 수정 성공; 감정 변화 [200]")
     public void 수정_성공_OK_2() {
         //given
         String accessToken = writerLogin();
@@ -397,28 +431,14 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(diaryRepository.findById(closedDiaryId)).map(Diary::getContent).get().isEqualTo(originalContent);
         assertDiaryNotAdded();
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().satisfies(it -> assertThat(it < basicDiaryEmotionScore).isTrue());
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().satisfies(it -> assertThat(it > basicOtherEmotionScore).isTrue());
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicOtherEmotionCount + 1);
+        assertOtherEmotionScoreIncreased();
 
-        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
-        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
-        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
-        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
+        updateFields();
     }
 
     /* Delete: 다이어리 삭제 */
     @Test
-    @DisplayName("테스트 18: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 04.01: 다이어리 삭제 시 [403]; 로그인하지 않았을 경우")
     public void 삭제_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -437,7 +457,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 19: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
+    @DisplayName("테스트 04.02: 다이어리 삭제 시 [403]; 삭제를 요청한 사람과 작성자가 다를 경우")
     public void 삭제_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -456,7 +476,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 20: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
+    @DisplayName("테스트 04.03: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
     public void 삭제_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
@@ -475,7 +495,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 21: 다이어리 삭제 성공 [200]")
+    @DisplayName("테스트 04.04: 다이어리 삭제 성공 [200]")
     public void 삭제_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -490,194 +510,13 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(diaryRepository.existsById(openedDiaryId)).isFalse();
         assertThat(diaryRepository.count()).isEqualTo(diaryCount - 1);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().satisfies(it -> assertThat(it < basicDiaryEmotionScore).isTrue());
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getScore
-        ).isPresent().get().satisfies(it -> assertThat(it > basicOtherEmotionScore).isTrue());
-        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
-                EmotionScore::getCount
-        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+        assertDiaryEmotionScoreDecreased();
 
         diaryCount -= 1;
-        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
-        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
-        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
-        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
+        updateFields();
     }
 
     /* 기타 */
-    /* 다이어리 검색 */
-    @Test
-    @DisplayName("테스트 22: 다이어리 검색 시 (400): 인덱스가 허용 범위를 벗어난 경우")
-    public void 다이어리_검색_실패_허용_되지_않은_인덱스() {
-
-    }
-
-    @Test
-    @DisplayName("테스트 23: 다이어리 검색 시 (400): 숨겨진 게시물을 검색했는데, 작성자가 아닌 경우")
-    public void 다이어리_검색_실패_숨겨진_게시물_작성자_아님() {
-
-    }
-
-    @Test
-    @DisplayName("테스트 24: 다이어리 검색 시 (401): 로그인하지 않았을 경우")
-    public void 다이어리_검색_실패_비로그인() {
-
-    }
-
-    @Test
-    @DisplayName("테스트 25: 다이어리 검색 성공")
-    public void 다이어리_검색_성공() {
-
-    }
-
-    /* 다이어리 내보내기 */
-    @Test
-    @DisplayName("테스트 26: 다이어리를 내보낼 때 [403]; 로그인하지 않았을 경우")
-    public void 다이어리_내보내기_실패_FORBIDDEN_1() {
-        //given
-        String accessToken = "";
-        DiaryExportRequest request = DiaryExportRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 27: 다이어리를 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
-    public void 다이어리_내보내기_실패_FORBIDDEN_2() {
-        //given
-        String accessToken = viewerLogin();
-        DiaryExportRequest request = DiaryExportRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 28: 다이어리를 내보낼 때 [404]; 해당 다이어리가 없는 경우")
-    public void 다이어리_내보내기_실패_NOT_FOUND() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportRequest request = DiaryExportRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-    }
-
-    @Test
-    @DisplayName("테스트 29: 다이어리를 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
-    public void 다이어리_내보내기_실패_CONFLICT() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportRequest request = DiaryExportRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
-    }
-
-    @Test
-    @DisplayName("테스트 30: 다이어리 내보내기 성공 [200]")
-    public void 다이어리_내보내기_성공_OK() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportRequest request = DiaryExportRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
-    @Test
-    @DisplayName("테스트 31: 다이어리를 모두 내보낼 때 [403]; 로그인하지 않았을 경우")
-    public void 다이어리_모두_내보내기_실패_FORBIDDEN_1() {
-        //given
-        String accessToken = "";
-        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 32: 다이어리를 모두 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
-    public void 다이어리_모두_내보내기_실패_FORBIDDEN_2() {
-        //given
-        String accessToken = viewerLogin();
-        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
-    }
-
-    @Test
-    @DisplayName("테스트 33: 다이어리를 모두 내보낼 때 [404]; 해당 다이어리가 없는 경우")
-    public void 다이어리_모두_내보내기_실패_NOT_FOUND() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
-
-    }
-
-    @Test
-    @DisplayName("테스트 34: 다이어리를 모두 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
-    public void 다이어리_모두_내보내기_실패_CONFLICT() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
-    }
-
-    @Test
-    @DisplayName("테스트 35: 다이어리 모두 내보내기 성공 [200]")
-    public void 다이어리_모두_내보내기_성공_OK() {
-        //given
-        String accessToken = writerLogin();
-        DiaryExportAllRequest request = DiaryExportAllRequest.builder().build();
-
-        //when
-        ExtractableResponse<Response> response = diaryExportAllRequest(accessToken, request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-    }
-
     /* 다이어리 신고 */
     @Test
     @DisplayName("테스트 36: 다이어리 신고 시 [403]; 로그인하지 않음")
@@ -694,7 +533,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 37: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 05.01: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_신고_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
@@ -708,7 +547,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 38: 다이어리 신고 성공 [200]; Not Report -> Report")
+    @DisplayName("테스트 05.02: 다이어리 신고 성공 [200]; Not Report -> Report")
     public void 다이어리_신고_성공_OK_1() {
         //given
         String accessToken = viewerLogin();
@@ -724,7 +563,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 38: 다이어리 신고 성공 [200]; Report -> Not Report")
+    @DisplayName("테스트 05.03: 다이어리 신고 성공 [200]; Report -> Not Report")
     public void 다이어리_신고_성공_OK_2() {
         //given
         String accessToken = viewerLogin();
@@ -767,10 +606,14 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReadAllRequest(String nickname, Integer pageNumber) {
+    private static ExtractableResponse<Response> diaryReadAllRequest(
+            String accessToken, String memberId, Integer pageNumber
+    ) {
         return RestAssured
                 .given().log().all()
-                .when().post("/diaries/{nickname}/{pageNumber}", nickname, pageNumber)
+                .auth().oauth2(accessToken)
+                .queryParam("page", pageNumber)
+                .when().get("/diaries/user/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }
@@ -865,6 +708,13 @@ public class DiaryApiTest extends AcceptanceTest {
                 .getAccessToken();
     }
 
+    private void updateFields() {
+        basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
+        basicDiaryEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getCount();
+        basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
+        basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
+    }
+
     private void assertDiaryNotAdded() {
         assertThat(diaryRepository.count()).isEqualTo(diaryCount);
     }
@@ -880,22 +730,70 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     private void assertScoreNotUpdated(String userId) {
-        System.out.println("A");
         assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, diaryEmotion)).map(
                 EmotionScore::getScore
         ).isPresent().get().isEqualTo(basicDiaryEmotionScore);
-        System.out.println("B");
         assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, diaryEmotion)).map(
                 EmotionScore::getCount
         ).isPresent().get().isEqualTo(basicDiaryEmotionCount);
-        System.out.println("C");
         assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, otherEmotion)).map(
                 EmotionScore::getScore
         ).isPresent().get().isEqualTo(basicOtherEmotionScore);
-        System.out.println("D");
         assertThat(emotionScoreRepository.findByMemberIdAndEmotion(userId, otherEmotion)).map(
                 EmotionScore::getCount
         ).isPresent().get().isEqualTo(basicOtherEmotionCount);
-        System.out.println("E");
+    }
+
+    private void assertDiaryEmotionScoreIncreased() {
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(score -> assertThat(score >= basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount + 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(score -> assertThat(score <= basicOtherEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+    }
+
+    private void assertDiaryEmotionScoreDecreased() {
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it < basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(it -> assertThat(it > basicOtherEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
+    }
+
+    private void assertOtherEmotionScoreIncreased() {
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(score -> assertThat(score <= basicDiaryEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicDiaryEmotionCount - 1);
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getScore
+        ).isPresent().get().satisfies(score -> assertThat(score >= basicOtherEmotionScore).isTrue());
+        assertThat(emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion)).map(
+                EmotionScore::getCount
+        ).isPresent().get().isEqualTo(basicOtherEmotionCount + 1);
+    }
+
+    private void assertWellPaged(ExtractableResponse<Response> response, String confirmedContent) {
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries().size()).isLessThanOrEqualTo(PAGE_SIZE);
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).anyMatch(
+                (diaryReadResponse) -> diaryReadResponse.getContent().contains(confirmedContent)
+        );
     }
 }
