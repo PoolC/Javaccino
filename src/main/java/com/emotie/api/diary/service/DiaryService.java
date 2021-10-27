@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
-    private static final int PAGE_SIZE = 10;
+    private static final int PAGE_SIZE = 15;
 
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
