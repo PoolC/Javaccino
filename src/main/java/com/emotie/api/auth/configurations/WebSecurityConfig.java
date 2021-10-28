@@ -79,6 +79,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/diaries").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.GET, "/diaries/{diaryId}").permitAll()
 
+                .antMatchers(HttpMethod.GET, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.PUT, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/report/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.DELETE, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.DELETE, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),

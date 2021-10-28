@@ -2,13 +2,11 @@ package com.emotie.api.common.domain;
 
 import com.emotie.api.member.domain.Member;
 import lombok.Getter;
-import lombok.Setter;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import java.util.Map;
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -23,7 +21,7 @@ public abstract class Postings extends TimestampEntity {
     @Column(name = "id", nullable = false, unique = true)
     protected Long id;
 
-    @ManyToOne(targetEntity = Member.class, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "writer_id", nullable = false)
     protected Member writer;
 
@@ -52,7 +50,7 @@ public abstract class Postings extends TimestampEntity {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Member)) return false;
         Postings posting = (Postings) o;
         return getId().equals(posting.getId());
     }
@@ -60,5 +58,12 @@ public abstract class Postings extends TimestampEntity {
     @Override
     public int hashCode() {
         return Objects.hash(getId());
+    }
+
+    public void addReportCount() {
+        this.reportCount++;
+        if (this.reportCount > reportCountThreshold) {
+            this.writer.addReportCount();
+        }
     }
 }

@@ -53,7 +53,7 @@ public class MemberService {
     }
 
     public Member getMemberByNickname(String nickname) {
-        return memberRepository.findByEmail(nickname).orElseThrow(() -> {
+        return memberRepository.findByNickname(nickname).orElseThrow(() -> {
             throw new NoSuchElementException("해당 닉네임을 가진 사용자가 없습니다.");
         });
     }
