@@ -6,6 +6,7 @@ import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
+import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,14 +19,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
-@Entity(name = "members")
+// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Entity(name = "members")
 public class Member extends TimestampEntity implements UserDetails {
     @Id
     @Column(name = "id", length = 40)
@@ -67,16 +66,20 @@ public class Member extends TimestampEntity implements UserDetails {
     @Embedded
     private MemberRoles roles;
 
-    // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
-    @ElementCollection(fetch = FetchType.LAZY)
-    private final List<Member> followers = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.LAZY)
-    private final List<Member> followees = new ArrayList<>();
+//    // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    private final List<Member> followers = new ArrayList<>();
+//
+//    @ElementCollection(fetch = FetchType.LAZY)
+//    private final List<Member> followees = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
     @Nullable
     private LocalDateTime withdrawalDate = null;
+
+    @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
+    @MapKeyJoinColumn(name = "emotion")
+    private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
 
     protected Member() {
     }
@@ -167,7 +170,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
         checkPasswordResetToken(passwordResetToken);
-        updatePassword(request);
+        updatePassword(request.getPassword());
     }
 
     public void checkAuthorized() {
@@ -181,28 +184,28 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
-    public boolean isFollowing(Member member) {
-        return this.followees.contains(member);
-    }
-
-    @SuppressWarnings("unused")
-    public boolean isFollowedBy(Member member) {
-        return this.followers.contains(member);
-    }
-
-    // 사용자가 누군가를 팔로우한다는 것은
-    public void follow(Member member) {
-        // 사용자의 팔로워에 그 사람이 추가 되고
-        this.followees.add(member);
-
-        // 그 사람의 팔로이에 사용자가 추가되는 것이다.
-        member.followers.add(this);
-    }
-
-    public void unfollow(Member member) {
-        this.followees.remove(member);
-        member.followers.remove(member);
-    }
+//    public boolean isFollowing(Member member) {
+//        return this.followees.contains(member);
+//    }
+//
+//    @SuppressWarnings("unused")
+//    public boolean isFollowedBy(Member member) {
+//        return this.followers.contains(member);
+//    }
+//
+//    // 사용자가 누군가를 팔로우한다는 것은
+//    public void follow(Member member) {
+//        // 사용자의 팔로이에 그 사람이 추가 되고
+//        this.followees.add(member);
+//
+//        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
+//        member.followers.add(this);
+//    }
+//
+//    public void unfollow(Member member) {
+//        this.followees.remove(member);
+//        member.followers.remove(member);
+//    }
 
     private void checkAuthorizationToken(String authorizationToken) {
         checkTokenExpired(this.authorizationTokenValidUntil);
@@ -239,16 +242,54 @@ public class Member extends TimestampEntity implements UserDetails {
         this.roles.changeRole(MemberRole.EXPELLED);
     }
 
-    private void updatePassword(PasswordResetRequest request) {
-        this.passwordHash = request.getPassword();
+    public void updatePassword(String updatePassword) {
+        this.passwordHash = updatePassword;
     }
 
-    public void updateUserInfo(
-            MemberUpdateRequest request, String passwordHash
-    ) {
-        this.passwordHash = passwordHash;
+    public void updateUserInfo(MemberUpdateRequest request) {
+        this.nickname = request.getNickname();
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
+    }
+
+    public void deepenEmotionScore(Emotion emotion) {
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
+                    // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
+                        emotionScoreValue.addOne();
+                        emotionScoreValue.deepenScore(1.0);
+                    } else {
+                        emotionScoreValue.deepenScore(0.0);
+                    }
+                }
+        );
+    }
+
+    public void reduceEmotionScore(Emotion emotion) {
+        this.emotionScore.forEach(
+                (emotionKey, emotionScoreValue) -> {
+                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
+                        emotionScoreValue.removeOne();
+                        emotionScoreValue.reduceScore(1.0);
+                    } else {
+                        emotionScoreValue.reduceScore(0.0);
+                    }
+                }
+        );
+    }
+
+    public void initializeEmotionScore(Emotion emotion, EmotionScore emotionScore) {
+        this.emotionScore.put(emotion, emotionScore);
+    }
+
+    public void updateEmotionScore(Emotion originalEmotion, Emotion updatedEmotion) {
+        reduceEmotionScore(originalEmotion);
+        deepenEmotionScore(updatedEmotion);
+    }
+
+    public Boolean isEmotionScoreInitialized(Emotion emotion) {
+        return this.emotionScore.containsKey(emotion);
     }
 
     public void addReportCount() {
