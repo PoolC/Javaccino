@@ -26,8 +26,7 @@ public class AuthControllerImpl implements AuthController {
         String accessToken = authService.createAccessToken(request.getEmail(), request.getPassword());
         return ResponseEntity.ok(new LoginResponse(accessToken));
     }
-
-
+    
     @Override
     @PutMapping(value = "/authorization")
     public ResponseEntity<Void> checkAuthorizationCode(@AuthenticationPrincipal Member loginMember,

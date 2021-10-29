@@ -89,47 +89,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 403 (로그인하지 않았을 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN_1() {
-        //given
-
-        //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest("");
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
-
-    }
-
-    @Test
-    @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN_2() {
-        //given
-        String accessToken = authorizedLogin();
-
-        //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(accessToken);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
-
-    }
-
-    //TODO: 이메일이 실제로 왔는지 테스트하는 로직이 필요하다.
-    @Test
-    @DisplayName("테스트 07: 이메일로 인증코드 보내기 성공 200")
-    public void 이메일_인증코드_보내기_성공() {
-        //given
-        String accessToken = unauthorizedLogin();
-
-        //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(accessToken);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
-    }
-
-    @Test
     @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (로그인하지 않았을 때)")
     public void 이메일_인증코드_확인_실패_FORBIDDEN_1() {
         //given
@@ -215,19 +174,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         //then
         assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
-    }
-
-    @Test
-    @DisplayName("테스트 14: 비밀번호 초기화 메일 보내기 성공 200")
-    public void 비밀번호_초기화_메일_보내기_성공() {
-        //given
-        String request = authorizedEmail;
-
-        //when
-        ExtractableResponse<Response> response = sendPasswordResetTokenRequest(request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
     }
 
     @Test
