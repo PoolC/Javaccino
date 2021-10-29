@@ -120,5 +120,6 @@ public class DiaryService {
     private void checkReportOrBlindRequestValidity(Member user, Long diaryId) {
         Diary diary = getDiaryById(diaryId);
         diary.checkNotWriter(user);
+        diary.checkIsOpened();
     }
 }
