@@ -80,8 +80,16 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO: blind 부분을 redirect로 할 수 있나?
     @PostMapping(value = "/report/{diaryId}")
-    public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
+    public ResponseEntity<Void> report(@AuthenticationPrincipal Member user, @RequestBody @Valid DiaryReportRequest request, @PathVariable Long diaryId) throws Exception {
+        diaryService.report(user, request, diaryId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/blind/{diaryId}")
+    public ResponseEntity<Void> blind(@AuthenticationPrincipal Member user, @PathVariable Long diaryId) throws Exception {
+        diaryService.blind(user, diaryId);
         return ResponseEntity.ok().build();
     }
 }
