@@ -26,7 +26,7 @@ public class DiaryCreateRequest {
     public DiaryCreateRequest(
             @JsonProperty(value = "emotion", required = true) String emotion,
             @JsonProperty(value = "content", required = true) String content,
-            @JsonProperty(value = "is_opened", required = true) Boolean isOpened
+            @JsonProperty(value = "isOpened", required = true) Boolean isOpened
     ) {
         this.emotion = emotion;
         this.content = content;

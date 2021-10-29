@@ -5,7 +5,6 @@ import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.common.exception.NotSameException;
 import com.emotie.api.diary.exception.DuplicatedArgumentsException;
 import com.emotie.api.diary.exception.PeekingPrivatePostException;
-import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.exception.CannotFollowException;
@@ -13,10 +12,12 @@ import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.web.firewall.RequestRejectedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.validation.ConstraintViolationException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.NoSuchElementException;
 public class CommonExceptionHandlers {
     @ExceptionHandler({
             IllegalArgumentException.class, NotSameException.class, MethodArgumentNotValidException.class,
-            MismatchedInputException.class
+            MismatchedInputException.class, RequestRejectedException.class, ConstraintViolationException.class
     })
     public ResponseEntity<Map<String, String>> BadRequestHandler(Exception e) {
         Map<String, String> errors = new HashMap<>();
