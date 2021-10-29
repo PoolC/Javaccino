@@ -700,7 +700,7 @@ public class DiaryApiTest extends AcceptanceTest {
     /* 다이어리 신고 */
     @Test
     @DisplayName("테스트 37: 다이어리 신고 시 [403]; 로그인하지 않음")
-    public void 다이어리_신고_실패_FORBIDDEN() {
+    public void 다이어리_신고_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
         DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
@@ -747,7 +747,23 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 40: 다이어리 신고 시 [200];")
+    @DisplayName("테스트 40: 다이어리 신고 시 [403]; closed된 다이어리를 신고하려고 할 시")
+    public void 다이어리_신고_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = writerLogin();
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, closedDiaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 41: 다이어리 신고 시 [200];")
     public void 방명록_신고_성공_OK() throws Exception {
         // given
         String accessToken = viewerLogin();
@@ -764,7 +780,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* 다이어리 블라인드 */
     @Test
-    @DisplayName("테스트 41: 다이어리 블라인드 시 [403]; 로그인하지 않음")
+    @DisplayName("테스트 42: 다이어리 블라인드 시 [403]; 로그인하지 않음")
     public void 다이어리_블라인드_실패_FORBIDDEN() {
         //given
         String accessToken = "";
@@ -777,7 +793,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 42: 다이어리 블라인드 시 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 43: 다이어리 블라인드 시 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_블라인드_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
@@ -790,7 +806,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 43: 다이어리 블라인드 시 [409]; 본인이 작성한 다이어리를 블라인드하려 할 때")
+    @DisplayName("테스트 44: 다이어리 블라인드 시 [409]; 본인이 작성한 다이어리를 블라인드하려 할 때")
     public void 다이어리_블라인드_실패_CONFLICT() {
         //given
         String accessToken = writerLogin();
@@ -803,7 +819,20 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 44: 다이어리 블라인드 시 [200];")
+    @DisplayName("테스트 40: 다이어리 블라인드 시 [403]; closed된 다이어리를 블라인드하려고 할 시")
+    public void 다이어리_블라인드_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = writerLogin();
+
+        //when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, closedDiaryId);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 45: 다이어리 블라인드 시 [200];")
     public void 방명록_블라인드_성공_OK() throws Exception {
         // given
         String accessToken = viewerLogin();
