@@ -7,6 +7,7 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
@@ -20,7 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
+// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity(name = "members")
@@ -64,11 +65,12 @@ public class Member extends TimestampEntity implements UserDetails {
 
     @Embedded
     private MemberRoles roles;
-//
-//    @ElementCollection(fetch = FetchType.EAGER)
+
+//    // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
+//    @ElementCollection(fetch = FetchType.LAZY)
 //    private final List<Member> followers = new ArrayList<>();
 //
-//    @ElementCollection(fetch = FetchType.EAGER)
+//    @ElementCollection(fetch = FetchType.LAZY)
 //    private final List<Member> followees = new ArrayList<>();
 
     @Column(name = "withdrawal_date")
@@ -288,5 +290,22 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public Boolean isEmotionScoreInitialized(Emotion emotion) {
         return this.emotionScore.containsKey(emotion);
+    }
+
+    public void addReportCount() {
+        this.reportCount++;
+    }
+
+    // TODO: 자기자신을 팔로우할 수 없는 CannotFollowException과 합칠 수 있을까?
+    public void checkNotOwner(String memberId) {
+        if (this.UUID.equals(memberId)) {
+            throw new MyselfException("자신의 방명록에는 글을 쓸 수 없습니다.");
+        }
+    }
+
+    public void checkOwner(String memberId) {
+        if (!this.UUID.equals(memberId)) {
+            throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
+        }
     }
 }
