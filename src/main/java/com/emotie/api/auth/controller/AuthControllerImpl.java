@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import java.util.Optional;
 
 @RestController
@@ -26,12 +27,6 @@ public class AuthControllerImpl implements AuthController {
         return ResponseEntity.ok(new LoginResponse(accessToken));
     }
 
-    @Override
-    @PostMapping(value = "/authorization")
-    public ResponseEntity<Void> sendEmailAuthorizationToken(@AuthenticationPrincipal Member loginMember) throws Exception {
-        authService.sendEmailAuthorizationToken(loginMember);
-        return ResponseEntity.ok().build();
-    }
 
     @Override
     @PutMapping(value = "/authorization")
@@ -43,7 +38,7 @@ public class AuthControllerImpl implements AuthController {
 
     @Override
     @PostMapping(value = "/password-reset")
-    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "Email") Optional<String> email) throws Exception {
+    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "Email") Optional<String> email) throws MessagingException {
         authService.sendEmailPasswordResetToken(email);
         return ResponseEntity.ok().build();
     }

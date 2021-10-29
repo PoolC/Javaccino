@@ -2,6 +2,7 @@ package com.emotie.api.auth.service;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.infra.JwtTokenProvider;
+import com.emotie.api.common.service.MailService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import net.bytebuddy.utility.RandomString;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.mail.MessagingException;
 import java.util.Optional;
 
 @Service
@@ -38,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
         loginMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
     }
 
-    public void sendEmailPasswordResetToken(Optional<String> email) throws Exception {
+    public void sendEmailPasswordResetToken(Optional<String> email) throws MessagingException {
         String validEmail = email.get();
         String passwordResetToken = CreatePasswordResetToken(validEmail);
         mailService.sendEmailPasswordResetToken(validEmail, passwordResetToken);
