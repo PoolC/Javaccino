@@ -24,15 +24,11 @@ public class MemberBlindDiary {
     @JoinColumn(name = "diary_id")
     private Diary diary;
 
-    @Column(name = "reason", nullable = false)
-    protected String reason;
-
     @Builder
     public MemberBlindDiary(
-            Member member, Diary diary, String reason
+            Member member, Diary diary
     ) {
         this.member = member;
         this.diary = diary;
-        this.reason = reason;
     }
 }
