@@ -102,18 +102,18 @@ public class EmotionDataLoader implements ApplicationRunner {
             Emotion emotion = Emotion.of(emotionNames.get(i), emotionColors.get(i));
             emotionRepository.saveAndFlush(emotion);
             if (i < 7) {
-                Diary diary = Diary.of(adminMember, "s", emotion, false);
+                Diary diary = Diary.of(adminMember, "test", emotion, false);
                 diaryRepository.save(diary);
 
             }
             emotionRepository.saveAndFlush(emotion);
         }
 
-        updatingEmotionId = emotionRepository.findByEmotion("슬픔|SAD").orElseThrow().getId();
-        beforeUpdatingEmotion = "슬픔|SAD";
+        updatingEmotionId = emotionRepository.findByEmotion("슬픔").orElseThrow().getId();
+        beforeUpdatingEmotion = "슬픔";
 
-        deletingFailEmotionId = emotionRepository.findByEmotion("지침|TIRED").orElseThrow().getId();
-        deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정|NONE").orElseThrow().getId();
+        deletingFailEmotionId = emotionRepository.findByEmotion("지침").orElseThrow().getId();
+        deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정").orElseThrow().getId();
 
     }
 }

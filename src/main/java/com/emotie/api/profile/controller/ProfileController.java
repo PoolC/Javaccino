@@ -1,6 +1,8 @@
 package com.emotie.api.profile.controller;
 
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.profile.dto.ProfileResponse;
+import com.emotie.api.profile.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,10 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ProfileController {
 
+    private final ProfileService profileService;
 
     @GetMapping("/{memberId}")
-    public ResponseEntity<Void> getProfile(@AuthenticationPrincipal Member user, @PathVariable Integer memberId){
-
-    return null;
+    public ResponseEntity<ProfileResponse> getProfile
+            (@AuthenticationPrincipal Member user, @PathVariable String memberId){
+        return ResponseEntity.ok(profileService.getProfile(user,memberId));
     }
 }

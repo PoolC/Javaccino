@@ -26,6 +26,7 @@ public class Diary extends Postings {
     private Diary(
             Member writer, String content, Emotion emotion, Boolean isOpened
     ) {
+
         this.writer = writer;
         this.content = content;
         this.emotion = emotion;
