@@ -456,7 +456,26 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 20: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
+    @DisplayName("테스트 20: 다이어리 삭제 시 [403]; 일정 횟수 이상 신고된 방명록일 때")
+    public void 삭제_실패_FORBIDDEN_3() {
+        //given
+        String accessToken = writerLogin();
+        DiaryDeleteRequest request = DiaryDeleteRequest.builder()
+                .diaryId(List.of(overReportedId))
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = diaryDeleteRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+        assertThat(diaryRepository.existsById(overReportedId)).isTrue();
+        assertDiaryNotAdded();
+        assertScoreNotUpdated(writerId);
+    }
+
+    @Test
+    @DisplayName("테스트 21: 다이어리 삭제 시 [404]; 삭제를 요청한 데이터 중 일부 혹은 전체가 없는 경우")
     public void 삭제_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
@@ -475,7 +494,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 21: 다이어리 삭제 성공 [200]")
+    @DisplayName("테스트 22: 다이어리 삭제 성공 [200]")
     public void 삭제_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -513,32 +532,32 @@ public class DiaryApiTest extends AcceptanceTest {
     /* 기타 */
     /* 다이어리 검색 */
     @Test
-    @DisplayName("테스트 22: 다이어리 검색 시 (400): 인덱스가 허용 범위를 벗어난 경우")
+    @DisplayName("테스트 23: 다이어리 검색 시 (400): 인덱스가 허용 범위를 벗어난 경우")
     public void 다이어리_검색_실패_허용_되지_않은_인덱스() {
 
     }
 
     @Test
-    @DisplayName("테스트 23: 다이어리 검색 시 (400): 숨겨진 게시물을 검색했는데, 작성자가 아닌 경우")
+    @DisplayName("테스트 24: 다이어리 검색 시 (400): 숨겨진 게시물을 검색했는데, 작성자가 아닌 경우")
     public void 다이어리_검색_실패_숨겨진_게시물_작성자_아님() {
 
     }
 
     @Test
-    @DisplayName("테스트 24: 다이어리 검색 시 (401): 로그인하지 않았을 경우")
+    @DisplayName("테스트 25: 다이어리 검색 시 (401): 로그인하지 않았을 경우")
     public void 다이어리_검색_실패_비로그인() {
 
     }
 
     @Test
-    @DisplayName("테스트 25: 다이어리 검색 성공")
+    @DisplayName("테스트 26: 다이어리 검색 성공")
     public void 다이어리_검색_성공() {
 
     }
 
     /* 다이어리 내보내기 */
     @Test
-    @DisplayName("테스트 26: 다이어리를 내보낼 때 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 27: 다이어리를 내보낼 때 [403]; 로그인하지 않았을 경우")
     public void 다이어리_내보내기_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -552,7 +571,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 27: 다이어리를 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
+    @DisplayName("테스트 28: 다이어리를 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
     public void 다이어리_내보내기_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -566,7 +585,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 28: 다이어리를 내보낼 때 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 29: 다이어리를 내보낼 때 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_내보내기_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
@@ -580,7 +599,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 29: 다이어리를 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
+    @DisplayName("테스트 30: 다이어리를 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
     public void 다이어리_내보내기_실패_CONFLICT() {
         //given
         String accessToken = writerLogin();
@@ -594,7 +613,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 30: 다이어리 내보내기 성공 [200]")
+    @DisplayName("테스트 31: 다이어리 내보내기 성공 [200]")
     public void 다이어리_내보내기_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -608,7 +627,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 31: 다이어리를 모두 내보낼 때 [403]; 로그인하지 않았을 경우")
+    @DisplayName("테스트 32: 다이어리를 모두 내보낼 때 [403]; 로그인하지 않았을 경우")
     public void 다이어리_모두_내보내기_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
@@ -622,7 +641,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 32: 다이어리를 모두 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
+    @DisplayName("테스트 33: 다이어리를 모두 내보낼 때 [403]; 요청한 사람이 작성자가 아닌 경우")
     public void 다이어리_모두_내보내기_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
@@ -636,7 +655,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 33: 다이어리를 모두 내보낼 때 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 34: 다이어리를 모두 내보낼 때 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_모두_내보내기_실패_NOT_FOUND() {
         //given
         String accessToken = writerLogin();
@@ -651,7 +670,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 34: 다이어리를 모두 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
+    @DisplayName("테스트 35: 다이어리를 모두 내보낼 때 [409]; 요청자의 디바이스가 파일 내보내기를 허용하지 않는 경우")
     public void 다이어리_모두_내보내기_실패_CONFLICT() {
         //given
         String accessToken = writerLogin();
@@ -665,7 +684,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 35: 다이어리 모두 내보내기 성공 [200]")
+    @DisplayName("테스트 36: 다이어리 모두 내보내기 성공 [200]")
     public void 다이어리_모두_내보내기_성공_OK() {
         //given
         String accessToken = writerLogin();
@@ -680,7 +699,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* 다이어리 신고 */
     @Test
-    @DisplayName("테스트 36: 다이어리 신고 시 [403]; 로그인하지 않음")
+    @DisplayName("테스트 37: 다이어리 신고 시 [403]; 로그인하지 않음")
     public void 다이어리_신고_실패_FORBIDDEN() {
         //given
         String accessToken = "";
@@ -696,7 +715,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 37: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 38: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_신고_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
@@ -712,7 +731,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 38: 다이어리 신고 시 [409]; 본인이 작성한 다이어리를 신고하려 할 때")
+    @DisplayName("테스트 39: 다이어리 신고 시 [409]; 본인이 작성한 다이어리를 신고하려 할 때")
     public void 다이어리_신고_실패_CONFLICT() {
         //given
         String accessToken = writerLogin();
@@ -728,7 +747,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 39: 다이어리 신고 시 [200];")
+    @DisplayName("테스트 40: 다이어리 신고 시 [200];")
     public void 방명록_신고_성공_OK() throws Exception {
         // given
         String accessToken = viewerLogin();
@@ -745,7 +764,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
     /* 다이어리 블라인드 */
     @Test
-    @DisplayName("테스트 40: 다이어리 블라인드 시 [403]; 로그인하지 않음")
+    @DisplayName("테스트 41: 다이어리 블라인드 시 [403]; 로그인하지 않음")
     public void 다이어리_블라인드_실패_FORBIDDEN() {
         //given
         String accessToken = "";
@@ -758,7 +777,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 41: 다이어리 블라인드 시 [404]; 해당 다이어리가 없는 경우")
+    @DisplayName("테스트 42: 다이어리 블라인드 시 [404]; 해당 다이어리가 없는 경우")
     public void 다이어리_블라인드_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
@@ -771,7 +790,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 42: 다이어리 블라인드 시 [409]; 본인이 작성한 다이어리를 블라인드하려 할 때")
+    @DisplayName("테스트 43: 다이어리 블라인드 시 [409]; 본인이 작성한 다이어리를 블라인드하려 할 때")
     public void 다이어리_블라인드_실패_CONFLICT() {
         //given
         String accessToken = writerLogin();
@@ -784,7 +803,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 43: 다이어리 블라인드 시 [200];")
+    @DisplayName("테스트 44: 다이어리 블라인드 시 [200];")
     public void 방명록_블라인드_성공_OK() throws Exception {
         // given
         String accessToken = viewerLogin();
