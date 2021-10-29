@@ -35,15 +35,15 @@ public class AuthControllerImpl implements AuthController {
 
     @Override
     @PutMapping(value = "/authorization")
-    public ResponseEntity<Void> checkAuthorizationCode(@AuthenticationPrincipal Member loginMember,
-                                                       @RequestParam(name = "AuthorizationToken") Optional<String> authorizationToken) {
-        authService.checkAuthorizationTokenRequestAndChangeMemberRole(loginMember, authorizationToken);
+    public ResponseEntity<Void> checkAuthorizationCode(@RequestParam(name = "email") Optional<String> email,
+                                                       @RequestParam(name = "authorizationToken") Optional<String> authorizationToken) {
+        authService.checkAuthorizationTokenRequestAndChangeMemberRole(email, authorizationToken);
         return ResponseEntity.ok().build();
     }
 
     @Override
     @PostMapping(value = "/password-reset")
-    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "Email") Optional<String> email) throws Exception {
+    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "email") Optional<String> email) throws Exception {
         authService.sendEmailPasswordResetToken(email);
         return ResponseEntity.ok().build();
     }

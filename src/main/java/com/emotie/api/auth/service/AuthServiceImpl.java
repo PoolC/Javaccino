@@ -32,10 +32,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Transactional
-    public void checkAuthorizationTokenRequestAndChangeMemberRole(Member loginMember, Optional<String> authorizationToken) {
-        loginMember.checkAuthorized();
+    public void checkAuthorizationTokenRequestAndChangeMemberRole(Optional<String> email, Optional<String> authorizationToken) {
+        Member checkAuthorizationMember = memberService.getMemberByEmail(email.get());
+        checkAuthorizationMember.checkAuthorized();
         String validAuthorizationToken = checkRequestValid(authorizationToken);
-        loginMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
+        checkAuthorizationMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
     }
 
     public void sendEmailPasswordResetToken(Optional<String> email) throws Exception {

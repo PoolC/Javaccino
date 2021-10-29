@@ -13,7 +13,7 @@ public interface AuthController {
 
     public ResponseEntity<Void> sendEmailAuthorizationToken(Member member) throws Exception;
 
-    public ResponseEntity<Void> checkAuthorizationCode(Member member, Optional<String> authorizationToken);
+    public ResponseEntity<Void> checkAuthorizationCode(Optional<String> email, Optional<String> authorizationToken);
 
     public ResponseEntity<Void> sendEmailPasswordResetToken(Optional<String> email) throws Exception;
 

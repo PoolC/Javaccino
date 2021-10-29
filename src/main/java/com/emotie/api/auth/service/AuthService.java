@@ -10,7 +10,7 @@ public interface AuthService {
 
     public void sendEmailAuthorizationToken(Member loginMember) throws Exception;
 
-    public void checkAuthorizationTokenRequestAndChangeMemberRole(Member loginMember, Optional<String> AuthorizationToken);
+    public void checkAuthorizationTokenRequestAndChangeMemberRole(Optional<String> email, Optional<String> AuthorizationToken);
 
     public void sendEmailPasswordResetToken(Optional<String> email) throws Exception;
 
