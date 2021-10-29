@@ -9,6 +9,7 @@ import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.MemberWithdrawalRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +20,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 // TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것
 @Getter
@@ -63,6 +67,7 @@ public class Member extends TimestampEntity implements UserDetails {
     @Column(name = "report_count")
     private int reportCount = 0;
 
+
     @Embedded
     private MemberRoles roles;
 
@@ -77,6 +82,9 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
+    @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
+    private String withdrawalReason;
+
     @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
     @MapKeyJoinColumn(name = "emotion")
     private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
@@ -85,7 +93,7 @@ public class Member extends TimestampEntity implements UserDetails {
     }
 
     @Builder
-    public Member(String UUID, String email, String nickname, String passwordHash, Gender gender, LocalDate dateOfBirth, String introduction, String passwordResetToken, LocalDateTime passwordResetTokenValidUntil, String authorizationToken, LocalDateTime authorizationTokenValidUntil, int reportCount, MemberRoles roles) {
+    public Member(String UUID, String email, String nickname, String passwordHash, Gender gender, LocalDate dateOfBirth, String introduction, String passwordResetToken, LocalDateTime passwordResetTokenValidUntil, String authorizationToken, LocalDateTime authorizationTokenValidUntil, int reportCount, MemberRoles roles, @Nullable LocalDateTime withdrawalDate, String withdrawalReason) {
         this.UUID = UUID;
         this.email = email;
         this.nickname = nickname;
@@ -99,6 +107,8 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = authorizationTokenValidUntil;
         this.reportCount = reportCount;
         this.roles = roles;
+        this.withdrawalDate = withdrawalDate;
+        this.withdrawalReason = withdrawalReason;
     }
 
     public Member(MemberRoles roles) {
@@ -233,13 +243,10 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = null;
     }
 
-    public void withdraw() {
+    public void withdraw(MemberWithdrawalRequest memberWithdrawalRequest) {
         this.roles.changeRole(MemberRole.WITHDRAWAL);
+        this.withdrawalReason = memberWithdrawalRequest.getReason();
         this.withdrawalDate = LocalDateTime.now();
-    }
-
-    public void expel() {
-        this.roles.changeRole(MemberRole.EXPELLED);
     }
 
     public void updatePassword(String updatePassword) {
