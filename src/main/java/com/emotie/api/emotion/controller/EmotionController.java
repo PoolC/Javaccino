@@ -1,9 +1,6 @@
 package com.emotie.api.emotion.controller;
 
-import com.emotie.api.emotion.dto.EmotionCreateRequest;
-import com.emotie.api.emotion.dto.EmotionResponseUnused;
-import com.emotie.api.emotion.dto.EmotionUpdateRequest;
-import com.emotie.api.emotion.dto.EmotionsResponse;
+import com.emotie.api.emotion.dto.*;
 import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
@@ -27,8 +24,8 @@ public class EmotionController {
 
     @GetMapping()
     public ResponseEntity<EmotionsResponse> getAllEmotions(){
-        List<EmotionResponseUnused> emotions = emotionService.getAllEmotions().stream()
-                .map(EmotionResponseUnused::new)
+        List<EmotionResponse> emotions = emotionService.getAllEmotions().stream()
+                .map(EmotionResponse::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(new EmotionsResponse(emotions));
     }

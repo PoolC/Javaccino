@@ -5,17 +5,21 @@ import com.emotie.api.emotion.repository.EmotionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
 
+@Order(0)
 @Component
 @RequiredArgsConstructor
 public class EmotionProvider implements ApplicationRunner {
 
     public static ArrayList<String> emotionNames = new ArrayList<>();
     public static ArrayList<String> emotionColors = new ArrayList<>();
+
+    public final static int totalEmotionNumbers = 8;
     private final EmotionRepository emotionRepository;
 
     @Override

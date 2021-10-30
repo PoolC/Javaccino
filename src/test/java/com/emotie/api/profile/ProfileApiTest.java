@@ -22,9 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ProfileApiTest extends AcceptanceTest {
 
 
-    /*
-     1. 팔로우 기능 테스트
-  */
+
     @Test
     @DisplayName("테스트 01-01: 프로필 조회 실패 [403]; 로그인하지 않았을 때")
     public void 방명록_전체_조회_실패_FORBIDDEN() throws Exception {
@@ -60,7 +58,8 @@ public class ProfileApiTest extends AcceptanceTest {
         ExtractableResponse<Response> response = profileRequest(accessToken, profileMemberId);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+        System.out.println(profileMember.getEmotionScore().isEmpty());
         System.out.println(response.body().jsonPath());
     }
 

@@ -1,6 +1,7 @@
 package com.emotie.api.emotion.dto;
 
 import com.emotie.api.emotion.domain.Emotion;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 
 @Getter
@@ -11,5 +12,10 @@ public class EmotionResponse {
     public EmotionResponse(Emotion emotion) {
         this.tag = emotion.getEmotion();
         this.color = emotion.getColor();
+    }
+    @JsonCreator
+    public EmotionResponse(String tag, String color) {
+        this.tag = tag;
+        this.color = color;
     }
 }

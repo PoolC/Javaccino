@@ -13,6 +13,7 @@ public abstract class Postings extends TimestampEntity {
     public static Integer reportCountThreshold = 10;
 
     @Id
+    @GeneratedValue
     @Column(name = "id", nullable = false, unique = true)
     protected Long id;
 

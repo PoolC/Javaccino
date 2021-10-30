@@ -35,7 +35,7 @@ public class Emotion extends TimestampEntity {
     private Emotion(String emotion, String color) {
         this.emotion = emotion;
         this.color = color;
-        this.priority = priority;
+
     }
 
     public static Emotion of(String emotion, String color) {

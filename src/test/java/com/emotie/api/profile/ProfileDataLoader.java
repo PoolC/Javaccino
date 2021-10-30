@@ -6,6 +6,7 @@ import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.*;
+import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
@@ -17,6 +18,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
+
+import static com.emotie.api.common.init.EmotionProvider.emotionNames;
 
 @Order(1)
 @Component
@@ -30,6 +34,7 @@ public class ProfileDataLoader implements ApplicationRunner {
     private final DiaryRepository diaryRepository;
     private final FollowRepository followRepository;
     private final MemberService memberService;
+    private final EmotionScoreRepository emotionScoreRepository;
 
     public static Member profileMember;
 
@@ -90,6 +95,25 @@ public class ProfileDataLoader implements ApplicationRunner {
         memberRepository.save(profileMember);
         memberRepository.save(profileMemberEmotion);
 
+        List<Emotion> allEmotion = emotionRepository.findAll();
+
+        List.of(profileMember, profileMemberEmotion).forEach(
+                (user) ->
+                        allEmotion.forEach(
+                                (emotion) -> {
+                                    EmotionScore emotionScore = EmotionScore.of(
+                                            user.getUUID(),
+                                            emotion,
+                                            0.0
+                                    );
+                                    emotionScoreRepository.save(emotionScore);
+
+                                    user.initializeEmotionScore(emotion, emotionScore);
+                                    memberRepository.saveAndFlush(user);
+                                }
+                        )
+        );
+
         for (int i =0; i < 4; i++){
             Member followMember = Member.builder()
                     .UUID("followMember_" + i)
@@ -136,7 +160,7 @@ public class ProfileDataLoader implements ApplicationRunner {
 
     private void generateDiaries(){
         for (int i = 0; i < 8; i++) {
-            Emotion emotion = emotionRepository.getById(i);
+            Emotion emotion = emotionRepository.findByEmotion(emotionNames.get(i)).get();
 
             diaryRepository.save(
                     Diary.builder()

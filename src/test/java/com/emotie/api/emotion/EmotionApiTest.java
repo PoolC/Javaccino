@@ -54,7 +54,7 @@ public class EmotionApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(OK.value());
         assertThat(
                 (int) responseBody.getEmotions().stream()
-                        .filter(emotionResponse -> emotionNames.stream().noneMatch(Predicate.isEqual(emotionResponse.getEmotion())))
+                        .filter(emotionResponse -> emotionNames.stream().noneMatch(Predicate.isEqual(emotionResponse.getTag())))
                         .count()
         ).isEqualTo(0);
         assertThat(
