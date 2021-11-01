@@ -4,7 +4,6 @@ import com.emotie.api.auth.exception.*;
 import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.common.exception.NotSameException;
 import com.emotie.api.diary.exception.PeekingPrivatePostException;
-import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
@@ -58,8 +57,7 @@ public class CommonExceptionHandlers {
 
     @ExceptionHandler({
             ExpiredTokenException.class, WrongTokenException.class, DuplicatedException.class,
-            CannotFollowException.class, EmotionDeleteConflictException.class,
-            IndexOutOfBoundsException.class, EmotionScoreNotInitializedException.class,
+            CannotFollowException.class, IndexOutOfBoundsException.class, EmotionScoreNotInitializedException.class,
             MyselfException.class
     })
     public ResponseEntity<Map<String, String>> conflictHandler(Exception e) {
