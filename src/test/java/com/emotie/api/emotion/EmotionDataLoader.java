@@ -60,6 +60,5 @@ public class EmotionDataLoader implements ApplicationRunner {
                 .roles(MemberRoles.getDefaultFor(MemberRole.ADMIN))
                 .build();
         memberRepository.saveAndFlush(member);
-        emotionRepository.save(new HappyEmotion(member, 0.0));
     }
 }

@@ -17,6 +17,7 @@ import static com.emotie.api.auth.AuthAcceptanceTest.loginRequest;
 import static com.emotie.api.diary.DiaryApiTest.diaryCreateRequest;
 import static com.emotie.api.emotion.EmotionDataLoader.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.withPrecision;
 
 @ActiveProfiles({"EmotionDataLoader", "DiaryDataLoader"})
 public class EmotionApiTest extends AcceptanceTest {
@@ -40,11 +41,11 @@ public class EmotionApiTest extends AcceptanceTest {
         diaryCreateRequest(accessToken, diaryCreateRequest);
 
         List<Emotion> emotions = emotionRepository.findAllByMember(member);
-        assertThat(Math.round(emotions.stream()
+        assertThat(emotions.stream()
                 .filter(emotion -> emotion.getName().equals(HAPPY_EMOTION))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("No emotion found with name: " + HAPPY_EMOTION))
-                .getScore() * 100)).isEqualTo(21L);
+                .getScore()).isEqualTo(0.21, withPrecision(1e-2));
     }
 
     public static String login(String email, String password) {

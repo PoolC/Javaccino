@@ -1,9 +1,15 @@
 package com.emotie.api.emotion.domain;
 
+import com.emotie.api.member.domain.Member;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Emotions {
+    private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
     private static final Double REDUCE_AMOUNT = 1.0;
     private static final Double NOT_REDUCE_AMOUNT = 0.0;
     private static final Double DEEPEN_AMOUNT = 1.0;
@@ -12,7 +18,19 @@ public class Emotions {
     private final List<Emotion> emotions;
 
     // TODO: 감정이 8개였다가 변하면 오류나서 감정계산할때 전체 재계산이 필요한지 여부 파악 필요
-    public Emotions(List<Emotion> emotions) {
+    public Emotions(Member member, List<Emotion> emotions) {
+        if(noEmotionsYet(emotions)) {
+            emotions = new Reflections(EMOTION_BASE_PACKAGE, new SubTypesScanner())
+                    .getSubTypesOf(Emotion.class).stream()
+                    .map(concreteEmotionClass -> {
+                        try {
+                            return concreteEmotionClass.getDeclaredConstructor(Member.class).newInstance(member);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Couldn't create concrete Emotion class\n" + e.getMessage());
+                        }
+                    })
+                    .collect(Collectors.toList());
+        }
         this.emotions = Collections.unmodifiableList(emotions);
     }
 
@@ -76,5 +94,9 @@ public class Emotions {
 
     private boolean acceptedScoreRange(Double score) {
         return 0.0 <= score && score <= 1.0;
+    }
+
+    private boolean noEmotionsYet(List<Emotion> emotions) {
+        return emotions.size() == 0;
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.withPrecision;
 
 public class EmotionTest {
     private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
@@ -39,7 +40,7 @@ public class EmotionTest {
         Emotion angryEmotion = new AngryEmotion(Member.builder().build(), 0.0);
         angryEmotion.deepenScore(1.0);
 
-        assertThat(Math.round(angryEmotion.getScore() * 100.0)).isEqualTo(21L);
+        assertThat(angryEmotion.getScore()).isEqualTo(0.20, withPrecision(1e-2));
     }
 
     @Test
@@ -47,6 +48,6 @@ public class EmotionTest {
         Emotion angryEmotion = new AngryEmotion(Member.builder().build(), 1.0);
         angryEmotion.reduceScore(0.5);
 
-        assertThat(Math.round(angryEmotion.getScore() * 100.0)).isEqualTo(113L);
+        assertThat(angryEmotion.getScore()).isEqualTo(1.13, withPrecision(1e-2));
     }
 }
