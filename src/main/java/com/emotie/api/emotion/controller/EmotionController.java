@@ -1,10 +1,10 @@
 package com.emotie.api.emotion.controller;
 
+import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.emotion.dto.EmotionCreateRequest;
 import com.emotie.api.emotion.dto.EmotionResponseUnused;
 import com.emotie.api.emotion.dto.EmotionUpdateRequest;
 import com.emotie.api.emotion.dto.EmotionsResponse;
-import com.emotie.api.emotion.exception.DuplicatedEmotionException;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
@@ -60,13 +60,13 @@ public class EmotionController {
 
     public void checkDuplicateEmotion(String emotion){
         if(emotionRepository.findByEmotion(emotion).isPresent()){
-            throw new DuplicatedEmotionException("중복된 감정입니다.");
+            throw new DuplicatedException("중복된 감정입니다.");
         }
     }
 
     public void checkDuplicateColor(String color){
         if(emotionRepository.findByEmotion(color).isPresent()){
-            throw new DuplicatedEmotionException("중복된 색상입니다.");
+            throw new DuplicatedException("중복된 색상입니다.");
         }
     }
 }

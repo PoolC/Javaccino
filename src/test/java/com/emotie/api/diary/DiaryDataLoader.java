@@ -48,11 +48,13 @@ public class DiaryDataLoader implements ApplicationRunner {
 
     private static Member writer, viewer, unauthorized;
     public static String writerId;
+    public static final String notExistMemberId = "notExist!#";
 
     public static final String originalContent = "오늘 잠을 잘 잤다. 좋았다.",
             updatedContent = "어제도 잠을 잘 잤다. 좋았었다.",
             newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
     public static final Long invalidId = Long.MAX_VALUE;
+    public static final int PAGE_SIZE = 10;
 
     public static Emotion diaryEmotion, otherEmotion;
     public static Long openedDiaryId, closedDiaryId, viewerReportedId, unreportedId, almostReportedId, overReportedId, unBlindedId, viewerBlindedId;
@@ -70,6 +72,7 @@ public class DiaryDataLoader implements ApplicationRunner {
         createEmotions();
         registerMembers();
         writeDiaries();
+        countDiaries();
         setDiaryIndexes();
         registerReporters();
         writeDiariesAndReport();
@@ -144,45 +147,80 @@ public class DiaryDataLoader implements ApplicationRunner {
 
         List.of(writer, viewer, unauthorized).forEach(
                 (user) ->
-                        allEmotion.forEach(
-                                (emotion) -> {
-                                    EmotionScore emotionScore = EmotionScore.of(
-                                            user.getUUID(),
-                                            emotion,
-                                            0.0
-                                    );
-                                    emotionScoreRepository.save(emotionScore);
+                allEmotion.forEach(
+                        (emotion) -> {
+                            EmotionScore emotionScore = EmotionScore.of(
+                                    user.getUUID(),
+                                    emotion,
+                                    0.0
+                            );
+                            emotionScoreRepository.save(emotionScore);
 
-                                    user.initializeEmotionScore(emotion, emotionScore);
-                                    memberRepository.saveAndFlush(user);
-                                }
-                        )
+                            user.initializeEmotionScore(emotion, emotionScore);
+                            memberRepository.saveAndFlush(user);
+                        }
+                )
         );
         writerId = writer.getUUID();
     }
 
     private void writeDiaries() {
+        Diary openedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                true
+        );
         diaryRepository.save(
-                Diary.of(
-                        writer,
-                        originalContent,
-                        diaryEmotion,
-                        true
-                )
+                openedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
+        openedDiaryId = openedDiary.getId();
+
+        Diary closedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                false
+        );
         diaryRepository.save(
-                Diary.of(
-                        writer,
-                        originalContent,
-                        diaryEmotion,
-                        false
-                )
+            closedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
+        closedDiaryId = closedDiary.getId();
+
         for (int i = 0; i < 2; i++) {
             writer.deepenEmotionScore(diaryEmotion);
         }
+
+        for (int i = 0; i < 95; i++) {
+            Boolean openFlag = (i % 3 == 0);
+            if (i % 2 == 0) {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                otherEmotion,
+                                openFlag
+                        )
+                );
+                emotionRepository.saveAndFlush(otherEmotion);
+                writer.deepenEmotionScore(otherEmotion);
+            } else {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                diaryEmotion,
+                                openFlag
+                        )
+                );
+                emotionRepository.saveAndFlush(diaryEmotion);
+                writer.deepenEmotionScore(diaryEmotion);
+            }
+
+        }
+
         memberRepository.saveAndFlush(writer);
         basicDiaryEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, diaryEmotion).get().getScore();
         basicOtherEmotionScore = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getScore();
@@ -190,13 +228,7 @@ public class DiaryDataLoader implements ApplicationRunner {
         basicOtherEmotionCount = emotionScoreRepository.findByMemberIdAndEmotion(writerId, otherEmotion).get().getCount();
     }
 
-    private void setDiaryIndexes() {
-        diaryRepository.findAll().forEach(
-                (it) -> {
-                    if (it.getIsOpened()) openedDiaryId = it.getId();
-                    else closedDiaryId = it.getId();
-                }
-        );
+    private void countDiaries() {
         diaryCount = diaryRepository.count();
     }
 
