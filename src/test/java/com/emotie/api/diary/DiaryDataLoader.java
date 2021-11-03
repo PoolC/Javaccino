@@ -73,7 +73,6 @@ public class DiaryDataLoader implements ApplicationRunner {
         registerMembers();
         writeDiaries();
         countDiaries();
-        setDiaryIndexes();
         registerReporters();
         writeDiariesAndReport();
         writeDiariesAndBlind();
@@ -147,19 +146,19 @@ public class DiaryDataLoader implements ApplicationRunner {
 
         List.of(writer, viewer, unauthorized).forEach(
                 (user) ->
-                allEmotion.forEach(
-                        (emotion) -> {
-                            EmotionScore emotionScore = EmotionScore.of(
-                                    user.getUUID(),
-                                    emotion,
-                                    0.0
-                            );
-                            emotionScoreRepository.save(emotionScore);
+                        allEmotion.forEach(
+                                (emotion) -> {
+                                    EmotionScore emotionScore = EmotionScore.of(
+                                            user.getUUID(),
+                                            emotion,
+                                            0.0
+                                    );
+                                    emotionScoreRepository.save(emotionScore);
 
-                            user.initializeEmotionScore(emotion, emotionScore);
-                            memberRepository.saveAndFlush(user);
-                        }
-                )
+                                    user.initializeEmotionScore(emotion, emotionScore);
+                                    memberRepository.saveAndFlush(user);
+                                }
+                        )
         );
         writerId = writer.getUUID();
     }
@@ -184,7 +183,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                 false
         );
         diaryRepository.save(
-            closedDiary
+                closedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
         closedDiaryId = closedDiary.getId();
