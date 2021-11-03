@@ -50,7 +50,7 @@ public class Diary extends Postings {
     }
 
     public Diary read(Member user) {
-        checkIsOpenedAndWriter(user);
+        checkIsOpenedOrWriter(user);
         return this;
     }
 
@@ -65,12 +65,11 @@ public class Diary extends Postings {
     }
 
     public void checkIsOpened() {
-        if (!this.isOpened) throw new UnauthorizedException("비공개 게시물입니다.");
+        if (!this.isOpened) throw new UnauthorizedException("비공개 게시물에 대해 수행할 수 없는 요청입니다.");
     }
 
-    private void checkIsOpenedAndWriter(Member user) {
-        checkIsOpened();
-        if (!this.writer.equals(user)) throw new PeekingPrivatePostException("비공개 게시물은 볼 수 없습니다.");
+    private void checkIsOpenedOrWriter(Member user) {
+        if (!this.writer.equals(user) && !this.isOpened) throw new PeekingPrivatePostException("비공개 게시물입니다.");
     }
 
     public void checkUserValidity(Member user) {
