@@ -12,7 +12,7 @@ import javax.persistence.Id;
 
 @Entity(name = "emotions")
 @Getter
-public class Emotion extends TimestampEntity {
+public class Emotion extends TimestampEntity implements Comparable<Emotion> {
 
     @Id
     @GeneratedValue
@@ -45,6 +45,16 @@ public class Emotion extends TimestampEntity {
     public void update(String emotion, String color) {
         this.emotion = emotion;
         this.color = color;
+    }
+
+    // Comparable interface
+    public int compareTo(Emotion e)
+    {
+        // Two instance of class can be compared
+        int diff = this.id - e.id;
+
+        // Note: Two equal employee Id will return 0
+        return diff;
     }
 
 

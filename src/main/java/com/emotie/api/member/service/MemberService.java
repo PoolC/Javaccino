@@ -16,6 +16,8 @@ import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
 import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
+import com.emotie.api.profile.dto.FolloweeResponse;
+import com.emotie.api.profile.dto.FollowerResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +118,18 @@ public class MemberService {
         Follow newFollow = Follow.builder().fromMember(fromMember).toMember(toMember).build();
         followRepository.save(newFollow);
         return true;
+    }
+
+    public boolean isFollowed(Member member, Member profileMember) {
+        return followRepository.findFollowByFromMemberAndToMember(member, profileMember).isPresent();
+    }
+
+    public List<FolloweeResponse> getFolloweesByMember(Member profileMember) {
+        return followRepository.findFollowByFromMember(profileMember).get().stream().map(FolloweeResponse::new).collect(Collectors.toList());
+    }
+
+    public List<FollowerResponse> getFollowersByMember(Member profileMember) {
+        return followRepository.findFollowByToMember(profileMember).get().stream().map(FollowerResponse::new).collect(Collectors.toList());
     }
 
     public void delete(Member executor, String memberId) {

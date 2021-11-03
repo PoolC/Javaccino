@@ -19,10 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 // TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Getter
@@ -180,26 +177,6 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
-    private void checkAuthorizationToken(String authorizationToken) {
-        checkTokenExpired(this.authorizationTokenValidUntil);
-        checkTokenCorrect(this.authorizationToken, authorizationToken);
-    }
-
-    private void checkPasswordResetToken(String passwordResetToken) {
-        checkTokenExpired(this.passwordResetTokenValidUntil);
-        checkTokenCorrect(this.passwordResetToken, passwordResetToken);
-    }
-
-    private void checkTokenExpired(LocalDateTime memberTokenValidUntil) {
-        if (!memberTokenValidUntil.isAfter(LocalDateTime.now()))
-            throw new ExpiredTokenException("토큰이 만료되었습니다.");
-    }
-
-    private void checkTokenCorrect(String memberToken, String inputToken) {
-        if (!memberToken.equals(inputToken))
-            throw new WrongTokenException("인증 토큰이 틀렸습니다.");
-    }
-
     private void changeMember() {
         this.roles.changeRole(MemberRole.MEMBER);
         this.authorizationToken = null;
@@ -218,6 +195,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public void updatePassword(String updatePassword) {
         this.passwordHash = updatePassword;
     }
+
+    public void updateIntroduction(String updatingIntroduction){this.introduction = updatingIntroduction;}
 
     public void updateUserInfo(MemberUpdateRequest request) {
         this.nickname = request.getNickname();
@@ -280,5 +259,25 @@ public class Member extends TimestampEntity implements UserDetails {
         if (!this.UUID.equals(memberId)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
         }
+    }
+
+    private void checkAuthorizationToken(String authorizationToken) {
+        checkTokenExpired(this.authorizationTokenValidUntil);
+        checkTokenCorrect(this.authorizationToken, authorizationToken);
+    }
+
+    private void checkPasswordResetToken(String passwordResetToken) {
+        checkTokenExpired(this.passwordResetTokenValidUntil);
+        checkTokenCorrect(this.passwordResetToken, passwordResetToken);
+    }
+
+    private void checkTokenExpired(LocalDateTime memberTokenValidUntil) {
+        if (!memberTokenValidUntil.isAfter(LocalDateTime.now()))
+            throw new ExpiredTokenException("토큰이 만료되었습니다.");
+    }
+
+    private void checkTokenCorrect(String memberToken, String inputToken) {
+        if (!memberToken.equals(inputToken))
+            throw new WrongTokenException("인증 토큰이 틀렸습니다.");
     }
 }
