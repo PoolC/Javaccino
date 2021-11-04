@@ -21,7 +21,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.loginRequest;
@@ -252,6 +251,7 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertWellPaged(response, "90");
         assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).allMatch(DiaryReadResponse::getIsOpened);
+        assertThat(response.body().jsonPath().getList("diaries", DiaryReadResponse.class)).extracting("diaryId").doesNotContain(viewerReportedId, overReportedId, viewerBlindedId);
     }
 
     @Test
