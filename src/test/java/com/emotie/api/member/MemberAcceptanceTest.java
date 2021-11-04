@@ -1,6 +1,7 @@
 package com.emotie.api.member;
 
 import com.emotie.api.AcceptanceTest;
+import com.emotie.api.auth.AuthAcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.member.domain.Gender;
@@ -715,6 +716,34 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 //        // 실제
 //        Member expelledMember = getByEmailAssertingExistence(MemberDataLoader.unauthorizedEmail);
 //        assertThat(expelledMember.getRoles().hasRole(MemberRole.EXPELLED)).isTrue();
+    }
+
+    @Test
+    @Order(36)
+    @DisplayName("본인 조회 실패 [403]; 로그인하지 않았을 때")
+    public void 회원_본인_조회_실패_FORBIDDEN() throws Exception {
+        // given
+        String accessToken = "";
+
+        // when
+        ExtractableResponse<Response> response = getMyInformation(accessToken);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @Order(37)
+    @DisplayName("본인 조회 성공 [200];")
+    public void 회원_본인_조회_성공() throws Exception {
+        // given
+        String accessToken = AuthAcceptanceTest.authorizedLogin();
+
+        // when
+        ExtractableResponse<Response> response = getMyInformation(accessToken);
+
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
     private ExtractableResponse<Response> memberCreateRequest(MemberCreateRequest request) {

@@ -26,6 +26,12 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<MemberResponse> getMyInformation(@AuthenticationPrincipal Member user) {
+        MemberResponse response = MemberResponse.of(user);
+        return ResponseEntity.ok().body(response);
+    }
+
     @GetMapping("/nickname")
     public ResponseEntity<Map<String, Boolean>> checkNicknameDuplicate(@RequestBody @Valid NicknameCheckRequest request) {
         Boolean checkNicknameDuplicateFlag = memberService.checkNicknameUse(request.getNickname());
@@ -54,7 +60,6 @@ public class MemberController {
         memberService.updatePassword(user, request);
         return ResponseEntity.ok().build();
     }
-
 
     @PostMapping(value = "/follow/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MemberFollowResponse> toggleMemberFollow(
