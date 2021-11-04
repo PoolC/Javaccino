@@ -72,10 +72,10 @@ public class DiaryDataLoader implements ApplicationRunner {
         createEmotions();
         registerMembers();
         writeDiaries();
-        countDiaries();
         registerReporters();
         writeDiariesAndReport();
         writeDiariesAndBlind();
+        countDiaries();
     }
 
     private void createEmotions() {
