@@ -14,4 +14,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
     List<Diary> findAllByWriter(Member writer, Pageable pageable);
 
     List<Diary> findAllByWriterAndIsOpened(Member writer, Boolean isOpened, Pageable pageable);
+
+    List<Diary> findAllByWriterAndIsOpened(Member writer, Boolean isOpened);
 }
