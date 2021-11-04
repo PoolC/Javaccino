@@ -6,11 +6,13 @@ import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.dto.*;
+import com.emotie.api.member.repository.FollowRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
@@ -33,10 +35,9 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 //    // 나중에 실제 구현할 때 추가해야할 테스트 코드
 //    private final MemberRepository memberRepository;
 //    private final PasswordHashProvider passwordHashProvider;
-//    private final FollowersRepository followersRepository;
-//    private final FolloweesRepository followeesRepository;
 //    private final JwtTokenProvider jwtTokenProvider;
-
+    @Autowired
+    public  FollowRepository followRepository;
     /*
         회원가입 테스트를 위한 상수
      */
@@ -538,7 +539,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = "";
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -552,7 +553,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -566,7 +567,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistNickname);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, notExistMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -580,7 +581,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.unauthorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
@@ -594,7 +595,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
@@ -608,27 +609,15 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.followerEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().as(MemberFollowResponse.class))
                 .hasFieldOrPropertyWithValue("isFollowing", true);
-
-//        // 실제 팔로잉하고 있는지 확인하는 부분
-//        Member followed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
-//        Member user = getByAccessTokenAssertingExistence(accessToken);
-//
-//        // 팔로잉 관계에 있는 것이 도메인 단에서 확인 가능하고,
-//        assertThat(followed.isFollowedBy(user)).isTrue();
-//        assertThat(user.isFollowing(followed)).isTrue();
-//
-//        // 실제 repository 에도 확실히 등록이 되어 있음.
-//        List<Member> userFollowers = followersRepository.findAllById(List.of(user.getUUID()));
-//        assertThat(followed).isIn(userFollowers);
-//
-//        List<Member> followedFollowees = followeesRepository.findAllById(List.of(followed.getUUID()));
-//        assertThat(user).isIn(followedFollowees);
+        assertThat(followRepository.findAll().size()).isEqualTo(1);
+        assertThat(followRepository.findAll().get(0).getFromMember().getUUID()).isEqualTo(authorizedMemberId);
+        assertThat(followRepository.findAll().get(0).getToMember().getUUID()).isEqualTo(followeeMemberId);
     }
 
     @Test
@@ -639,27 +628,13 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberFollowRequest(accessToken, MemberDataLoader.followerEmail);
+        ExtractableResponse<Response> response = memberFollowRequest(accessToken, followeeMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().as(MemberFollowResponse.class))
                 .hasFieldOrPropertyWithValue("isFollowing", false);
-
-//        // 실제 언팔로우 했는지 확인하는 부분
-//        Member unfollowed = getByEmailAssertingExistence(MemberDataLoader.authorizedEmail);
-//        Member user = getByAccessTokenAssertingExistence(accessToken);
-//
-//        // 팔로잉 관계에 있지 않는 것이 도메인 단에서 확인 가능하고,
-//        assertThat(unfollowed.isFollowedBy(user)).isFalse();
-//        assertThat(user.isFollowing(unfollowed)).isFalse();
-//
-//        // 실제 repository 에서도 확실이 드랍 됨.
-//        List<Member> userFollowers = followersRepository.findAllById(List.of(user.getUUID()));
-//        assertThat(unfollowed).isNotIn(userFollowers);
-//
-//        List<Member> unfollowedFollowees = followeesRepository.findAllById(List.of(unfollowed.getUUID()));
-//        assertThat(user).isNotIn(unfollowedFollowees);
+        assertThat(followRepository.findAll().size()).isEqualTo(0);
     }
 
     /*
@@ -673,7 +648,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = "";
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -687,7 +662,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.authorizedEmail);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, authorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -701,7 +676,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, notExistNickname);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, notExistMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -715,7 +690,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = unauthorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.unauthorizedEmail);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -733,7 +708,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = adminLogin();
 
         // when
-        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, MemberDataLoader.unauthorizedEmail);
+        ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, unAuthorizedMemberId);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -826,35 +801,26 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     private ExtractableResponse<Response> memberFollowRequest(
-            String accessToken, String nickname
+            String accessToken, String memberId
     ) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().post("/members/follow/{nickname}", nickname)
+                .when().post("/members/follow/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }
 
-    private ExtractableResponse<Response> memberWithdrawalRequest(String accessToken, String nickname) {
+    private ExtractableResponse<Response> memberWithdrawalRequest(String accessToken, String memberId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().delete("/members/{nickname}", nickname)
+                .when().delete("/members/{memberId}", memberId)
                 .then().log().all()
                 .extract();
     }
 
-    private ExtractableResponse<Response> getMyInformation(String accessToken) {
-        return RestAssured
-                .given().log().all()
-                .auth().oauth2(accessToken)
-                .when().get("/members/me")
-                .then().log().all()
-                .extract();
-    }
-
-    private String adminLogin() {
+    public static String adminLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(MemberDataLoader.adminEmail)
                 .password(MemberDataLoader.password)

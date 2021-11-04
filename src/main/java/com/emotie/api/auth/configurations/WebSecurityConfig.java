@@ -66,15 +66,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/emotions/{emotionId}").hasAuthority(MemberRole.ADMIN.name())
 
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .antMatchers(HttpMethod.POST, "/auth/authorization").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
-                .antMatchers(HttpMethod.PUT, "/auth/authorization").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
 
                 .antMatchers(HttpMethod.POST, "/members").permitAll()
                 .antMatchers(HttpMethod.PUT, "/members").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
-                .antMatchers(HttpMethod.POST, "/members/follow/{nickname}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
-                .antMatchers(HttpMethod.DELETE, "/members/{nickname}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
-                .antMatchers(HttpMethod.GET, "/members/me").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
-                
+
+                .antMatchers(HttpMethod.POST, "/members/follow/{uuid}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/members/{uuid}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+
+                .antMatchers(HttpMethod.POST, "/diaries").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.PUT, "/diaries/{diaryId}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/diaries").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.GET, "/diaries/{diaryId}").permitAll()
+
+                .antMatchers(HttpMethod.GET, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.PUT, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.POST, "/guestbooks/report/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.DELETE, "/guestbooks/{guestbookId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.DELETE, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
