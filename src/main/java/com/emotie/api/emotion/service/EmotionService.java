@@ -1,8 +1,8 @@
 package com.emotie.api.emotion.service;
 
+import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.dto.EmotionCreateRequest;
-import com.emotie.api.emotion.dto.EmotionResponse;
 import com.emotie.api.emotion.dto.EmotionUpdateRequest;
 import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
 import com.emotie.api.emotion.repository.EmotionRepository;
@@ -18,10 +18,12 @@ import java.util.NoSuchElementException;
 public class EmotionService {
 
     private final EmotionRepository emotionRepository;
+    private final DiaryRepository diaryRepository;
 
     public List<Emotion> getAllEmotions(){
         return emotionRepository.findAll();
     }
+
 
     @Transactional
     public void createEmotion(EmotionCreateRequest request) {
@@ -39,7 +41,7 @@ public class EmotionService {
     @Transactional
     public void deleteEmotion(Integer emotionId){
         Emotion deletingEmotion = emotionRepository.findById(emotionId).orElseThrow(()-> new NoSuchElementException("잘못된 emotionId 입니다."));
-        if(deletingEmotion.getDiariesList().size() > 0){
+        if(diaryRepository.findByEmotion(deletingEmotion).size() > 0 ){
             throw new EmotionDeleteConflictException("해당 감정을 사용하는 다이어리가 존재합니다.");
         }
         emotionRepository.delete(deletingEmotion);
