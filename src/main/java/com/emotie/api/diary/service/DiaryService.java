@@ -56,13 +56,13 @@ public class DiaryService {
 
         Pageable page = PageRequest.of(pageNumber, PAGE_SIZE, Sort.by("createdAt").descending());
         if (user.equals(writer)) {
-            List<Diary> allDiaries = diaryRepository.findAllByWriter(writer, Diary.reportCountThreshold, page);
+            List<Diary> allDiaries = diaryRepository.findAllByWriter(user, writer, Diary.reportCountThreshold, page);
             return new DiaryReadAllResponse(
                     allDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
             );
         }
 
-        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(writer, true, Diary.reportCountThreshold, page);
+        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(user, writer, true, Diary.reportCountThreshold, page);
         return new DiaryReadAllResponse(
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
         );

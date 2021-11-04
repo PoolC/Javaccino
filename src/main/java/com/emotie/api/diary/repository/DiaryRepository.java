@@ -18,7 +18,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             " AND d.id NOT IN (SELECT DISTINCT mrd.diary FROM members_report_diaries mrd WHERE mrd.member = :user)" +
             " AND d.id NOT IN (SELECT DISTINCT mbd.diary FROM members_blind_diaries mbd WHERE mbd.member = :user)" +
             " AND d.reportCount < :reportCountThreshold")
-    List<Diary> findAllByWriter(Member writer, Integer reportCountThreshold, Pageable pageable);
+    List<Diary> findAllByWriter(Member user, Member writer, Integer reportCountThreshold, Pageable pageable);
 
     @Query(value = "SELECT d" +
             " FROM emodiaries d" +
@@ -27,5 +27,5 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             " AND d.id NOT IN (SELECT DISTINCT mrd.diary FROM members_report_diaries mrd WHERE mrd.member = :user)" +
             " AND d.id NOT IN (SELECT DISTINCT mbd.diary FROM members_blind_diaries mbd WHERE mbd.member = :user)" +
             " AND d.reportCount < :reportCountThreshold")
-    List<Diary> findAllByWriterAndIsOpened(Member writer, Boolean isOpened, Integer reportCountThreshold, Pageable pageable);
+    List<Diary> findAllByWriterAndIsOpened(Member user, Member writer, Boolean isOpened, Integer reportCountThreshold, Pageable pageable);
 }
