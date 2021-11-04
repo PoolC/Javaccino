@@ -38,7 +38,7 @@ public class CommonExceptionHandlers {
                 .body(errors);
     }
 
-    @ExceptionHandler({UnauthenticatedException.class, WrongPasswordException.class})
+    @ExceptionHandler({UnauthenticatedException.class})
     public ResponseEntity<Map<String, String>> unauthorizedHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Collections.singletonMap("message", e.getMessage()));

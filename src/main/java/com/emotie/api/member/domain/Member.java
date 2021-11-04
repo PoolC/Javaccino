@@ -2,7 +2,6 @@ package com.emotie.api.member.domain;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.exception.ExpiredTokenException;
-import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
@@ -180,7 +179,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void loginAndCheckExpelled() {
         if (this.isAccountNonExpired()) {
-            throw new UnauthenticatedException("추방된 회원입니다.");
+            throw new UnauthorizedException("추방된 회원입니다.");
         }
     }
 
