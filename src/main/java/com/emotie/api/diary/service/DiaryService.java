@@ -13,16 +13,23 @@ import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import org.springframework.data.domain.Pageable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
+    private static final int PAGE_SIZE = 10;
+
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
 
@@ -133,5 +140,11 @@ public class DiaryService {
         Diary diary = getDiaryById(diaryId);
         diary.checkNotWriter(user);
         diary.checkIsOpened();
+    }
+
+    private Member getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElseThrow(
+                () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
+        );
     }
 }

@@ -22,6 +22,7 @@ import java.util.List;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.loginRequest;
 import static com.emotie.api.diary.DiaryDataLoader.*;
+import static com.emotie.api.guestbook.service.GuestbookService.PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -767,5 +768,12 @@ public class DiaryApiTest extends AcceptanceTest {
 //                EmotionScore::getCount
 //        ).isPresent().get().isEqualTo(basicOtherEmotionCount);
 //        System.out.println("E");
+    }
+    private void assertWellPaged(ExtractableResponse<Response> response, String confirmedContent) {
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries().size()).isLessThanOrEqualTo(PAGE_SIZE);
+        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).anyMatch(
+                (diaryReadResponse) -> diaryReadResponse.getContent().contains(confirmedContent)
+        );
     }
 }
