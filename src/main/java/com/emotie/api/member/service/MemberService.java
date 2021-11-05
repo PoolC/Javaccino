@@ -4,6 +4,8 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.*;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.exception.CannotFollowException;
@@ -237,11 +239,6 @@ public class MemberService {
         if (!user.isEmotionScoreInitialized(emotion)) {
             throw new EmotionScoreNotInitializedException("감정 점수가 초기화 되어 있지 않습니다.");
         }
-    }
-
-    private void withdrawal(Member user) {
-        user.withdraw();
-        memberRepository.saveAndFlush(user);
     }
 
     private void withdrawal(Member user, MemberWithdrawalRequest memberWithdrawalRequest) {

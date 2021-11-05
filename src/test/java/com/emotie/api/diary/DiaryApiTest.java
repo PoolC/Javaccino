@@ -894,11 +894,5 @@ public class DiaryApiTest extends AcceptanceTest {
                 (diaryReadResponse) -> diaryReadResponse.getContent().contains(confirmedContent)
         );
     }
-    private void assertWellPaged(ExtractableResponse<Response> response, String confirmedContent) {
-        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
-        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries().size()).isLessThanOrEqualTo(PAGE_SIZE);
-        assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).anyMatch(
-                (diaryReadResponse) -> diaryReadResponse.getContent().contains(confirmedContent)
-        );
-    }
+
 }

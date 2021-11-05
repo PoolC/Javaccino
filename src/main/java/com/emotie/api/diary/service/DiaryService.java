@@ -11,6 +11,7 @@ import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
+import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,10 +41,10 @@ public class DiaryService {
 
     @Transactional
     public void create(Member member, DiaryCreateRequest request) {
-        emotionService.deepenEmotionScore(member, request.getEmotion());
+        Emotion emotion = getEmotionByEmotion(request.getEmotion());
         diaryRepository.save(
                 Diary.builder()
-                        .writer(user)
+                        .writer(member)
                         .emotion(emotion)
                         .content(request.getContent())
                         .isOpened(request.getIsOpened())
@@ -158,11 +159,5 @@ public class DiaryService {
         Diary diary = getDiaryById(diaryId);
         diary.checkNotWriter(user);
         diary.checkIsOpened();
-    }
-
-    private Member getMemberById(String memberId) {
-        return memberRepository.findById(memberId).orElseThrow(
-                () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
-        );
     }
 }

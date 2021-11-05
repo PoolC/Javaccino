@@ -2,7 +2,9 @@ package com.emotie.api.diary;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.diary.domain.Diary;
+import com.emotie.api.diary.dto.DiaryReportRequest;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.*;
@@ -60,8 +62,7 @@ public class DiaryDataLoader implements ApplicationRunner {
 
     public static Double basicDiaryEmotionScore, basicOtherEmotionScore;
     public static Integer basicDiaryEmotionCount, basicOtherEmotionCount;
-  
-    public static Emotion diaryEmotion;
+
     public static Long openedDiaryId, closedDiaryId, viewerReportedId, unreportedId, almostReportedId, overReportedId, unBlindedId, viewerBlindedId;
     public static Long diaryCount;
 
