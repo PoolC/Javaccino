@@ -44,7 +44,7 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final String reporterNickname = "번째 신고자";
     public static final String unauthorizedNickname = "공릉동도롱뇽";
     public static final String notExistNickname = "공릉동용용";
-  
+
     private static final String introduction = "사람들에게 자신을 소개해 보세요!";
     public static final String password = "random-password";
 
@@ -74,6 +74,9 @@ public class DiaryDataLoader implements ApplicationRunner {
         createEmotions();
         registerMembers();
         writeDiaries();
+        registerReporters();
+        writeDiariesAndReport();
+        writeDiariesAndBlind();
         countDiaries();
     }
 
@@ -145,19 +148,19 @@ public class DiaryDataLoader implements ApplicationRunner {
 
         List.of(writer, viewer, unauthorized).forEach(
                 (user) ->
-                allEmotion.forEach(
-                        (emotion) -> {
-                            EmotionScore emotionScore = EmotionScore.of(
-                                    user.getUUID(),
-                                    emotion,
-                                    0.0
-                            );
-                            emotionScoreRepository.save(emotionScore);
+                        allEmotion.forEach(
+                                (emotion) -> {
+                                    EmotionScore emotionScore = EmotionScore.of(
+                                            user.getUUID(),
+                                            emotion,
+                                            0.0
+                                    );
+                                    emotionScoreRepository.save(emotionScore);
 
-                            user.initializeEmotionScore(emotion, emotionScore);
-                            memberRepository.saveAndFlush(user);
-                        }
-                )
+                                    user.initializeEmotionScore(emotion, emotionScore);
+                                    memberRepository.saveAndFlush(user);
+                                }
+                        )
         );
         writerId = writer.getUUID();
     }
@@ -182,7 +185,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                 false
         );
         diaryRepository.save(
-            closedDiary
+                closedDiary
         );
         emotionRepository.saveAndFlush(diaryEmotion);
         closedDiaryId = closedDiary.getId();
