@@ -2,6 +2,7 @@ package com.emotie.api.auth.service;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.infra.JwtTokenProvider;
+import com.emotie.api.common.service.MailService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;

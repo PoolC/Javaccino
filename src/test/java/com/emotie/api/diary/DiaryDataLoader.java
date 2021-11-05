@@ -28,17 +28,21 @@ public class DiaryDataLoader implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final EmotionScoreRepository emotionScoreRepository;
     private final PasswordHashProvider passwordHashProvider;
+    private final DiaryService diaryService;
+
 
     public static String testEmotion, invalidEmotion;
 
-    public static final String writerEmail = "writer@gmail.com",
-            viewerEmail = "viewer@gmail.com",
-            unauthorizedEmail = "unauthorized@gmail.com";
-    public static final String writerNickname = "공릉동공룡",
-            viewerNickname = "공릉동익룡",
-            unauthorizedNickname = "공릉동도롱뇽",
-            notExistNickname = "공릉동용용";
-
+    public static final String writerEmail = "writer@gmail.com";
+    public static final String viewerEmail = "viewer@gmail.com";
+    public static final String unauthorizedEmail = "unauthorized@gmail.com";
+    public static final String reporterEmail = "reporter@gmail.com";
+    public static final String writerNickname = "공릉동공룡";
+    public static final String viewerNickname = "공릉동익룡";
+    public static final String reporterNickname = "번째 신고자";
+    public static final String unauthorizedNickname = "공릉동도롱뇽";
+    public static final String notExistNickname = "공릉동용용";
+  
     private static final String introduction = "사람들에게 자신을 소개해 보세요!";
     public static final String password = "random-password";
 
@@ -53,11 +57,16 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final int PAGE_SIZE = 10;
 
     public static Emotion diaryEmotion, otherEmotion;
-    public static Long openedDiaryId, closedDiaryId;
-    public static Long diaryCount;
 
     public static Double basicDiaryEmotionScore, basicOtherEmotionScore;
     public static Integer basicDiaryEmotionCount, basicOtherEmotionCount;
+  
+    public static Emotion diaryEmotion;
+    public static Long openedDiaryId, closedDiaryId, viewerReportedId, unreportedId, almostReportedId, overReportedId, unBlindedId, viewerBlindedId;
+    public static Long diaryCount;
+
+    public static Member[] reporters = new Member[Diary.reportCountThreshold];
+    public static String reportReason = "신고 테스트를 하고 싶어서";
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
@@ -218,5 +227,91 @@ public class DiaryDataLoader implements ApplicationRunner {
 
     private void countDiaries() {
         diaryCount = diaryRepository.count();
+    }
+
+    private void registerReporters() {
+        for (int i = 0; i < Diary.reportCountThreshold; i++) {
+            reporters[i] = Member.builder()
+                    .UUID(UUID.randomUUID().toString())
+                    .email(i + reporterEmail)
+                    .nickname(i + reporterNickname)
+                    .passwordHash(passwordHashProvider.encodePassword(password))
+                    .gender(Gender.HIDDEN)
+                    .dateOfBirth(LocalDate.now())
+                    .introduction(introduction)
+                    .passwordResetToken(null)
+                    .passwordResetTokenValidUntil(null)
+                    .authorizationToken(null)
+                    .authorizationTokenValidUntil(null)
+                    .reportCount(0)
+                    .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
+                    .build();
+            memberRepository.save(reporters[i]);
+        }
+    }
+
+    private void writeDiariesAndReport() {
+        unreportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        viewerReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        diaryService.report(viewer, DiaryReportRequest.builder().reason(reportReason).build(), viewerReportedId);
+
+        almostReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        for (int i = 0; i < Diary.reportCountThreshold - 1; i++) {
+            diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), almostReportedId);
+        }
+
+        overReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        for (int i = 0; i < Diary.reportCountThreshold; i++) {
+            diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), overReportedId);
+        }
+    }
+
+    private void writeDiariesAndBlind() {
+        unBlindedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+
+        viewerBlindedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        diaryService.blind(viewer, viewerBlindedId);
     }
 }

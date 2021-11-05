@@ -1,5 +1,7 @@
 package com.emotie.api.common.domain;
 
+import com.emotie.api.auth.exception.UnauthorizedException;
+import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.domain.Member;
 import lombok.Getter;
 
@@ -45,7 +47,9 @@ public abstract class Postings extends TimestampEntity {
      */
     public abstract Postings reportPosting();
 
-    public void rewriteContent(String updatingContent) { this.content = updatingContent; }
+    public void rewriteContent(String updatingContent) {
+        this.content = updatingContent;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -64,6 +68,25 @@ public abstract class Postings extends TimestampEntity {
         this.reportCount++;
         if (this.reportCount > reportCountThreshold) {
             this.writer.addReportCount();
+        }
+    }
+
+    // TODO: 방명록과 다이어리의 threshold를 다르게 설정할 경우 분리 가능?
+    public void checkNotOverReported() {
+        if (this.reportCount >= reportCountThreshold) {
+            throw new UnauthorizedException("신고를 많이 받아 삭제할 수 없습니다.");
+        }
+    }
+
+    public void checkWriter(Member user) {
+        if (!this.writer.equals(user)) {
+            throw new UnauthorizedException("해당 글의 작성자가 아닙니다.");
+        }
+    }
+
+    public void checkNotWriter(Member user) {
+        if (this.writer.equals(user)) {
+            throw new MyselfException("자신이 작성한 글은 신고할 수 없습니다.");
         }
     }
 }

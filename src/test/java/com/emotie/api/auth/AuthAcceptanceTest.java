@@ -116,19 +116,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
 
     }
 
-    //TODO: 이메일이 실제로 왔는지 테스트하는 로직이 필요하다.
-    @Test
-    @DisplayName("테스트 07: 이메일로 인증코드 보내기 성공 200")
-    public void 이메일_인증코드_보내기_성공() {
-        //given
-        String email = unauthorizedEmail;
-
-        //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(email);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
-    }
 
     @Test
     @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
@@ -217,19 +204,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         //then
         assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
-    }
-
-    @Test
-    @DisplayName("테스트 14: 비밀번호 초기화 메일 보내기 성공 200")
-    public void 비밀번호_초기화_메일_보내기_성공() {
-        //given
-        String request = authorizedEmail;
-
-        //when
-        ExtractableResponse<Response> response = sendPasswordResetTokenRequest(request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
     }
 
     @Test
