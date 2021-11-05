@@ -1,69 +1,51 @@
 package com.emotie.api.emotion.domain;
 
-import com.emotie.api.member.domain.Member;
+
+import com.emotie.api.common.domain.TimestampEntity;
+import lombok.Builder;
 import lombok.Getter;
 
-import javax.persistence.*;
-import java.util.Objects;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-@Entity
+@Entity(name = "emotions")
 @Getter
-@DiscriminatorColumn(name = "DISCRIMINATOR", discriminatorType = DiscriminatorType.STRING)
-@Table(name = "emotions")
-public abstract class Emotion {
-    private static final Double TRANSFER_WEIGHT = 0.79;
-    private static final Double REVERSE_TRANSFER_WEIGHT = 1/TRANSFER_WEIGHT;
+public class Emotion extends TimestampEntity {
 
     @Id
     @GeneratedValue
-    private Long Id;
+    @Column(name = "id")
+    private Integer id;
 
-    @ManyToOne(targetEntity = Member.class, fetch = FetchType.EAGER)
-    @JoinColumn(name ="member_id")
-    protected Member member;
+    @Column(name = "emotion")
+    private String emotion;
 
-    @Column(name = "score")
-    protected Double score;
+    @Column(name = "color")
+    private String color;
 
-    @Column(name = "name")
-    protected String name;
-
-    @Transient
-    protected String color;
-
-    @Transient
-    protected String description;
+    @Column(name = "priority")
+    private Integer priority;
 
     protected Emotion() {
     }
 
-    protected Emotion(Member member, double score, String color, String description, String name) {
-        this.member = member;
-        this.score = score;
+    @Builder
+    private Emotion(String emotion, String color) {
+        this.emotion = emotion;
         this.color = color;
-        this.description = description;
-        this.name = name;
+        this.priority = priority;
     }
 
-    public void deepenScore(Double amount) {
-        this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * amount;
+    public static Emotion of(String emotion, String color) {
+        return new Emotion(emotion, color);
     }
 
-    public void reduceScore(Double amount) {
-        this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * amount;
-        if (this.score < 0) this.score = 0.0;
+    public void update(String emotion, String color) {
+        this.emotion = emotion;
+        this.color = color;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Emotion emotion = (Emotion) o;
-        return member.equals(emotion.member) && name.equals(emotion.name);
-    }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(member, name);
-    }
 }

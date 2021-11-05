@@ -3,26 +3,35 @@ package com.emotie.api.diary.controller;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping("/diaries")
+@Validated
 @RequiredArgsConstructor
 public class DiaryController {
+    private static final int PAGE_SIZE = 10;
+
     private final DiaryService diaryService;
+    private final MemberService memberService;
 
     @PostMapping
     public ResponseEntity<Void> write(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
-    ) {
+    ) throws Exception {
         diaryService.create(user, diaryCreateRequest);
+        memberService.deepenEmotionScore(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
@@ -33,11 +42,12 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.read(user, diaryId));
     }
 
-    @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadAllResponse> readAll(
-            @PathVariable String nickname, @PathVariable Integer pageNumber
+            @AuthenticationPrincipal Member user, @PathVariable String memberId,
+            @RequestParam @Min(0) @Max(Integer.MAX_VALUE / PAGE_SIZE) Integer page
     ) throws Exception {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(diaryService.readAll(user, memberId, page));
     }
 
     @Deprecated
@@ -48,7 +58,7 @@ public class DiaryController {
     ) throws Exception {
         String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
         String updatingEmotion = diaryUpdateRequest.getEmotion();
-//        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
+        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
         return ResponseEntity.ok().build();
     }
 
@@ -57,9 +67,9 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception {
         List<String> reducingEmotionNames = diaryService.delete(user, diaryDeleteRequest);
-//        reducingEmotionNames.forEach(
-//                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
-//        );
+        reducingEmotionNames.forEach(
+                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
+        );
         return ResponseEntity.ok().build();
     }
 
