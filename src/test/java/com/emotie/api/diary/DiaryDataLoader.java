@@ -29,6 +29,7 @@ public class DiaryDataLoader implements ApplicationRunner {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final PasswordHashProvider passwordHashProvider;
+    private final DiaryService diaryService;
 
     public static final String writerEmail = "writer@gmail.com";
     public static final String viewerEmail = "viewer@gmail.com";
@@ -146,5 +147,91 @@ public class DiaryDataLoader implements ApplicationRunner {
                 }
         );
         diaryCount = diaryRepository.count();
+    }
+
+    private void registerReporters() {
+        for (int i = 0; i < Diary.reportCountThreshold; i++) {
+            reporters[i] = Member.builder()
+                    .UUID(UUID.randomUUID().toString())
+                    .email(i + reporterEmail)
+                    .nickname(i + reporterNickname)
+                    .passwordHash(passwordHashProvider.encodePassword(password))
+                    .gender(Gender.HIDDEN)
+                    .dateOfBirth(LocalDate.now())
+                    .introduction(introduction)
+                    .passwordResetToken(null)
+                    .passwordResetTokenValidUntil(null)
+                    .authorizationToken(null)
+                    .authorizationTokenValidUntil(null)
+                    .reportCount(0)
+                    .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
+                    .build();
+            memberRepository.save(reporters[i]);
+        }
+    }
+
+    private void writeDiariesAndReport() {
+        unreportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        viewerReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        diaryService.report(viewer, DiaryReportRequest.builder().reason(reportReason).build(), viewerReportedId);
+
+        almostReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        for (int i = 0; i < Diary.reportCountThreshold - 1; i++) {
+            diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), almostReportedId);
+        }
+
+        overReportedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        for (int i = 0; i < Diary.reportCountThreshold; i++) {
+            diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), overReportedId);
+        }
+    }
+
+    private void writeDiariesAndBlind() {
+        unBlindedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+
+        viewerBlindedId = diaryRepository.save(
+                Diary.of(
+                        writer,
+                        originalContent,
+                        diaryEmotion,
+                        true
+                )
+        ).getId();
+        diaryService.blind(viewer, viewerBlindedId);
     }
 }

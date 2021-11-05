@@ -18,8 +18,8 @@ public interface GuestbookRepository extends JpaRepository<Guestbook, Long> {
 
     @Query(value = "SELECT g" +
             " FROM guestbooks g" +
-            " WHERE g.id NOT IN (SELECT DISTINCT mrg.guestbook FROM members_report_guestbooks mrg WHERE mrg.member = :user)" +
-            " AND g.owner = :owner" +
+            " WHERE g.owner = :owner" +
+            " AND g.id NOT IN (SELECT DISTINCT mrg.guestbook FROM members_report_guestbooks mrg WHERE mrg.member = :user)" +
             " AND g.reportCount < :reportCountThreshold" +
             " AND g.isOwnerReported = false")
     List<Guestbook> findByOwner(Member user, Member owner, Integer reportCountThreshold, Pageable pageable);
