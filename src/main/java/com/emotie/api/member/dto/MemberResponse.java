@@ -3,37 +3,32 @@ package com.emotie.api.member.dto;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Getter
 public class MemberResponse {
+    private final String memberId;
     private final String nickname;
     private final Gender gender;
     private final LocalDate dateOfBirth;
     private final String email;
-    private final String introduction;
 
     @JsonCreator
-    @Builder
-    protected MemberResponse(@JsonProperty("name") String nickname, @JsonProperty("gender") Gender gender, @JsonProperty("dateOfBirth") LocalDate dateOfBirth, @JsonProperty("email") String email, @JsonProperty("introduction") String introduction) {
+    public MemberResponse(String memberId, String nickname, Gender gender, LocalDate dateOfBirth, String email) {
+        this.memberId = memberId;
         this.nickname = nickname;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
         this.email = email;
-        this.introduction = introduction;
     }
 
-    public static MemberResponse of(Member member) {
-        return MemberResponse.builder()
-                .nickname(member.getNickname())
-                .gender(member.getGender())
-                .dateOfBirth(member.getDateOfBirth())
-                .email(member.getEmail())
-                .introduction(member.getIntroduction())
-                .build();
+    public MemberResponse(Member member) {
+        this.memberId = member.getUUID();
+        this.nickname = member.getNickname();
+        this.gender = member.getGender();
+        this.dateOfBirth = member.getDateOfBirth();
+        this.email = member.getEmail();
     }
 }

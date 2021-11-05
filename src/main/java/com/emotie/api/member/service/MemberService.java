@@ -4,20 +4,16 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
-import com.emotie.api.member.domain.Follow;
-import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.domain.MemberRole;
-import com.emotie.api.member.domain.MemberRoles;
-import com.emotie.api.member.dto.MemberCreateRequest;
-import com.emotie.api.member.dto.MemberUpdateRequest;
-import com.emotie.api.member.dto.PasswordCheckRequest;
-import com.emotie.api.member.dto.PasswordUpdateRequest;
+import com.emotie.api.member.domain.*;
+import com.emotie.api.member.dto.*;
 import com.emotie.api.member.exception.CannotFollowException;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,7 +56,8 @@ public class MemberService {
         });
     }
 
-    public void create(MemberCreateRequest request) {
+    @Transactional
+    public void create(MemberCreateRequest request, String authorizationToken) {
         checkCreateRequestValidity(request);
         Member user = Member.builder()
                 .UUID(UUID.randomUUID().toString())
@@ -72,8 +69,8 @@ public class MemberService {
                 .introduction("자기 소개를 작성해서 사람들에게 당신을 알려주세요!")
                 .passwordResetToken(null)
                 .passwordResetTokenValidUntil(null)
-                .authorizationToken(null)
-                .authorizationTokenValidUntil(null)
+                .authorizationToken(authorizationToken)
+                .authorizationTokenValidUntil(LocalDateTime.now().plusDays(1L))
                 .reportCount(0)
                 .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
                 .build();
@@ -93,6 +90,8 @@ public class MemberService {
     }
 
     public void updatePassword(Member member, PasswordUpdateRequest request) {
+        if (!passwordHashProvider.matches(request.getCurrentPassword(), member.getPassword()))
+            throw new WrongPasswordException("비밀번호를 확인해주세요.");
         request.checkPasswordMatches();
         String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
         member.updatePassword(passwordHash);
@@ -111,16 +110,11 @@ public class MemberService {
         return true;
     }
 
-    public void delete(Member executor, String memberId) {
-        checkDeleteRequestValidity(executor, memberId);
-        Member user = getMemberById(memberId);
-
-        // 행위자가 자신과 같으면, 유예 기간이 있고, 아니면 추방
-        if (executor.equals(user)) {
-            withdrawal(user);
-        } else {
-            expel(user);
+    public void delete(Member user, MemberWithdrawalRequest memberWithdrawalRequest) {
+        if (!passwordHashProvider.matches(memberWithdrawalRequest.getPassword(), user.getPassword())) {
+            throw new WrongPasswordException("비밀번호를 확인해주세요.");
         }
+        withdrawal(user, memberWithdrawalRequest);
     }
 
     private Boolean isNicknameExists(String nickname) {
@@ -147,7 +141,7 @@ public class MemberService {
         Member user = getMemberById(memberId);
 
         // 관리자가 아닐 때는 본인이어야 함.
-        if (!executor.getRoles().isAdmin() && !executor.equals(user)) {
+        if (!executor.equals(user)) {
             throw new UnauthorizedException("계정을 삭제할 권한이 없습니다.");
         }
     }
@@ -188,13 +182,9 @@ public class MemberService {
         }
     }
 
-    private void withdrawal(Member user) {
-        user.withdraw();
-        memberRepository.saveAndFlush(user);
-    }
 
-    private void expel(Member user) {
-        user.expel();
+    private void withdrawal(Member user, MemberWithdrawalRequest memberWithdrawalRequest) {
+        user.withdraw(memberWithdrawalRequest);
         memberRepository.saveAndFlush(user);
     }
 }

@@ -7,6 +7,7 @@ import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.MemberWithdrawalRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -71,6 +72,9 @@ public class Member extends TimestampEntity implements UserDetails {
     @Column(name = "withdrawal_date")
     @Nullable
     private LocalDateTime withdrawalDate = null;
+
+    @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
+    private String withdrawalReason = null;
 
     protected Member() {
     }
@@ -201,7 +205,8 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = null;
     }
 
-    public void withdraw() {
+    public void withdraw(MemberWithdrawalRequest request) {
+        this.withdrawalReason = request.getReason();
         this.roles.changeRole(MemberRole.WITHDRAWAL);
         this.withdrawalDate = LocalDateTime.now();
     }

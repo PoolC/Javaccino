@@ -68,10 +68,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
 
                 .antMatchers(HttpMethod.POST, "/members").permitAll()
+                .antMatchers(HttpMethod.GET, "/members/me").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
                 .antMatchers(HttpMethod.PUT, "/members").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name(), MemberRole.WITHDRAWAL.name(), MemberRole.UNACCEPTED.name())
 
                 .antMatchers(HttpMethod.POST, "/members/follow/{uuid}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
-                .antMatchers(HttpMethod.DELETE, "/members/{uuid}").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/members").hasAnyAuthority(MemberRole.UNACCEPTED.name(), MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
 
                 .antMatchers(HttpMethod.POST, "/diaries").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
                 .antMatchers(HttpMethod.PUT, "/diaries/{diaryId}").hasAnyAuthority(MemberRole.MEMBER.name(), MemberRole.ADMIN.name())
