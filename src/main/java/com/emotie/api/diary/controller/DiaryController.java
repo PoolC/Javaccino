@@ -3,7 +3,6 @@ package com.emotie.api.diary.controller;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DiaryController {
     private final DiaryService diaryService;
-    private final MemberService memberService;
 
     @PostMapping
     public ResponseEntity<Void> write(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
-    ) throws Exception {
+    ) {
         diaryService.create(user, diaryCreateRequest);
-        memberService.deepenEmotionScore(user, diaryCreateRequest.getEmotion());
         return ResponseEntity.ok().build();
     }
 
@@ -51,7 +48,7 @@ public class DiaryController {
     ) throws Exception {
         String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
         String updatingEmotion = diaryUpdateRequest.getEmotion();
-        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
+//        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
         return ResponseEntity.ok().build();
     }
 
@@ -60,9 +57,9 @@ public class DiaryController {
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception {
         List<String> reducingEmotionNames = diaryService.delete(user, diaryDeleteRequest);
-        reducingEmotionNames.forEach(
-                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
-        );
+//        reducingEmotionNames.forEach(
+//                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
+//        );
         return ResponseEntity.ok().build();
     }
 
@@ -80,8 +77,16 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO: blind 부분을 redirect로 할 수 있나?
     @PostMapping(value = "/report/{diaryId}")
-    public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
+    public ResponseEntity<Void> report(@AuthenticationPrincipal Member user, @RequestBody @Valid DiaryReportRequest request, @PathVariable Long diaryId) throws Exception {
+        diaryService.report(user, request, diaryId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/blind/{diaryId}")
+    public ResponseEntity<Void> blind(@AuthenticationPrincipal Member user, @PathVariable Long diaryId) throws Exception {
+        diaryService.blind(user, diaryId);
         return ResponseEntity.ok().build();
     }
 }

@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     private final UserDetailsService userDetailsService;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException, UnauthenticatedException {
         String token = jwtTokenProvider.getToken((HttpServletRequest) request);
         try {
             Optional.ofNullable(token)
@@ -41,11 +41,12 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(publicMember, "", publicMember.getAuthorities());
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     });
-
             chain.doFilter(request, response);
         } catch (UnauthenticatedException e) {
             HttpServletResponse res = (HttpServletResponse) response;
             res.sendError(HttpServletResponse.SC_UNAUTHORIZED, Collections.singletonMap("message", "토큰이 만료됐거나 잘못됐습니다. 다시 로그인해주세요.").toString());
         }
+
+
     }
 }
