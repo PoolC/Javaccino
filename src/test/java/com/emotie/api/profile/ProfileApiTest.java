@@ -23,8 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestMethodOrder(MethodOrderer.DisplayName.class)
 public class ProfileApiTest extends AcceptanceTest {
 
-
-
     @Test
     @DisplayName("테스트 01-01: 프로필 조회 실패 [403]; 로그인하지 않았을 때")
     public void 프로필_전체_조회_실패_FORBIDDEN() throws Exception {
