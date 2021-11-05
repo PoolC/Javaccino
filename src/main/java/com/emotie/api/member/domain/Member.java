@@ -2,13 +2,13 @@ package com.emotie.api.member.domain;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.exception.ExpiredTokenException;
-import com.emotie.api.auth.exception.UnauthenticatedException;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongTokenException;
 import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.MemberWithdrawalRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -70,9 +70,14 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
+
     @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
     @MapKeyJoinColumn(name = "emotion")
     private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
+
+    @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
+    private String withdrawalReason = null;
+
 
     protected Member() {
     }
@@ -173,7 +178,7 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void loginAndCheckExpelled() {
         if (this.isAccountNonExpired()) {
-            throw new UnauthenticatedException("추방된 회원입니다.");
+            throw new UnauthorizedException("추방된 회원입니다.");
         }
     }
 
@@ -183,7 +188,8 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = null;
     }
 
-    public void withdraw() {
+    public void withdraw(MemberWithdrawalRequest request) {
+        this.withdrawalReason = request.getReason();
         this.roles.changeRole(MemberRole.WITHDRAWAL);
         this.withdrawalDate = LocalDateTime.now();
     }

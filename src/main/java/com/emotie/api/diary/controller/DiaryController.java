@@ -8,15 +8,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping("/diaries")
+@Validated
 @RequiredArgsConstructor
 public class DiaryController {
+    private static final int PAGE_SIZE = 10;
+
     private final DiaryService diaryService;
     private final MemberService memberService;
 
@@ -36,11 +42,12 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.read(user, diaryId));
     }
 
-    @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadAllResponse> readAll(
-            @PathVariable String nickname, @PathVariable Integer pageNumber
+            @AuthenticationPrincipal Member user, @PathVariable String memberId,
+            @RequestParam @Min(0) @Max(Integer.MAX_VALUE / PAGE_SIZE) Integer page
     ) throws Exception {
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(diaryService.readAll(user, memberId, page));
     }
 
     @Deprecated
@@ -80,8 +87,16 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO: blind 부분을 redirect로 할 수 있나?
     @PostMapping(value = "/report/{diaryId}")
-    public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
+    public ResponseEntity<Void> report(@AuthenticationPrincipal Member user, @RequestBody @Valid DiaryReportRequest request, @PathVariable Long diaryId) throws Exception {
+        diaryService.report(user, request, diaryId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/blind/{diaryId}")
+    public ResponseEntity<Void> blind(@AuthenticationPrincipal Member user, @PathVariable Long diaryId) throws Exception {
+        diaryService.blind(user, diaryId);
         return ResponseEntity.ok().build();
     }
 }

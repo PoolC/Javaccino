@@ -10,7 +10,10 @@ import javax.validation.constraints.NotBlank;
 
 @Getter
 public class PasswordUpdateRequest {
-    @NotBlank(message = "비밀번호를 입력해주세요.")
+    @NotBlank(message = "현재 비밀번호를 입력해주세요.")
+    private final String currentPassword;
+
+    @NotBlank(message = "변경할 비밀번호를 입력해주세요.")
     private final String password;
 
     @NotBlank(message = "비밀번호 확인란에 입력해주세요.")
@@ -19,9 +22,11 @@ public class PasswordUpdateRequest {
     @JsonCreator
     @Builder
     public PasswordUpdateRequest(
+            @JsonProperty(value = "currentPassword", required = true) String currentPassword,
             @JsonProperty(value = "password", required = true) String password,
             @JsonProperty(value = "passwordCheck", required = true) String passwordCheck
     ) {
+        this.currentPassword = currentPassword;
         this.password = password;
         this.passwordCheck = passwordCheck;
     }
