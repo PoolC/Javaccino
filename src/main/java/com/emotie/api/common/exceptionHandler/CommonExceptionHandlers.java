@@ -43,7 +43,7 @@ public class CommonExceptionHandlers {
                 .body(Collections.singletonMap("message", e.getMessage()));
     }
 
-    @ExceptionHandler({UnauthorizedException.class, PeekingPrivatePostException.class})
+    @ExceptionHandler({UnauthorizedException.class, PeekingPrivatePostException.class, WrongPasswordException.class})
     public ResponseEntity<Map<String, String>> forbiddenHandler(Exception e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Collections.singletonMap("message", e.getMessage()));
