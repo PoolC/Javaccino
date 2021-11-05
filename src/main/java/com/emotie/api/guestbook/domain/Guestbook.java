@@ -1,9 +1,7 @@
 package com.emotie.api.guestbook.domain;
 
-import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.guestbook.dto.GuestbookUpdateRequest;
-import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.domain.Member;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,23 +48,5 @@ public class Guestbook extends Postings {
     public void ownerReport() {
         this.isOwnerReported = true;
         this.writer.addReportCount();
-    }
-
-    public void checkNotOverReported() {
-        if (this.reportCount >= Guestbook.reportCountThreshold) {
-            throw new UnauthorizedException("신고를 많이 받아 삭제할 수 없는 방명록입니다.");
-        }
-    }
-
-    public void checkWriter(Member user) {
-        if (!this.writer.equals(user)) {
-            throw new UnauthorizedException("해당 방명록 글의 작성자가 아닙니다.");
-        }
-    }
-
-    public void checkNotWriter(Member user) {
-        if (this.writer.equals(user)) {
-            throw new MyselfException("자신이 작성한 방명록 글은 신고할 수 없습니다.");
-        }
     }
 }

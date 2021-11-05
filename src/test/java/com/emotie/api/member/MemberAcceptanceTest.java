@@ -507,8 +507,8 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
     @Test
     @Order(23)
-    @DisplayName("비밀번호 변경 실패 [401]; 현재 비밀번호가 틀렸을 때")
-    public void 비밀번호_변경_실패_UNAUTHORIZED() throws Exception {
+    @DisplayName("비밀번호 변경 실패 [403]; 현재 비밀번호가 틀렸을 때")
+    public void 비밀번호_변경_실패_FORBIDDEN() throws Exception {
         //given
         String accessToken = authorizedLogin();
         PasswordUpdateRequest request = PasswordUpdateRequest.builder()
@@ -521,7 +521,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = updatePasswordRequest(accessToken, request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -664,8 +664,8 @@ public class MemberAcceptanceTest extends AcceptanceTest {
      */
     @Test
     @Order(32)
-    @DisplayName("회원 탈퇴 실패 [401]; 비밀번호 틀렸을 때")
-    public void 회원_탈퇴_실패_UNAUTHORIZED() {
+    @DisplayName("회원 탈퇴 실패 [403]; 비밀번호 틀렸을 때")
+    public void 회원_탈퇴_실패_FORBIDDEN() {
         // given
         String accessToken = unauthorizedLogin();
         MemberWithdrawalRequest request = MemberWithdrawalRequest.builder()
@@ -678,7 +678,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = memberWithdrawalRequest(accessToken, request);
 
         // then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
