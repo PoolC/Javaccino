@@ -11,7 +11,6 @@ import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +43,8 @@ public class DiaryService {
         emotionService.deepenEmotionScore(member, request.getEmotion());
         diaryRepository.save(
                 Diary.builder()
-                        .writer(member)
-                        .emotion(emotionService.getEmotionByMemberAndEmotionName(member, request.getEmotion()))
+                        .writer(user)
+                        .emotion(emotion)
                         .content(request.getContent())
                         .isOpened(request.getIsOpened())
                         .build()
@@ -68,6 +67,7 @@ public class DiaryService {
             );
         }
 
+
         List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(user, writer, true, Diary.reportCountThreshold, page);
         return new DiaryReadAllResponse(
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
@@ -78,29 +78,29 @@ public class DiaryService {
     public String update(Member user, Long diaryId, DiaryUpdateRequest request) {
         Diary diary = getDiaryById(diaryId);
         Emotion originalEmotion = diary.getEmotion();
-//
-//        diary.checkUserValidity(user);
-//
-//        Emotion updatingEmotion = getEmotionByEmotion(request.getEmotion());
-//
-//        updateDiaryWithRequest(diary, request);
-//        diaryRepository.saveAndFlush(diary);
-//        emotionRepository.saveAndFlush(originalEmotion);
-//        emotionRepository.saveAndFlush(updatingEmotion);
 
-        return originalEmotion.getName();
+        diary.checkUserValidity(user);
+
+        Emotion updatingEmotion = getEmotionByEmotion(request.getEmotion());
+
+        updateDiaryWithRequest(diary, request);
+        diaryRepository.saveAndFlush(diary);
+        emotionRepository.saveAndFlush(originalEmotion);
+        emotionRepository.saveAndFlush(updatingEmotion);
+
+        return originalEmotion.getEmotion();
     }
 
     public List<String> delete(Member user, DiaryDeleteRequest request) {
         Set<Long> id = new HashSet<>(request.getDiaryId());
         checkDeleteListValidity(user, id);
         LinkedList<String> emotions = new LinkedList<>();
-//        id.stream().map(this::getDiaryById).forEach(
-//                (diary) -> {
-//                    emotions.add(diary.getEmotion().getEmotion());
-//                    diaryRepository.delete(diary);
-//                }
-//        );
+        id.stream().map(this::getDiaryById).forEach(
+                (diary) -> {
+                    emotions.add(diary.getEmotion().getEmotion());
+                    diaryRepository.delete(diary);
+                }
+        );
 
         return emotions;
     }
@@ -123,6 +123,24 @@ public class DiaryService {
         return diaryRepository.findById(diaryId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 다이어리가 없습니다.")
         );
+    }
+
+    private Member getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElseThrow(
+                () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
+        );
+    }
+
+    private Emotion getEmotionByEmotion(String emotion) {
+        return emotionRepository.findByEmotion(emotion).orElseThrow(
+                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
+        );
+    }
+
+    private void updateDiaryWithRequest(Diary diary, DiaryUpdateRequest updateRequest) {
+        diary.rewriteContent(updateRequest.getContent());
+        diary.updateEmotion(getEmotionByEmotion(updateRequest.getEmotion()));
+        diary.updateOpenness(updateRequest.getIsOpened());
     }
 
     private void checkDeleteListValidity(Member user, Set<Long> id) {

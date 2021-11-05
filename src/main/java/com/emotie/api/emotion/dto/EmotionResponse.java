@@ -6,13 +6,14 @@ import lombok.Getter;
 
 @Getter
 public class EmotionResponse {
-    private String tag;
-    private String color;
+    private final String tag;
+    private final String color;
 
     public EmotionResponse(Emotion emotion) {
-        this.tag = emotion.getName();
+        this.tag = emotion.getEmotion();
         this.color = emotion.getColor();
     }
+
     @JsonCreator
     public EmotionResponse(String tag, String color) {
         this.tag = tag;

@@ -1,31 +1,49 @@
 package com.emotie.api.emotion.service;
 
+import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
-import com.emotie.api.emotion.domain.Emotions;
+import com.emotie.api.emotion.dto.EmotionCreateRequest;
+import com.emotie.api.emotion.dto.EmotionUpdateRequest;
+import com.emotie.api.emotion.exception.EmotionDeleteConflictException;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
 public class EmotionService {
+
     private final EmotionRepository emotionRepository;
+    private final DiaryRepository diaryRepository;
 
-    public void deepenEmotionScore(Member member, String emotionName) {
-        Emotions emotions = new Emotions(member, emotionRepository.findAllByMember(member));
-
-        emotions.deepenCurrentEmotionScore(emotionName);
-        emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
+    public List<Emotion> getAllEmotions(){
+        return emotionRepository.findAll();
     }
 
-    public Emotion getEmotionByMemberAndEmotionName(Member member, String emotionName) {
-        return emotionRepository.findByMemberAndName(member, emotionName)
-                .orElseThrow(() -> new RuntimeException("emotion does not exist: " + emotionName));
+
+    @Transactional
+    public void createEmotion(EmotionCreateRequest request) {
+        Emotion emotion = Emotion.of(request.getEmotion(), request.getColor());
+        emotionRepository.save(emotion);
+    }
+
+    @Transactional
+    public void updateEmotion(EmotionUpdateRequest request, Integer emotionId){
+        Emotion updatingEmotion = emotionRepository.findById(emotionId).orElseThrow(()-> new NoSuchElementException("잘못된 emotionId 입니다."));
+        updatingEmotion.update(request.getEmotion(), request.getColor());
+        emotionRepository.saveAndFlush(updatingEmotion);
+    }
+
+    @Transactional
+    public void deleteEmotion(Integer emotionId){
+        Emotion deletingEmotion = emotionRepository.findById(emotionId).orElseThrow(()-> new NoSuchElementException("잘못된 emotionId 입니다."));
+        if(diaryRepository.findByEmotion(deletingEmotion).size() > 0 ){
+            throw new EmotionDeleteConflictException("해당 감정을 사용하는 다이어리가 존재합니다.");
+        }
+        emotionRepository.delete(deletingEmotion);
     }
 }

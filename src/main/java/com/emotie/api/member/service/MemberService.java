@@ -7,12 +7,15 @@ import com.emotie.api.common.exception.DuplicatedException;
 import com.emotie.api.member.domain.*;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.exception.CannotFollowException;
+import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
+import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -22,6 +25,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
+    private final EmotionRepository emotionRepository;
+    private final EmotionScoreRepository emotionScoreRepository;
     private final FollowRepository followRepository;
     private final PasswordHashProvider passwordHashProvider;
 
@@ -75,6 +80,8 @@ public class MemberService {
                 .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
                 .build();
         memberRepository.save(user);
+
+        initializeEmotionScore(user);
     }
 
     public void update(Member member, MemberUpdateRequest request) {
@@ -115,6 +122,50 @@ public class MemberService {
             throw new WrongPasswordException("비밀번호를 확인해주세요.");
         }
         withdrawal(user, memberWithdrawalRequest);
+    }
+
+    public void deepenEmotionScore(Member user, String emotion) {
+        user.deepenEmotionScore(getEmotionByEmotion(emotion));
+        memberRepository.saveAndFlush(user);
+    }
+
+    public void reduceEmotionScore(Member user, String emotion) {
+        user.reduceEmotionScore(getEmotionByEmotion(emotion));
+        memberRepository.saveAndFlush(user);
+    }
+
+    public void updateEmotionScore(Member user, String originalEmotion, String updatingEmotion) {
+        user.updateEmotionScore(
+                getEmotionByEmotion(originalEmotion),
+                getEmotionByEmotion(updatingEmotion)
+        );
+        memberRepository.saveAndFlush(user);
+    }
+
+    private void initializeEmotionScore(Member user) {
+        List<Emotion> allEmotion = emotionRepository.findAll();
+
+        allEmotion.forEach(
+                (emotion) -> initializeEmotionScore(user, emotion)
+        );
+    }
+
+    private void initializeEmotionScore(Member user, Emotion emotion) {
+        EmotionScore emotionScore = EmotionScore.of(
+                user.getUUID(),
+                emotion,
+                0.0
+        );
+        emotionScoreRepository.save(emotionScore);
+
+        user.initializeEmotionScore(emotion, emotionScore);
+        memberRepository.saveAndFlush(user);
+    }
+
+    private Emotion getEmotionByEmotion(String emotion) {
+        return emotionRepository.findByEmotion(emotion).orElseThrow(
+                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
+        );
     }
 
     private Boolean isNicknameExists(String nickname) {
@@ -181,7 +232,17 @@ public class MemberService {
             throw new CannotFollowException("해당 사용자는 탈퇴한 회원이라, 팔로우 신청할 수 없습니다.");
         }
     }
+  
+    private void checkUpdatingEmotionScoreValidity(Member user, Emotion emotion) {
+        if (!user.isEmotionScoreInitialized(emotion)) {
+            throw new EmotionScoreNotInitializedException("감정 점수가 초기화 되어 있지 않습니다.");
+        }
+    }
 
+    private void withdrawal(Member user) {
+        user.withdraw();
+        memberRepository.saveAndFlush(user);
+    }
 
     private void withdrawal(Member user, MemberWithdrawalRequest memberWithdrawalRequest) {
         user.withdraw(memberWithdrawalRequest);

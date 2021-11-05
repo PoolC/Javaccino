@@ -5,6 +5,10 @@ import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.domain.Member;
 import lombok.Getter;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.*;
 import java.util.Objects;
 
