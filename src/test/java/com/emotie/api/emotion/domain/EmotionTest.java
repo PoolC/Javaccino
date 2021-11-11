@@ -38,16 +38,8 @@ public class EmotionTest {
     @Test
     void testDeepenScore() {
         Emotion angryEmotion = new AngryEmotion(Member.builder().build(), 0.0);
-        angryEmotion.deepenScore(1.0);
+        angryEmotion.deepenScore(1);
 
         assertThat(angryEmotion.getScore()).isEqualTo(0.20, withPrecision(1e-2));
-    }
-
-    @Test
-    void testReduceScore() {
-        Emotion angryEmotion = new AngryEmotion(Member.builder().build(), 1.0);
-        angryEmotion.reduceScore(0.5);
-
-        assertThat(angryEmotion.getScore()).isEqualTo(1.13, withPrecision(1e-2));
     }
 }

@@ -3,27 +3,34 @@ package com.emotie.api.diary.service;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.diary.dto.DiaryCreateRequest;
-import com.emotie.api.diary.dto.DiaryDeleteRequest;
-import com.emotie.api.diary.dto.DiaryReadResponse;
-import com.emotie.api.diary.dto.DiaryUpdateRequest;
+import com.emotie.api.diary.domain.DiaryIds;
+import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
 @Service
 @RequiredArgsConstructor
 public class DiaryService {
+    private static final int PAGE_SIZE = 10;
+
     private final DiaryRepository diaryRepository;
     private final EmotionRepository emotionRepository;
+    private final MemberRepository memberRepository;
     private final EmotionService emotionService;
 
     @Transactional
@@ -45,35 +52,16 @@ public class DiaryService {
         return new DiaryReadResponse(diary.read(user));
     }
 
-    @Deprecated
-    public String update(Member user, Long diaryId, DiaryUpdateRequest request) {
-        Diary diary = getDiaryById(diaryId);
-        Emotion originalEmotion = diary.getEmotion();
-//
-//        diary.checkUserValidity(user);
-//
-//        Emotion updatingEmotion = getEmotionByEmotion(request.getEmotion());
-//
-//        updateDiaryWithRequest(diary, request);
-//        diaryRepository.saveAndFlush(diary);
-//        emotionRepository.saveAndFlush(originalEmotion);
-//        emotionRepository.saveAndFlush(updatingEmotion);
-
-        return originalEmotion.getName();
-    }
-
-    public List<String> delete(Member user, DiaryDeleteRequest request) {
-        Set<Long> id = new HashSet<>(request.getDiaryId());
+    public void delete(Member user, DiaryDeleteRequest request) {
+        DiaryIds id = new DiaryIds(request.getDiaryId());
         checkDeleteListValidity(user, id);
-        LinkedList<String> emotions = new LinkedList<>();
-//        id.stream().map(this::getDiaryById).forEach(
-//                (diary) -> {
-//                    emotions.add(diary.getEmotion().getEmotion());
-//                    diaryRepository.delete(diary);
-//                }
-//        );
-
-        return emotions;
+        id.getDiaryIds().forEach(
+                diaryId -> {
+                    Diary deleteDiary = getDiaryById(diaryId);
+                    emotionService.reduceEmotionScore(user, deleteDiary.getEmotion().getName());
+                    diaryRepository.delete(deleteDiary);
+                }
+        );
     }
 
     private Diary getDiaryById(Long diaryId) {
@@ -82,14 +70,37 @@ public class DiaryService {
         );
     }
 
-    private void checkDeleteListValidity(Member user, Set<Long> id) {
-        id.forEach(
+    private void checkDeleteListValidity(Member user, DiaryIds id) {
+        id.getDiaryIds().forEach(
                 (diaryId) -> {
                     Diary diary = getDiaryById(diaryId);
                     if (!user.equals(diary.getWriter())) throw new UnauthorizedException("삭제를 요청한 사람에게 해당 권한이 없습니다.");
                     if (diary.getReportCount() >= Postings.reportCountThreshold)
                         throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다.");
                 }
+        );
+    }
+
+    public DiaryReadAllResponse readAll(Member user, String memberId, Integer pageNumber) {
+        Member writer = getMemberById(memberId);
+
+        Pageable page = PageRequest.of(pageNumber, PAGE_SIZE, Sort.by("createdAt").descending());
+        if (user.equals(writer)) {
+            List<Diary> allDiaries = diaryRepository.findAllByWriter(writer, page);
+            return new DiaryReadAllResponse(
+                    allDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
+            );
+        }
+
+        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(writer, true, page);
+        return new DiaryReadAllResponse(
+                allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
+        );
+    }
+
+    private Member getMemberById(String memberId) {
+        return memberRepository.findById(memberId).orElseThrow(
+                () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
         );
     }
 }

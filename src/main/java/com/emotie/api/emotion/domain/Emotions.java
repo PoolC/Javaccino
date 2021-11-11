@@ -6,18 +6,19 @@ import org.reflections.scanners.SubTypesScanner;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("unused")
 public class Emotions {
     private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
-    private static final Double REDUCE_AMOUNT = 1.0;
-    private static final Double NOT_REDUCE_AMOUNT = 0.0;
-    private static final Double DEEPEN_AMOUNT = 1.0;
-    private static final Double NOT_DEEPEN_AMOUNT = 0.0;
+    private static final Integer REDUCE_AMOUNT = 1;
+    private static final Integer NOT_REDUCE_AMOUNT = 0;
+    private static final Integer DEEPEN_AMOUNT = 1;
+    private static final Integer NOT_DEEPEN_AMOUNT = 0;
 
     private final List<Emotion> emotions;
 
-    // TODO: 감정이 8개였다가 변하면 오류나서 감정계산할때 전체 재계산이 필요한지 여부 파악 필요
     public Emotions(Member member, List<Emotion> emotions) {
         if(noEmotionsYet(emotions)) {
             emotions = new Reflections(EMOTION_BASE_PACKAGE, new SubTypesScanner())
@@ -26,7 +27,7 @@ public class Emotions {
                         try {
                             return concreteEmotionClass.getDeclaredConstructor(Member.class).newInstance(member);
                         } catch (Exception e) {
-                            throw new RuntimeException("Couldn't create concrete Emotion class\n" + e.getMessage());
+                            throw new NoSuchElementException("Couldn't create concrete Emotion class\n" + e.getMessage());
                         }
                     })
                     .collect(Collectors.toList());
@@ -39,61 +40,61 @@ public class Emotions {
     }
 
     public void reduceCurrentEmotionScore(String emotionName) {
-        reduceScore(emotionName, REDUCE_AMOUNT);
-        notReduceEmotionScoresWithoutEmotion(emotionName, NOT_REDUCE_AMOUNT);
+        reduceScore(emotionName);
+        notReduceEmotionScoresWithoutEmotion(emotionName);
     }
 
     public void deepenCurrentEmotionScore(String emotionName) {
-        deepenScore(emotionName, DEEPEN_AMOUNT);
-        notDeepenEmotionScoresWithoutEmotion(emotionName, NOT_DEEPEN_AMOUNT);
+        deepenScore(emotionName);
+        notDeepenEmotionScoresWithoutEmotion(emotionName);
     }
 
-    private void notReduceEmotionScoresWithoutEmotion(String excludeEmotionName, Double notReduceAmount) {
-        validateAmount(notReduceAmount);
+    private void notReduceEmotionScoresWithoutEmotion(String excludeEmotionName) {
+        validateAmount(NOT_REDUCE_AMOUNT);
 
         emotions.stream()
                 .filter(emotion -> !emotion.getName().equals(excludeEmotionName))
-                .forEach(emotion -> emotion.reduceScore(notReduceAmount));
+                .forEach(emotion -> emotion.reduceScore(NOT_REDUCE_AMOUNT));
     }
 
-    private void notDeepenEmotionScoresWithoutEmotion(String excludeEmotionName, Double notDeepenAmount) {
-        validateAmount(notDeepenAmount);
+    private void notDeepenEmotionScoresWithoutEmotion(String excludeEmotionName) {
+        validateAmount(NOT_DEEPEN_AMOUNT);
 
         emotions.stream()
                 .filter(emotion -> !emotion.getName().equals(excludeEmotionName))
-                .forEach(emotion -> emotion.deepenScore(notDeepenAmount));
+                .forEach(emotion -> emotion.deepenScore(NOT_DEEPEN_AMOUNT));
     }
 
-    private void deepenScore(String deepenEmotionName, Double deepenAmount) {
-        validateAmount(deepenAmount);
+    private void deepenScore(String deepenEmotionName) {
+        validateAmount(DEEPEN_AMOUNT);
 
         emotions.stream()
                 .filter(emotion -> emotion.getName().equals(deepenEmotionName))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new NoSuchElementException(
                         deepenEmotionName + " could not be found. This exception is impossible"))
-                .deepenScore(deepenAmount);
+                .deepenScore(DEEPEN_AMOUNT);
     }
 
-    private void reduceScore(String reduceEmotionName, Double reduceAmount) {
-        validateAmount(reduceAmount);
+    private void reduceScore(String reduceEmotionName) {
+        validateAmount(REDUCE_AMOUNT);
 
         emotions.stream()
                 .filter(emotion -> emotion.getName().equals(reduceEmotionName))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException(
+                .orElseThrow(() -> new NoSuchElementException(
                         reduceEmotionName + " could not be found. This exception is impossible"))
-                .deepenScore(reduceAmount);
+                .reduceScore(REDUCE_AMOUNT);
     }
 
-    private void validateAmount(Double score) {
+    private void validateAmount(Integer score) {
         if(!acceptedScoreRange(score)) {
-            throw new RuntimeException("Score can only be between 0.0 <= score <= 1.0");
+            throw new ArithmeticException("Score can only be 0 or 1");
         }
     }
 
-    private boolean acceptedScoreRange(Double score) {
-        return 0.0 <= score && score <= 1.0;
+    private boolean acceptedScoreRange(Integer score) {
+        return (score == 1) || (score == 0);
     }
 
     private boolean noEmotionsYet(List<Emotion> emotions) {

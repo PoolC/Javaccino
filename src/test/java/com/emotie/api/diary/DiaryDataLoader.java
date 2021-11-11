@@ -1,7 +1,10 @@
 package com.emotie.api.diary;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
+import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.repository.DiaryRepository;
+import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Gender;
 import com.emotie.api.member.domain.Member;
@@ -9,6 +12,8 @@ import com.emotie.api.member.domain.MemberRole;
 import com.emotie.api.member.domain.MemberRoles;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -16,8 +21,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("FieldCanBeLocal")
 @Order(0)
@@ -36,12 +44,12 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final String writerNickname = "공릉동공룡";
     public static final String viewerNickname = "공릉동익룡";
     public static final String unauthorizedNickname = "공릉동도롱뇽";
-    public static final String notExistNickname = "공릉동용용";
     private static final String introduction = "사람들에게 자신을 소개해 보세요!";
     public static final String password = "random-password";
 
-    private static Member writer, viewer, unauthorized;
+    public static Member writer, viewer, unauthorized;
     public static String writerId;
+    public static String notExistMemberId = "FakeID";
 
     public static final String originalContent = "오늘 잠을 잘 잤다. 좋았다.";
     public static final String updatedContent = "어제도 잠을 잘 잤다. 좋았었다.";
@@ -51,15 +59,20 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static Long openedDiaryId, closedDiaryId;
     public static Long diaryCount;
 
+    public static Emotion diaryEmotion, otherEmotion;
+    public static Map<String, Double> writerEmotionScores = new HashMap<>();
+
+    public static Integer PAGE_SIZE = 10;
+
+    private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        createEmotions();
         registerMembers();
+        loadEmotion();
         writeDiaries();
-        setDiaryIndexes();
-    }
-
-    private void createEmotions() {
+        loadScores();
+        loadInfo();
     }
 
     private void registerMembers() {
@@ -110,41 +123,99 @@ public class DiaryDataLoader implements ApplicationRunner {
                 .build();
         memberRepository.saveAllAndFlush(List.of(writer, viewer, unauthorized));
 
+        List<Member> members = List.of(writer, viewer, unauthorized);
+
+        for (Member member: members) {
+            List<Emotion> emotions = new Reflections(EMOTION_BASE_PACKAGE, new SubTypesScanner())
+                    .getSubTypesOf(Emotion.class).stream()
+                    .map(concreteEmotionClass -> {
+                        try {
+                            return concreteEmotionClass.getDeclaredConstructor(Member.class).newInstance(member);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Couldn't create concrete Emotion class\n" + e.getMessage());
+                        }
+                    })
+                    .collect(Collectors.toList());
+            emotionRepository.saveAllAndFlush(emotions);
+        }
         List.of(writer, viewer, unauthorized).forEach(memberRepository::saveAndFlush);
         writerId = writer.getUUID();
     }
 
-    private void writeDiaries() {
-//        diaryRepository.save(
-//                Diary.of(
-//                        writer,
-//                        originalContent,
-//                        true
-//                )
-//        );
-//        emotionRepository.saveAndFlush(diaryEmotion);
-//        diaryRepository.save(
-//                Diary.of(
-//                        writer,
-//                        originalContent,
-//                        diaryEmotion,
-//                        false
-//                )
-//        );
-//        emotionRepository.saveAndFlush(diaryEmotion);
-//        for (int i = 0; i < 2; i++) {
-////            writer.deepenEmotionScore(diaryEmotion);
-//        }
-//        memberRepository.saveAndFlush(writer);
+    private void loadEmotion() {
+        diaryEmotion = emotionRepository.findByMemberAndName(writer, "happy").get();
+        otherEmotion = emotionRepository.findByMemberAndName(writer, "sad").get();
     }
 
-    private void setDiaryIndexes() {
-        diaryRepository.findAll().forEach(
-                (it) -> {
-                    if (it.getIsOpened()) openedDiaryId = it.getId();
-                    else closedDiaryId = it.getId();
-                }
+    private void writeDiaries() {
+        Diary openedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                true
         );
-        diaryCount = diaryRepository.count();
+        diaryRepository.save(openedDiary);
+        openedDiaryId = openedDiary.getId();
+
+        Diary closedDiary = Diary.of(
+                writer,
+                originalContent,
+                diaryEmotion,
+                false
+        );
+        diaryRepository.save(closedDiary);
+        closedDiaryId = closedDiary.getId();
+
+        for (int i = 0; i < 2; i++) {
+            deepenDiaryEmotion();
+        }
+
+        for (int i = 0; i < 95; i++) {
+            Boolean openFlag = (i % 3 == 0);
+            if (i % 2 == 0) {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                otherEmotion,
+                                openFlag
+                        )
+                );
+                deepenOtherEmotion();
+
+            } else {
+                diaryRepository.save(
+                        Diary.of(
+                                writer,
+                                originalContent + i,
+                                diaryEmotion,
+                                openFlag
+                        )
+                );
+                deepenDiaryEmotion();
+            }
+        }
+    }
+
+    private void loadScores() {
+        emotionRepository.findAllByMember(writer).forEach(
+                emotion -> writerEmotionScores.put(emotion.getName(), emotion.getScore())
+        );
+    }
+
+    private void loadInfo() {
+        diaryCount = (long) diaryRepository.findAll().size();
+    }
+
+    private void deepenDiaryEmotion() {
+        Emotions emotions = new Emotions(writer, emotionRepository.findAllByMember(writer));
+        emotions.deepenCurrentEmotionScore(diaryEmotion.getName());
+        emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
+    }
+
+    private void deepenOtherEmotion() {
+        Emotions emotions = new Emotions(writer, emotionRepository.findAllByMember(writer));
+        emotions.deepenCurrentEmotionScore(otherEmotion.getName());
+        emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
     }
 }

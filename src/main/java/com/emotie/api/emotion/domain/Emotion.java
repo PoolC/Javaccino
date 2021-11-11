@@ -45,11 +45,12 @@ public abstract class Emotion {
         this.name = name;
     }
 
-    public void deepenScore(Double amount) {
+    public void deepenScore(Integer amount) {
         this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * amount;
+        if (this.score > 1) this.score = 1.0;
     }
 
-    public void reduceScore(Double amount) {
+    public void reduceScore(Integer amount) {
         this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * amount;
         if (this.score < 0) this.score = 0.0;
     }

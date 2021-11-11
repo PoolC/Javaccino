@@ -7,15 +7,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/diaries")
 @RequiredArgsConstructor
 public class DiaryController {
+    private static final int PAGE_SIZE = 10;
     private final DiaryService diaryService;
 
     @PostMapping
@@ -33,33 +38,19 @@ public class DiaryController {
         return ResponseEntity.ok(diaryService.read(user, diaryId));
     }
 
-    @GetMapping(value = "/user/{nickname}/page/{pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(value = "/user/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DiaryReadAllResponse> readAll(
-            @PathVariable String nickname, @PathVariable Integer pageNumber
+            @AuthenticationPrincipal Member user, @PathVariable String memberId,
+            @RequestParam("page") @Min(0) @Max(Integer.MAX_VALUE / PAGE_SIZE) Integer page
     ) throws Exception {
-        return ResponseEntity.ok().build();
-    }
-
-    @Deprecated
-    @PutMapping(value = "/{diaryId}")
-    public ResponseEntity<Void> update(
-            @AuthenticationPrincipal Member user, @PathVariable Long diaryId,
-            @RequestBody @Valid DiaryUpdateRequest diaryUpdateRequest
-    ) throws Exception {
-        String originalEmotion = diaryService.update(user, diaryId, diaryUpdateRequest);
-        String updatingEmotion = diaryUpdateRequest.getEmotion();
-//        memberService.updateEmotionScore(user, originalEmotion, updatingEmotion);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(diaryService.readAll(user, memberId, page));
     }
 
     @DeleteMapping
     public ResponseEntity<Void> delete(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryDeleteRequest diaryDeleteRequest
     ) throws Exception {
-        List<String> reducingEmotionNames = diaryService.delete(user, diaryDeleteRequest);
-//        reducingEmotionNames.forEach(
-//                (emotionName) -> memberService.reduceEmotionScore(user, emotionName)
-//        );
+        diaryService.delete(user, diaryDeleteRequest);
         return ResponseEntity.ok().build();
     }
 

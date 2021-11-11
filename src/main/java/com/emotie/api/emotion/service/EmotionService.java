@@ -5,12 +5,7 @@ import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +16,13 @@ public class EmotionService {
         Emotions emotions = new Emotions(member, emotionRepository.findAllByMember(member));
 
         emotions.deepenCurrentEmotionScore(emotionName);
+        emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
+    }
+
+    public void reduceEmotionScore(Member member, String emotionName) {
+        Emotions emotions = new Emotions(member, emotionRepository.findAllByMember(member));
+
+        emotions.reduceCurrentEmotionScore(emotionName);
         emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
     }
 
