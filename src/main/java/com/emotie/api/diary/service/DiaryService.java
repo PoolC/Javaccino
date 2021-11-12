@@ -84,7 +84,7 @@ public class DiaryService {
 
     public void delete(Member user, DiaryDeleteRequest request) {
         DiaryIds id = new DiaryIds(request.getDiaryId());
-        checkDeleteListValidity(user, id);
+        checkDeleteListValidity(user, id.getDiaryIds());
         id.getDiaryIds().forEach(
                 diaryId -> {
                     Diary deleteDiary = getDiaryById(diaryId);
@@ -127,24 +127,10 @@ public class DiaryService {
         );
     }
 
-    private void checkDeleteListValidity(Member user, DiaryIds id) {
-        id.getDiaryIds().forEach(
     private Member getMemberById(String memberId) {
         return memberRepository.findById(memberId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
         );
-    }
-
-    private Emotion getEmotionByEmotion(String emotion) {
-        return emotionRepository.findByEmotion(emotion).orElseThrow(
-                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
-        );
-    }
-
-    private void updateDiaryWithRequest(Diary diary, DiaryUpdateRequest updateRequest) {
-        diary.rewriteContent(updateRequest.getContent());
-        diary.updateEmotion(getEmotionByEmotion(updateRequest.getEmotion()));
-        diary.updateOpenness(updateRequest.getIsOpened());
     }
 
     private void checkDeleteListValidity(Member user, Set<Long> id) {
@@ -155,12 +141,6 @@ public class DiaryService {
                     if (diary.getReportCount() >= Postings.reportCountThreshold)
                         throw new UnauthorizedException("삭제를 요청한 대상이 신고가 누적되어 삭제가 불가능합니다.");
                 }
-        );
-    }
-
-    private Member getMemberById(String memberId) {
-        return memberRepository.findById(memberId).orElseThrow(
-                () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
         );
     }
 
