@@ -73,11 +73,6 @@ public class Member extends TimestampEntity implements UserDetails {
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
-
-    @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
-    @MapKeyJoinColumn(name = "emotion")
-    private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
-
     @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
     private String withdrawalReason = null;
 
@@ -213,46 +208,6 @@ public class Member extends TimestampEntity implements UserDetails {
         this.nickname = request.getNickname();
         this.gender = request.getGender();
         this.dateOfBirth = request.getDateOfBirth();
-    }
-
-    public void deepenEmotionScore(Emotion emotion) {
-        this.emotionScore.forEach(
-                (emotionKey, emotionScoreValue) -> {
-                    // 만약, 이번에 쓰인 감정이 맞다면, 1.0; 아니라면 0.0으로 업데이트 연산
-                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
-                        emotionScoreValue.addOne();
-                        emotionScoreValue.deepenScore(1.0);
-                    } else {
-                        emotionScoreValue.deepenScore(0.0);
-                    }
-                }
-        );
-    }
-
-    public void reduceEmotionScore(Emotion emotion) {
-        this.emotionScore.forEach(
-                (emotionKey, emotionScoreValue) -> {
-                    if (emotionKey.getEmotion().equals(emotion.getEmotion())) {
-                        emotionScoreValue.removeOne();
-                        emotionScoreValue.reduceScore(1.0);
-                    } else {
-                        emotionScoreValue.reduceScore(0.0);
-                    }
-                }
-        );
-    }
-
-    public void initializeEmotionScore(Emotion emotion, EmotionScore emotionScore) {
-        this.emotionScore.put(emotion, emotionScore);
-    }
-
-    public void updateEmotionScore(Emotion originalEmotion, Emotion updatedEmotion) {
-        reduceEmotionScore(originalEmotion);
-        deepenEmotionScore(updatedEmotion);
-    }
-
-    public Boolean isEmotionScoreInitialized(Emotion emotion) {
-        return this.emotionScore.containsKey(emotion);
     }
 
     public void addReportCount() {

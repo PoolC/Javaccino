@@ -3,6 +3,8 @@ package com.emotie.api.diary.service;
 import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
+import com.emotie.api.diary.domain.DiaryIds;
+import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.domain.MemberBlindDiary;
 import com.emotie.api.diary.domain.MemberReportDiary;
 import com.emotie.api.diary.dto.*;
@@ -10,10 +12,12 @@ import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Follow;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -44,11 +48,12 @@ public class DiaryService {
 
     @Transactional
     public void create(Member member, DiaryCreateRequest request) {
-        Emotion emotion = getEmotionByEmotion(request.getEmotion());
+        emotionService.deepenEmotionScore(member, request.getEmotion());
+
         diaryRepository.save(
                 Diary.builder()
                         .writer(member)
-                        .emotion(emotion)
+                        .emotion(emotionService.getEmotionByMemberAndEmotionName(member, request.getEmotion()))
                         .content(request.getContent())
                         .isOpened(request.getIsOpened())
                         .build()
@@ -65,49 +70,30 @@ public class DiaryService {
 
         Pageable page = PageRequest.of(pageNumber, PAGE_SIZE, Sort.by("createdAt").descending());
         if (user.equals(writer)) {
-            List<Diary> allDiaries = diaryRepository.findAllByWriter(user, writer, Diary.reportCountThreshold, page);
+            List<Diary> allDiaries = diaryRepository.findAllByWriter(writer, page);
             return new DiaryReadAllResponse(
                     allDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
             );
         }
 
-
-        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(user, writer, true, Diary.reportCountThreshold, page);
+        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(writer, true, page);
         return new DiaryReadAllResponse(
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
         );
     }
 
-    @Deprecated
-    public String update(Member user, Long diaryId, DiaryUpdateRequest request) {
-        Diary diary = getDiaryById(diaryId);
-        Emotion originalEmotion = diary.getEmotion();
-
-        diary.checkUserValidity(user);
-
-        Emotion updatingEmotion = getEmotionByEmotion(request.getEmotion());
-
-        updateDiaryWithRequest(diary, request);
-        diaryRepository.saveAndFlush(diary);
-        emotionRepository.saveAndFlush(originalEmotion);
-        emotionRepository.saveAndFlush(updatingEmotion);
-
-        return originalEmotion.getEmotion();
-    }
-
-    public List<String> delete(Member user, DiaryDeleteRequest request) {
-        Set<Long> id = new HashSet<>(request.getDiaryId());
-        checkDeleteListValidity(user, id);
-        LinkedList<String> emotions = new LinkedList<>();
-        id.stream().map(this::getDiaryById).forEach(
-                (diary) -> {
-                    emotions.add(diary.getEmotion().getEmotion());
-                    diaryRepository.delete(diary);
+    public void delete(Member user, DiaryDeleteRequest request) {
+        DiaryIds id = new DiaryIds(request.getDiaryId());
+        checkDeleteListValidity(user, id.getDiaryIds());
+        id.getDiaryIds().forEach(
+                diaryId -> {
+                    Diary deleteDiary = getDiaryById(diaryId);
+                    emotionService.reduceEmotionScore(user, deleteDiary.getEmotion().getName());
+                    diaryRepository.delete(deleteDiary);
                 }
         );
-
-        return emotions;
     }
+
 
     public DiaryReadAllResponse getFeed(Member user, Integer page) {
         List<Follow> followingMember = followRepository.findFollowByFromMember(user).get();
@@ -145,18 +131,6 @@ public class DiaryService {
         return memberRepository.findById(memberId).orElseThrow(
                 () -> new NoSuchElementException("해당하는 아이디의 멤버가 없습니다.")
         );
-    }
-
-    private Emotion getEmotionByEmotion(String emotion) {
-        return emotionRepository.findByEmotion(emotion).orElseThrow(
-                () -> new NoSuchElementException("해당하는 이름의 감정이 없습니다.")
-        );
-    }
-
-    private void updateDiaryWithRequest(Diary diary, DiaryUpdateRequest updateRequest) {
-        diary.rewriteContent(updateRequest.getContent());
-        diary.updateEmotion(getEmotionByEmotion(updateRequest.getEmotion()));
-        diary.updateOpenness(updateRequest.getIsOpened());
     }
 
     private void checkDeleteListValidity(Member user, Set<Long> id) {

@@ -1,13 +1,17 @@
 package com.emotie.api.emotion.repository;
 
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.member.domain.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface EmotionRepository extends JpaRepository<Emotion, Integer> {
 
-    Optional<Emotion> findByEmotion(String emotion);
+    List<Emotion> findAllByMember(Member member);
+
+    Optional<Emotion> findByMemberAndName(Member member, String name);
 }
