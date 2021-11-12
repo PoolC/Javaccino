@@ -28,10 +28,10 @@ public abstract class Emotion {
     @Column(name = "name")
     protected String name;
 
-    @Transient
+    @Column(name = "color")
     protected String color;
 
-    @Transient
+    @Column(name = "description")
     protected String description;
 
     protected Emotion() {
