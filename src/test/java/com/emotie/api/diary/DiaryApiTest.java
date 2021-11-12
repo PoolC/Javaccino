@@ -673,6 +673,36 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
+    @Test
+    @DisplayName("테스트 07.01: 다이어리 피드 조회 성공 [200];")
+    public void 다이어리_피드_조회_성공_1() {
+        //given
+        String accessToken = viewerLogin();
+
+
+        //when
+        ExtractableResponse<Response> response = diaryReadfeed(accessToken, 0);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+    }
+
+    @Test
+    @DisplayName("테스트 07.01: 다이어리 피드 조회 성공 [200];")
+    public void 다이어리_피드_조회_성공_2() {
+        //given
+        String accessToken = viewerLogin();
+
+
+        //when
+        ExtractableResponse<Response> response = diaryReadfeed(accessToken, 1);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+    }
+
     private static ExtractableResponse<Response> diaryCreateRequest(String accessToken, DiaryCreateRequest request) {
         return RestAssured
                 .given().log().all()
@@ -776,6 +806,18 @@ public class DiaryApiTest extends AcceptanceTest {
                 .given().log().all()
                 .auth().oauth2(accessToken)
                 .when().post("/diaries/blind/{diaryId}", diaryId)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryReadfeed(
+            String accessToken, Integer pageNumber
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .queryParam("page", pageNumber)
+                .when().get("/diaries/feed")
                 .then().log().all()
                 .extract();
     }

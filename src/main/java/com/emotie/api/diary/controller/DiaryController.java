@@ -99,4 +99,11 @@ public class DiaryController {
         diaryService.blind(user, diaryId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping(value = "/feed")
+    public ResponseEntity<DiaryReadAllResponse> get_feed(
+            @AuthenticationPrincipal Member user,
+            @RequestParam @Min(0) @Max(Integer.MAX_VALUE / PAGE_SIZE) Integer page){
+        return ResponseEntity.ok().body(diaryService.getFeed(user, page));
+    }
 }

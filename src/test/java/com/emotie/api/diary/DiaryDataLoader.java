@@ -9,6 +9,7 @@ import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.*;
 import com.emotie.api.member.repository.EmotionScoreRepository;
+import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
@@ -30,7 +31,9 @@ public class DiaryDataLoader implements ApplicationRunner {
     private final MemberRepository memberRepository;
     private final EmotionScoreRepository emotionScoreRepository;
     private final PasswordHashProvider passwordHashProvider;
+    private final FollowRepository followRepository;
     private final DiaryService diaryService;
+
 
 
     public static String testEmotion, invalidEmotion;
@@ -162,6 +165,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                                 }
                         )
         );
+        followRepository.save(new Follow(viewer, writer));
         writerId = writer.getUUID();
     }
 

@@ -11,8 +11,10 @@ import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
+import com.emotie.api.member.domain.Follow;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,7 @@ public class DiaryService {
     private final MemberReportDiaryRepository memberReportDiaryRepository;
     private final MemberBlindDiaryRepository memberBlindDiaryRepository;
     private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
 
     private final EmotionService emotionService;
 
@@ -106,6 +109,18 @@ public class DiaryService {
         return emotions;
     }
 
+    public DiaryReadAllResponse getFeed(Member user, Integer page) {
+        List<Follow> followingMember = followRepository.findByFromMember(user);
+        List<Diary> feed  = new LinkedList<>();
+        followingMember.stream().forEach(follow -> {
+            List<Diary> diaries = diaryRepository.findAllByWriterAndIsOpened(follow.getToMember(), true);
+            feed.addAll(diaries);
+        });
+        feed.sort(Comparator.comparing(Diary::getCreatedAt).reversed());
+        List<DiaryReadResponse> collect = feed.stream().map(DiaryReadResponse::new).skip(page*5).limit(5).collect(Collectors.toList());
+        return new DiaryReadAllResponse(collect);
+    }
+  
     public void report(Member user, DiaryReportRequest request, Long diaryId) {
         checkReportOrBlindRequestValidity(user, diaryId);
         Diary target = getDiaryById(diaryId);
