@@ -4,12 +4,13 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.auth.exception.WrongPasswordException;
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.exception.DuplicatedException;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.domain.*;
+import com.emotie.api.member.domain.Follow;
+import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.domain.MemberRole;
+import com.emotie.api.member.domain.MemberRoles;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.exception.CannotFollowException;
-import com.emotie.api.member.exception.EmotionScoreNotInitializedException;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.profile.dto.FolloweeResponse;
@@ -97,6 +98,7 @@ public class MemberService {
         return passwordHashProvider.matches(request.getPassword(), user.getPassword());
     }
 
+    @Transactional
     public void updatePassword(Member member, PasswordUpdateRequest request) {
         if (!passwordHashProvider.matches(request.getCurrentPassword(), member.getPassword()))
             throw new WrongPasswordException("비밀번호를 확인해주세요.");

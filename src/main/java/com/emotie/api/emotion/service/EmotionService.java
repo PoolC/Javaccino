@@ -6,12 +6,14 @@ import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class EmotionService {
     private final EmotionRepository emotionRepository;
 
+    @Transactional
     public void deepenEmotionScore(Member member, String emotionName) {
         Emotions emotions = new Emotions(member, emotionRepository.findAllByMember(member));
 
