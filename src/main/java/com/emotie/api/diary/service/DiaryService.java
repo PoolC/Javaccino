@@ -46,7 +46,6 @@ public class DiaryService {
 
     private final EmotionService emotionService;
 
-    @Transactional
     public void create(Member member, DiaryCreateRequest request) {
         emotionService.deepenEmotionScore(member, request.getEmotion());
 
