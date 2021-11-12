@@ -1,4 +1,4 @@
-package com.emotie.api.guestbook.domain;
+package com.emotie.api.diary.domain;
 
 import com.emotie.api.member.domain.Member;
 import lombok.Builder;
@@ -7,11 +7,11 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @NoArgsConstructor
-@Entity(name = "members_report_guestbooks")
+@Entity(name = "members_report_diaries")
 @Table(uniqueConstraints = {
-        @UniqueConstraint(name = "UniqueReportGuestbook",
-                columnNames = {"member_id", "guestbook_id"})})
-public class MemberReportGuestbook {
+        @UniqueConstraint(name = "UniqueReportDiary",
+                columnNames = {"member_id", "diary_id"})})
+public class MemberReportDiary {
     @Id
     @GeneratedValue
     private Long id;
@@ -21,18 +21,18 @@ public class MemberReportGuestbook {
     private Member member;
 
     @ManyToOne
-    @JoinColumn(name = "guestbook_id")
-    private Guestbook guestbook;
+    @JoinColumn(name = "diary_id")
+    private Diary diary;
 
     @Column(name = "reason", nullable = false)
     protected String reason;
 
     @Builder
-    public MemberReportGuestbook(
-            Member member, Guestbook guestbook, String reason
+    public MemberReportDiary(
+            Member member, Diary diary, String reason
     ) {
         this.member = member;
-        this.guestbook = guestbook;
+        this.diary = diary;
         this.reason = reason;
     }
 }

@@ -1,4 +1,4 @@
-package com.emotie.api.auth.service;
+package com.emotie.api.common.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -23,7 +23,7 @@ public class JavaMailServiceImpl implements MailService {
         helper.setSubject("이모티 아이디 인증 안내메일입니다.");
         helper.setText(String.format("안녕하세요. 이모티입니다. 아이디를 인증하시려면 해당 url( %s )로 들어가시면 됩니다.\n" +
                         "감사합니다.",
-                address + "/auth/authorization?authorizationToken=" + authorizationToken));
+                address + "/auth/authorization?email=" + email + "&authorizationToken=" + authorizationToken));
         helper.setTo(email);
         mailSender.send(message);
     }

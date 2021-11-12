@@ -26,7 +26,7 @@ public class DiaryController {
     @PostMapping
     public ResponseEntity<Void> write(
             @AuthenticationPrincipal Member user, @RequestBody @Valid DiaryCreateRequest diaryCreateRequest
-    ) {
+    ) throws Exception {
         diaryService.create(user, diaryCreateRequest);
         return ResponseEntity.ok().build();
     }
@@ -68,8 +68,23 @@ public class DiaryController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO: blind 부분을 redirect로 할 수 있나?
     @PostMapping(value = "/report/{diaryId}")
-    public ResponseEntity<DiaryReportResponse> report(@PathVariable Integer diaryId) throws Exception {
+    public ResponseEntity<Void> report(@AuthenticationPrincipal Member user, @RequestBody @Valid DiaryReportRequest request, @PathVariable Long diaryId) throws Exception {
+        diaryService.report(user, request, diaryId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/blind/{diaryId}")
+    public ResponseEntity<Void> blind(@AuthenticationPrincipal Member user, @PathVariable Long diaryId) throws Exception {
+        diaryService.blind(user, diaryId);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/feed")
+    public ResponseEntity<DiaryReadAllResponse> get_feed(
+            @AuthenticationPrincipal Member user,
+            @RequestParam @Min(0) @Max(Integer.MAX_VALUE / PAGE_SIZE) Integer page){
+        return ResponseEntity.ok().body(diaryService.getFeed(user, page));
     }
 }

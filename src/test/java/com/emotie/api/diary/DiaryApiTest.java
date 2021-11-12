@@ -26,6 +26,7 @@ import java.util.Set;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.loginRequest;
 import static com.emotie.api.diary.DiaryDataLoader.*;
+import static com.emotie.api.guestbook.service.GuestbookService.PAGE_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -175,7 +176,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().get("content").equals(originalContent)).isTrue();
+        assertThat(response.body().as(DiaryReadResponse.class)).hasFieldOrPropertyWithValue("content", originalContent);
     }
 
     @Test
@@ -189,12 +190,12 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().jsonPath().get("content").equals(originalContent)).isTrue();
+        assertThat(response.body().as(DiaryReadResponse.class)).hasFieldOrPropertyWithValue("content", originalContent);
     }
 
     @Test
     @DisplayName("테스트 03.01: 다이어리 전체 조회 시 [400]; 페이지 인덱스가 너무 크거나 작을 경우; 즉, 페이지 인덱스가 없을 경우")
-    public void 전체_조회_실패_NOT_FOUND_1() {
+    public void 전체_조회_실패_BAD_REQUEST() {
         //given
         Integer pageNumber = Integer.MAX_VALUE;
         String accessToken = viewerLogin();
@@ -238,6 +239,7 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).allMatch(DiaryReadResponse::getIsOpened);
     }
 
+    /* Update: 다이어리 수정 */
     @Test
     @DisplayName("테스트 03.04: 다이어리 전체 조회 성공 [200]; 작성자의 경우")
     public void 전체_조회_성공_OK_2() {
@@ -341,68 +343,163 @@ public class DiaryApiTest extends AcceptanceTest {
                 .build();
     }
 
+    /* 기타 */
     /* 다이어리 신고 */
     @Test
     @DisplayName("테스트 05.01: 다이어리 신고 시 [403]; 로그인하지 않음")
-    public void 다이어리_신고_실패_FORBIDDEN() {
+    public void 신고_실패_FORBIDDEN_1() {
         //given
         String accessToken = "";
-        Integer diaryId = 0;
-
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
         //when
-        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
-
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, unreportedId);
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
     @DisplayName("테스트 05.02: 다이어리 신고 시 [404]; 해당 다이어리가 없는 경우")
-    public void 다이어리_신고_실패_NOT_FOUND() {
+    public void 신고_실패_NOT_FOUND() {
         //given
         String accessToken = viewerLogin();
-        Integer diaryId = 0;
-
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
         //when
-        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
-
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, invalidId);
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
     }
 
     @Test
-    @DisplayName("테스트 05.03: 다이어리 신고 성공 [200]; Not Report -> Report")
-    public void 다이어리_신고_성공_OK_1() {
+    @DisplayName("테스트 05.03: 다이어리 신고 시 [409]; 본인이 작성한 다이어리를 신고하려 할 때")
+    public void 신고_실패_CONFLICT() {
         //given
-        String accessToken = viewerLogin();
-        Integer diaryId = 0;
-
+        String accessToken = writerLogin();
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
         //when
-        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
-
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, unreportedId);
         //then
-        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(DiaryReportResponse.class))
-                .hasFieldOrPropertyWithValue("isReported", true);
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
     }
 
     @Test
-    @DisplayName("테스트 05.04: 다이어리 신고 성공 [200]; Report -> Not Report")
-    public void 다이어리_신고_성공_OK_2() {
+    @DisplayName("테스트 05.04: 다이어리 신고 시 [403]; closed된 다이어리를 신고하려고 할 시")
+    public void 신고_실패_FORBIDDEN_2() {
         //given
         String accessToken = viewerLogin();
-        Integer diaryId = 0;
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
+        //when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, closedDiaryId);
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 05.05: 다이어리 신고 시 [200];")
+    public void 신고_성공_OK() throws Exception {
+        // given
+        String accessToken = viewerLogin();
+        DiaryReportRequest diaryReportRequest = DiaryReportRequest.builder()
+                .reason(reportReason)
+                .build();
+        // when
+        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryReportRequest, unreportedId);
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    /* 다이어리 블라인드 */
+    @Test
+    @DisplayName("테스트 06.01: 다이어리 블라인드 시 [403]; 로그인하지 않음")
+    public void 블라인드_실패_FORBIDDEN() {
+        //given
+        String accessToken = "";
+        //when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, unBlindedId);
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 06.02: 다이어리 블라인드 시 [404]; 해당 다이어리가 없는 경우")
+    public void 블라인드_실패_NOT_FOUND() {
+        //given
+        String accessToken = viewerLogin();
+        //when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, invalidId);
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
+    }
+
+    @Test
+    @DisplayName("테스트 06.03: 다이어리 블라인드 시 [409]; 본인이 작성한 다이어리를 블라인드하려 할 때")
+    public void 블라인드_실패_CONFLICT() {
+        //given
+        String accessToken = writerLogin();
+        //when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, unBlindedId);
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.CONFLICT.value());
+    }
+
+    @Test
+    @DisplayName("테스트 06.04: 다이어리 블라인드 시 [403]; closed된 다이어리를 블라인드하려고 할 시")
+    public void 블라인드_실패_FORBIDDEN_2() {
+        //given
+        String accessToken = viewerLogin();
+        //when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, closedDiaryId);
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    }
+
+    @Test
+    @DisplayName("테스트 06.05: 다이어리 블라인드 시 [200];")
+    public void 블라인드_성공_OK() throws Exception {
+        // given
+        String accessToken = viewerLogin();
+        // when
+        ExtractableResponse<Response> response = diaryBlindRequest(accessToken, unBlindedId);
+        // then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
+
+    @Test
+    @DisplayName("테스트 07.01: 다이어리 피드 조회 성공 [200];")
+    public void 다이어리_피드_조회_성공_1() {
+        //given
+        String accessToken = viewerLogin();
 
         //when
-        ExtractableResponse<Response> response = diaryReportRequest(accessToken, diaryId);
+        ExtractableResponse<Response> response = diaryReadfeed(accessToken, 0);
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(DiaryReportResponse.class))
-                .hasFieldOrPropertyWithValue("isReported", false);
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
     }
 
-    public static ExtractableResponse<Response> diaryCreateRequest(String accessToken, DiaryCreateRequest request) {
+    @Test
+    @DisplayName("테스트 07.02: 다이어리 피드 조회 성공 [200];")
+    public void 다이어리_피드_조회_성공_2() {
+        //given
+        String accessToken = viewerLogin();
+
+        //when
+        ExtractableResponse<Response> response = diaryReadfeed(accessToken, 1);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body().as(DiaryReadAllResponse.class)).hasFieldOrProperty("diaries");
+    }
+
+    private static ExtractableResponse<Response> diaryCreateRequest(String accessToken, DiaryCreateRequest request) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
@@ -477,16 +574,38 @@ public class DiaryApiTest extends AcceptanceTest {
                 .extract();
     }
 
-    private static ExtractableResponse<Response> diaryReportRequest(String accessToken, Integer diaryId) {
+    private static ExtractableResponse<Response> diaryReportRequest(String accessToken, DiaryReportRequest request, Long diaryId) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
-                .when().put("/diaries/report/{diaryId}", diaryId)
+                .body(request).contentType(APPLICATION_JSON_VALUE)
+                .when().post("/diaries/report/{diaryId}", diaryId)
                 .then().log().all()
                 .extract();
     }
 
-    public static String writerLogin() {
+    private static ExtractableResponse<Response> diaryBlindRequest(String accessToken, Long diaryId) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .when().post("/diaries/blind/{diaryId}", diaryId)
+                .then().log().all()
+                .extract();
+    }
+
+    private static ExtractableResponse<Response> diaryReadfeed(
+            String accessToken, Integer pageNumber
+    ) {
+        return RestAssured
+                .given().log().all()
+                .auth().oauth2(accessToken)
+                .queryParam("page", pageNumber)
+                .when().get("/diaries/feed")
+                .then().log().all()
+                .extract();
+    }
+
+    private static String writerLogin() {
         LoginRequest request = LoginRequest.builder()
                 .email(writerEmail)
                 .password(password)

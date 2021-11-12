@@ -10,7 +10,7 @@ public class EmotionResponse {
     private String color;
 
     public EmotionResponse(Emotion emotion) {
-        this.tag = emotion.getName();
+        this.tag = emotion.getEmotion();
         this.color = emotion.getColor();
     }
     @JsonCreator

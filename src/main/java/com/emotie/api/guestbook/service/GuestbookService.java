@@ -62,7 +62,7 @@ public class GuestbookService {
     }
 
     public void report(Member user, GuestbookReportRequest request, Long guestbookId) {
-        checkToggleReportRequestValidity(user, guestbookId);
+        checkReportRequestValidity(user, guestbookId);
         Guestbook target = getGuestbookById(guestbookId);
         if (user.equals(target.getOwner())) {
             target.ownerReport();
@@ -109,7 +109,7 @@ public class GuestbookService {
         guestbook.checkNotOverReported();
     }
 
-    private void checkToggleReportRequestValidity(Member user, Long guestbookId) {
+    private void checkReportRequestValidity(Member user, Long guestbookId) {
         Guestbook guestbook = getGuestbookById(guestbookId);
         guestbook.checkNotWriter(user);
     }

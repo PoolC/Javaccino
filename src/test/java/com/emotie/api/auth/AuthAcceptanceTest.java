@@ -23,8 +23,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class AuthAcceptanceTest extends AcceptanceTest {
 
     @Test
-    @DisplayName("테스트 01: 로그인시 실패 401 (비밀번호가 틀렸을 때)")
-    public void 로그인_실패_UNAUTHORIZED_1() {
+    @DisplayName("테스트 01: 로그인시 실패 403 (비밀번호가 틀렸을 때)")
+    public void 로그인_실패_FORBIDDEN_1() {
         //given
         LoginRequest request = LoginRequest.builder()
                 .email(unauthorizedEmail)
@@ -35,12 +35,12 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = loginRequest(request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
     }
 
     @Test
-    @DisplayName("테스트 02: 로그인 실패 401 (추방된 회원 )")
-    public void 로그인_실패_UNAUTHORIZED_2() {
+    @DisplayName("테스트 02: 로그인 실패 403 (추방된 회원 )")
+    public void 로그인_실패_FORBIDDEN_2() {
         //given
         LoginRequest request = LoginRequest.builder()
                 .email(expelledEmail)
@@ -51,7 +51,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = loginRequest(request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(UNAUTHORIZED.value());
+        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
     }
 
     @Test
@@ -89,12 +89,13 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 403 (로그인하지 않았을 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN_1() {
+    @DisplayName("테스트 05: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
+    public void 이메일_인증코드_보내기_실패_FORBIDDEN() {
         //given
+        String email = authorizedEmail;
 
         //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest("");
+        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(email);
 
         //then
         assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
@@ -102,41 +103,29 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 403 (이미 이메일 인증을 끝낸 상태일 때)")
-    public void 이메일_인증코드_보내기_실패_FORBIDDEN_2() {
+    @DisplayName("테스트 06: 이메일로 인증코드 보내기 실패 404 (해당하는 이메일을 가진 멤버가 존재하지 않을 때)")
+    public void 이메일_인증코드_보내기_실패_NOT_FOUND() {
         //given
-        String accessToken = authorizedLogin();
+        String email = "";
 
         //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(accessToken);
+        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(email);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
+        assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
     }
 
-    //TODO: 이메일이 실제로 왔는지 테스트하는 로직이 필요하다.
-    @Test
-    @DisplayName("테스트 07: 이메일로 인증코드 보내기 성공 200")
-    public void 이메일_인증코드_보내기_성공() {
-        //given
-        String accessToken = unauthorizedLogin();
-
-        //when
-        ExtractableResponse<Response> response = sendAuthorizationTokenRequest(accessToken);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
-    }
 
     @Test
-    @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (로그인하지 않았을 때)")
-    public void 이메일_인증코드_확인_실패_FORBIDDEN_1() {
+    @DisplayName("테스트 08: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
+    public void 이메일_인증코드_확인_실패_FORBIDDEN() {
         //given
+        String email = authorizedEmail;
         String request = authorizationToken;
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest("", request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
@@ -144,17 +133,17 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 09: 이메일 인증코드 확인 실패 403 (이미 이메일 인증했을 때)")
-    public void 이메일_인증코드_확인_실패_FORBIDDEN_2() {
+    @DisplayName("테스트 09: 이메일 인증코드 확인 실패 403 (해당하는 이메일을 가진 멤버가 존재하지 않을 때)")
+    public void 이메일_인증코드_확인_실패_NOT_FOUND() {
         //given
-        String accessToken = authorizedLogin();
+        String email = notExistEmail;
         String request = authorizationToken;
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(accessToken, request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
-        assertThat(response.statusCode()).isEqualTo(FORBIDDEN.value());
+        assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
 
     }
 
@@ -162,11 +151,11 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 10: 이메일 인증코드 확인 실패 409 (인증코드 틀렸을시)")
     public void 이메일_인증코드_확인_실패_CONFLICT_1() {
         //given
-        String accessToken = getAuthorizationTokenLogin();
+        String email = getAuthorizationTokenEmail;
         String request = "";
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(accessToken, request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -177,11 +166,11 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 11: 이메일 인증코드 확인 실패 409 (인증코드가 만료되었을시)")
     public void 이메일_인증코드_확인_실패_CONFLICT_2() {
         //given
-        String accessToken = getExpiredAuthorizationTokenLogin();
+        String email = expiredAuthorizationTokenEmail;
         String request = authorizationToken;
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(accessToken, request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -192,11 +181,11 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     @DisplayName("테스트 12: 이메일 인증코드 확인 성공 200")
     public void 이메일_인증코드_확인_성공() {
         //given
-        String accessToken = getAuthorizationTokenLogin();
+        String email = getAuthorizationTokenEmail;
         String request = authorizationToken;
 
         //when
-        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(accessToken, request);
+        ExtractableResponse<Response> response = checkAuthorizationTokenRequest(email, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(OK.value());
@@ -218,19 +207,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 14: 비밀번호 초기화 메일 보내기 성공 200")
-    public void 비밀번호_초기화_메일_보내기_성공() {
-        //given
-        String request = authorizedEmail;
-
-        //when
-        ExtractableResponse<Response> response = sendPasswordResetTokenRequest(request);
-
-        //then
-        assertThat(response.statusCode()).isEqualTo(OK.value());
-    }
-
-    @Test
     @DisplayName("테스트 15: 비밀번호 변경 실패 400 (password가 없을 시)")
     public void 비밀번호_변경_실패_BAD_REQUEST_1() {
         //given
@@ -239,7 +215,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(BAD_REQUEST.value());
@@ -257,7 +233,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(BAD_REQUEST.value());
@@ -275,7 +251,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(NOT_FOUND.value());
@@ -293,7 +269,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest("", request);
+        ExtractableResponse<Response> response = passwordRestRequest("", request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -311,7 +287,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(CONFLICT.value());
@@ -329,7 +305,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .build();
 
         //when
-        ExtractableResponse<Response> response = passwordResetRequest(passwordResetToken, request);
+        ExtractableResponse<Response> response = passwordRestRequest(passwordResetToken, request);
 
         //then
         assertThat(response.statusCode()).isEqualTo(OK.value());
@@ -388,21 +364,20 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .getAccessToken();
     }
 
-    private ExtractableResponse<Response> sendAuthorizationTokenRequest(String accessToken) {
+    private ExtractableResponse<Response> sendAuthorizationTokenRequest(String email) {
         return RestAssured
                 .given().log().all()
-                .auth().oauth2(accessToken)
+                .param("email", email)
                 .when().post("/auth/authorization")
                 .then().log().all()
                 .extract();
     }
 
-    private ExtractableResponse<Response> checkAuthorizationTokenRequest(String accessToken, String authenticationToken) {
+    private ExtractableResponse<Response> checkAuthorizationTokenRequest(String email, String authenticationToken) {
         return RestAssured
                 .given().log().all()
-                .auth().oauth2(accessToken)
                 .contentType(APPLICATION_JSON_VALUE)
-                .queryParam("AuthorizationToken", authenticationToken)
+                .queryParams("email", email, "AuthorizationToken", authenticationToken)
                 .when().put("/auth/authorization")
                 .then().log().all()
                 .extract();
@@ -418,7 +393,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .extract();
     }
 
-    private ExtractableResponse<Response> passwordResetRequest(String passwordResetToken, PasswordResetRequest request) {
+    private ExtractableResponse<Response> passwordRestRequest(String passwordResetToken, PasswordResetRequest request) {
         return RestAssured
                 .given().log().all()
                 .body(request)
