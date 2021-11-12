@@ -4,10 +4,8 @@ import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.diary.domain.DiaryIds;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -21,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Set;
 
 import static com.emotie.api.auth.AuthAcceptanceTest.loginRequest;
@@ -224,7 +221,7 @@ public class DiaryApiTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("테스트 03.03: 다이어리 전체 조회 성공 [200]; 일반적인 경우")
+    @DisplayName("테스트 03.03: 다이어리 전체 조회 성공 [200]; 일반적인 경우 + 신고 및 블라인드된 게시물 필터링 확인")
     public void 전체_조회_성공_OK_1() {
         //given
         Integer pageNumber = 0;
@@ -237,6 +234,7 @@ public class DiaryApiTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertWellPaged(response, "90");
         assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).allMatch(DiaryReadResponse::getIsOpened);
+        assertThat(response.body().jsonPath().getList("diaries", DiaryReadResponse.class)).extracting("diaryId").doesNotContain(viewerReportedId, overReportedId, viewerBlindedId);
     }
 
     /* Update: 다이어리 수정 */

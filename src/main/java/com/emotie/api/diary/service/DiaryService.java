@@ -64,13 +64,13 @@ public class DiaryService {
 
         Pageable page = PageRequest.of(pageNumber, PAGE_SIZE, Sort.by("createdAt").descending());
         if (user.equals(writer)) {
-            List<Diary> allDiaries = diaryRepository.findAllByWriter(writer, page);
+            List<Diary> allDiaries = diaryRepository.findAllByWriterAndNotBlinded(user, writer, Diary.reportCountThreshold, page);
             return new DiaryReadAllResponse(
                     allDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
             );
         }
 
-        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(writer, true, page);
+        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpenedAndNotBlinded(user, writer, true, Diary.reportCountThreshold, page);
         return new DiaryReadAllResponse(
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
         );
@@ -93,7 +93,7 @@ public class DiaryService {
         List<Follow> followingMember = followRepository.findFollowByFromMember(user).get();
         List<Diary> feed = new LinkedList<>();
         followingMember.stream().forEach(follow -> {
-            List<Diary> diaries = diaryRepository.findAllByWriterAndIsOpened(follow.getToMember(), true);
+            List<Diary> diaries = diaryRepository.findAllByWriterAndIsOpenedAndNotBlinded(user, follow.getToMember(), true, Diary.reportCountThreshold);
             feed.addAll(diaries);
         });
         feed.sort(Comparator.comparing(Diary::getCreatedAt).reversed());
