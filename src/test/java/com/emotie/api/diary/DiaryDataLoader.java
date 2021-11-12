@@ -2,16 +2,16 @@ package com.emotie.api.diary;
 
 import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.diary.domain.Diary;
-import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.dto.DiaryReportRequest;
 import com.emotie.api.diary.repository.DiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
-import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.diary.service.DiaryService;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
-import com.emotie.api.member.domain.*;
-import com.emotie.api.member.repository.EmotionScoreRepository;
+import com.emotie.api.member.domain.Gender;
+import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.domain.MemberRole;
+import com.emotie.api.member.domain.MemberRoles;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,10 +43,6 @@ public class DiaryDataLoader implements ApplicationRunner {
     private final FollowRepository followRepository;
     private final DiaryService diaryService;
 
-
-
-    public static String testEmotion, invalidEmotion;
-
     public static final String writerEmail = "writer@gmail.com";
     public static final String viewerEmail = "viewer@gmail.com";
     public static final String unauthorizedEmail = "unauthorized@gmail.com";
@@ -66,51 +62,29 @@ public class DiaryDataLoader implements ApplicationRunner {
     public static final String updatedContent = "어제도 잠을 잘 잤다. 좋았었다.";
     public static final String newContent = "내일도 잠을 잘 잘 것이다. 좋을 것이다.";
     public static final Long invalidId = Long.MAX_VALUE;
-    public static final int PAGE_SIZE = 10;
 
     public static Emotion diaryEmotion, otherEmotion;
-
-    public static Long openedDiaryId, closedDiaryId;
+    public static Long openedDiaryId, closedDiaryId, viewerReportedId,
+            unreportedId, almostReportedId, overReportedId, unBlindedId, viewerBlindedId;
     public static Long diaryCount;
 
     public static Member[] reporters = new Member[Diary.reportCountThreshold];
     public static String reportReason = "신고 테스트를 하고 싶어서";
 
-    public static Emotion diaryEmotion, otherEmotion;
     public static Map<String, Double> writerEmotionScores = new HashMap<>();
-
-    public static Integer PAGE_SIZE = 10;
 
     private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        createEmotions();
         registerMembers();
         loadEmotion();
         writeDiaries();
-        loadScores();
-        loadInfo();
         registerReporters();
         writeDiariesAndReport();
         writeDiariesAndBlind();
-        countDiaries();
-    }
-
-    private void createEmotions() {
-        diaryEmotion = Emotion.builder()
-                .emotion("기쁨|HAPPY")
-                .color("#FFF27D")
-                .build();
-        testEmotion = diaryEmotion.getEmotion();
-        invalidEmotion = "없음|none";
-        emotionRepository.save(diaryEmotion);
-
-        otherEmotion = Emotion.builder()
-                .emotion("슬픔|SAD")
-                .color("#9FA7EF")
-                .build();
-        emotionRepository.save(otherEmotion);
+        loadScores();
+        loadInfo();
     }
 
     private void registerMembers() {
@@ -176,7 +150,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                     .collect(Collectors.toList());
             emotionRepository.saveAllAndFlush(emotions);
         }
-        List.of(writer, viewer, unauthorized).forEach(memberRepository::saveAndFlush);
+        members.forEach(memberRepository::saveAndFlush);
         writerId = writer.getUUID();
     }
 
@@ -287,6 +261,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
         viewerReportedId = diaryRepository.save(
                 Diary.of(
                         writer,
@@ -295,6 +270,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
         diaryService.report(viewer, DiaryReportRequest.builder().reason(reportReason).build(), viewerReportedId);
 
         almostReportedId = diaryRepository.save(
@@ -305,6 +281,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
         for (int i = 0; i < Diary.reportCountThreshold - 1; i++) {
             diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), almostReportedId);
         }
@@ -317,6 +294,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
         for (int i = 0; i < Diary.reportCountThreshold; i++) {
             diaryService.report(reporters[i], DiaryReportRequest.builder().reason(reportReason).build(), overReportedId);
         }
@@ -331,6 +309,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
 
         viewerBlindedId = diaryRepository.save(
                 Diary.of(
@@ -340,6 +319,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                         true
                 )
         ).getId();
+        deepenDiaryEmotion();
         diaryService.blind(viewer, viewerBlindedId);
     }
 }

@@ -4,13 +4,15 @@ import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.*;
-import com.emotie.api.member.repository.EmotionScoreRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
@@ -19,8 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import static com.emotie.api.common.init.EmotionProvider.emotionNames;
+import java.util.stream.Collectors;
 
 @Order(1)
 @Component
@@ -34,7 +35,6 @@ public class ProfileDataLoader implements ApplicationRunner {
     private final DiaryRepository diaryRepository;
     private final FollowRepository followRepository;
     private final MemberService memberService;
-    private final EmotionScoreRepository emotionScoreRepository;
 
     public static Member profileMember;
     public static String profileMemberEmail = "profileMember@gmail.com";
@@ -47,14 +47,19 @@ public class ProfileDataLoader implements ApplicationRunner {
     private static String anotherMemberId = "anotherMember";
     private static String anotherMemberNickname = "anotherNickname";
 
+    public static Emotion diaryEmotion;
+
+    private static final String EMOTION_BASE_PACKAGE = "com.emotie.api.emotion";
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         generateMembers();
+        loadEmotion();
         generateDiaries();
     }
 
-    private void generateMembers(){
-         profileMember = Member.builder()
+    private void generateMembers() {
+        profileMember = Member.builder()
                 .UUID(profileMemberId)
                 .email(profileMemberEmail)
                 .nickname(profileMemberNickname)
@@ -86,27 +91,14 @@ public class ProfileDataLoader implements ApplicationRunner {
                 .build();
         memberRepository.save(profileMember);
         memberRepository.save(profileMemberEmotion);
-        List<Emotion> allEmotion = emotionRepository.findAll();
-        List.of(profileMember, profileMemberEmotion).forEach(
-                (user) ->
-                        allEmotion.forEach(
-                                (emotion) -> {
-                                    EmotionScore emotionScore = EmotionScore.of(
-                                            user.getUUID(),
-                                            emotion,
-                                            0.0
-                                    );
-                                    emotionScoreRepository.save(emotionScore);
 
-                                    user.initializeEmotionScore(emotion, emotionScore);
-                                    memberRepository.saveAndFlush(user);
-                                }
-                        )
-        );
-        for (int i =0; i < 4; i++){
+        createEmotions(profileMember);
+        createEmotions(profileMemberEmotion);
+
+        for (int i = 0; i < 4; i++) {
             Member followMember = Member.builder()
                     .UUID("followMember_" + i)
-                    .email("follow"+i + "@gamil.com")
+                    .email("follow" + i + "@gamil.com")
                     .nickname("followMember_" + i)
                     .passwordHash(passwordHashProvider.encodePassword(password))
                     .dateOfBirth(LocalDate.now())
@@ -120,8 +112,8 @@ public class ProfileDataLoader implements ApplicationRunner {
                     .roles(MemberRoles.getDefaultFor(MemberRole.MEMBER))
                     .build();
             Member followeeMember = Member.builder()
-                    .UUID("followeeMember_"+ i )
-                    .email("followee"+i + "@gamil.com")
+                    .UUID("followeeMember_" + i)
+                    .email("followee" + i + "@gamil.com")
                     .nickname("followeeMember_" + i)
                     .dateOfBirth(LocalDate.now())
                     .passwordHash(passwordHashProvider.encodePassword(password))
@@ -137,25 +129,32 @@ public class ProfileDataLoader implements ApplicationRunner {
                     .build();
             memberRepository.save(followMember);
             memberRepository.save(followeeMember);
-            followRepository.save( new Follow(profileMember, followeeMember));
-            followRepository.save( new Follow(followMember, profileMember));
+            followRepository.save(new Follow(profileMember, followeeMember));
+            followRepository.save(new Follow(followMember, profileMember));
+
+            createEmotions(followMember);
+            createEmotions(followeeMember);
         }
     }
 
-    private void generateDiaries(){
+    private void loadEmotion() {
+        diaryEmotion = emotionRepository.findByMemberAndName(profileMember, "happy").get();
+    }
+
+    private void generateDiaries() {
         for (int i = 0; i < 4; i++) {
-            Emotion emotion = emotionRepository.findByEmotion(emotionNames.get(i)).get();
             diaryRepository.save(
                     Diary.builder()
                             .writer(profileMember)
-                            .emotion(emotion)
+                            .emotion(diaryEmotion)
                             .content("test")
                             .isOpened(true)
-                            .build());
-            memberService.deepenEmotionScore(profileMember, emotion.getEmotion());
+                            .build()
+            );
+            deepenDiaryEmotion();
         }
-        Emotion flutter = emotionRepository.findByEmotion(emotionNames.get(0)).get();
-        for(int i = 0; i< 3; i ++) {
+        Emotion flutter = emotionRepository.findByMemberAndName(profileMember, "flutter").get();
+        for (int i = 0; i < 3; i++) {
             diaryRepository.save(
                     Diary.builder()
                             .writer(profileMember)
@@ -164,7 +163,7 @@ public class ProfileDataLoader implements ApplicationRunner {
                             .isOpened(true)
                             .build());
         }
-        Emotion jealous = emotionRepository.findByEmotion(emotionNames.get(1)).get();
+        Emotion jealous = emotionRepository.findByMemberAndName(profileMember, "jealous").get();
         diaryRepository.save(
                 Diary.builder()
                         .writer(profileMember)
@@ -172,6 +171,26 @@ public class ProfileDataLoader implements ApplicationRunner {
                         .content("test")
                         .isOpened(true)
                         .build());
+    }
+
+    private void deepenDiaryEmotion() {
+        Emotions emotions = new Emotions(profileMember, emotionRepository.findAllByMember(profileMember));
+        emotions.deepenCurrentEmotionScore(diaryEmotion.getName());
+        emotionRepository.saveAllAndFlush(emotions.allMemberEmotions());
+    }
+
+    private void createEmotions(Member member) {
+        List<Emotion> emotions = new Reflections(EMOTION_BASE_PACKAGE, new SubTypesScanner())
+                .getSubTypesOf(Emotion.class).stream()
+                .map(concreteEmotionClass -> {
+                    try {
+                        return concreteEmotionClass.getDeclaredConstructor(Member.class).newInstance(member);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Couldn't create concrete Emotion class\n" + e.getMessage());
+                    }
+                })
+                .collect(Collectors.toList());
+        emotionRepository.saveAllAndFlush(emotions);
     }
 }
 

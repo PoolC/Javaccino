@@ -31,27 +31,15 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class MemberAcceptanceTest extends AcceptanceTest {
     // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname 의 형식이 필요할 것으로 보임.
 
-    //    // 나중에 실제 구현할 때 추가해야할 테스트 코드
-//    private final MemberRepository memberRepository;
-//    private final PasswordHashProvider passwordHashProvider;
-//    private final JwtTokenProvider jwtTokenProvider;
     @Autowired
     public FollowRepository followRepository;
-    /*
-        회원가입 테스트를 위한 상수
-     */
+
     private final String
             createTestEmail = "randomhuman@gmail.com",
             createTestPassword = "creative!password",
             changedPassword = "better_password?",
             notExistNickname = "공릉동익룡";
 
-    //    @BeforeEach
-//    public void settingRepositories() {
-//        memberRepository.deleteAll();
-//        followeesRepository.deleteAll();
-//        followersRepository.deleteAll();
-//    }
     /*
         회원가입 테스트
      */
@@ -117,27 +105,6 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
     }
-
-    // 이메일을 보내서 검증하는 로직이 구현된 이후 확인 가능; 구현된다고 해도, 이제는 검증된 이메일도 필요하게 됨.
-//    @Test
-//    @DisplayName("테스트 04: 회원가입 실패 [400]; 잘못된 이메일 형식 혹은 잘못된 이메일")
-//    public void 회원가입_실패_BAD_REQUEST_4() throws Exception {
-//        // given
-//        MemberCreateRequest request = MemberCreateRequest.builder()
-//                .nickname(createTestEmail)
-//                .password(createTestPassword)
-//                .passwordCheck(createTestPassword)
-//                .gender(Gender.HIDDEN)
-//                .dateOfBirth(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE))
-//                .email("human@earth.com")
-//                .build();
-//
-//        // when
-//        ExtractableResponse<Response> response = memberCreateRequest(request);
-//
-//        // then
-//        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-//    }
 
     @Test
     @Order(5)
