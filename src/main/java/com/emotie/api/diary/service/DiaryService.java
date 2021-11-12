@@ -4,20 +4,16 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.domain.DiaryIds;
-import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.domain.MemberBlindDiary;
 import com.emotie.api.diary.domain.MemberReportDiary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
-import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Follow;
 import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -69,13 +64,13 @@ public class DiaryService {
 
         Pageable page = PageRequest.of(pageNumber, PAGE_SIZE, Sort.by("createdAt").descending());
         if (user.equals(writer)) {
-            List<Diary> allDiaries = diaryRepository.findAllByWriter(writer, page);
+            List<Diary> allDiaries = diaryRepository.findAllByWriterAndNotBlinded(user, writer, Diary.reportCountThreshold, page);
             return new DiaryReadAllResponse(
                     allDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
             );
         }
 
-        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpened(writer, true, page);
+        List<Diary> allOpenedDiaries = diaryRepository.findAllByWriterAndIsOpenedAndNotBlinded(user, writer, true, Diary.reportCountThreshold, page);
         return new DiaryReadAllResponse(
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
         );
@@ -98,7 +93,7 @@ public class DiaryService {
         List<Follow> followingMember = followRepository.findFollowByFromMember(user).get();
         List<Diary> feed = new LinkedList<>();
         followingMember.stream().forEach(follow -> {
-            List<Diary> diaries = diaryRepository.findAllByWriterAndIsOpened(follow.getToMember(), true);
+            List<Diary> diaries = diaryRepository.findAllByWriterAndIsOpenedAndNotBlinded(user, follow.getToMember(), true, Diary.reportCountThreshold);
             feed.addAll(diaries);
         });
         feed.sort(Comparator.comparing(Diary::getCreatedAt).reversed());
