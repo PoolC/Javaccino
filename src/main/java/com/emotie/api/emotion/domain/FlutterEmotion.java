@@ -9,19 +9,19 @@ import javax.persistence.Entity;
 @Entity
 @Getter
 @DiscriminatorValue("SEOLEM")
-public class SeolemEmotion extends Emotion {
+public class FlutterEmotion extends Emotion {
     private static final String COLOR = "#A29CB6";
     private static final String DESCRIPTION = "설렘";
-    private static final String NAME = "seolem";
+    private static final String NAME = "flutter";
 
-    protected SeolemEmotion() {
+    protected FlutterEmotion() {
     }
 
-    public SeolemEmotion(Member member) {
+    public FlutterEmotion(Member member) {
         this(member, 0.0);
     }
 
-    public SeolemEmotion(Member member, double score) {
+    public FlutterEmotion(Member member, double score) {
         super(member, score, COLOR, DESCRIPTION, NAME);
     }
 }

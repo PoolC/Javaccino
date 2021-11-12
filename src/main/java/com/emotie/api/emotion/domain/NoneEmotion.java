@@ -9,19 +9,19 @@ import javax.persistence.Entity;
 @Entity
 @Getter
 @DiscriminatorValue("NEUTRAL")
-public class NeutralEmotion extends Emotion {
+public class NoneEmotion extends Emotion {
     private static final String COLOR = "#FFFFFF";
     private static final String DESCRIPTION = "무감정";
-    private static final String NAME = "neutral";
+    private static final String NAME = "none";
 
-    protected NeutralEmotion() {
+    protected NoneEmotion() {
     }
 
-    public NeutralEmotion(Member member) {
+    public NoneEmotion(Member member) {
         this(member, 0.0);
     }
 
-    public NeutralEmotion(Member member, double score) {
+    public NoneEmotion(Member member, double score) {
         super(member, score, COLOR, DESCRIPTION, NAME);
     }
 }
