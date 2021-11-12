@@ -5,6 +5,7 @@ import com.emotie.api.member.domain.Member;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -15,11 +16,11 @@ import java.util.Date;
 public class JwtTokenProvider {
     private final int AUTHORIZATION_CONSTRUCTION_LENGTH = 2;
 
-    //TODO: 환경 변수로 변경해야함
-    private String secretKey = "EXAMPLE_SECRET_KEY";
+    @Value("${security.jwt.token.secret-key}")
+    private String secretKey;
 
-    //TODO: 환경 변수로 변경해야함
-    private Long expireTimeInMS = 360000L;
+    @Value("${security.jwt.token.expire-length}")
+    private Long expireTimeInMS;
 
     public String createToken(Member member) {
         Date now = new Date();

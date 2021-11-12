@@ -28,6 +28,7 @@ import java.util.Arrays;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserDetailsService userDetailsService;
+    private String domainAddress = System.getenv("EMOTIE_DOMAIN");
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -38,7 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));//TODO: 도메인 명에 맞게 넣을 것
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", domainAddress));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control",
                 "Content-Type", "Accept", "Content-Length", "Accept-Encoding", "X-Requested-With", "Access-Control-Allow-Origin"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));

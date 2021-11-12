@@ -12,9 +12,7 @@ import javax.mail.internet.MimeMessage;
 @RequiredArgsConstructor
 public class JavaMailServiceImpl implements MailService {
     private final JavaMailSender mailSender;
-
-    //TODO: 환경변수로 바꾸기
-    String address = "https://emotie.com";
+    private String address = System.getenv("EMOTIE_DOMAIN");
 
     @Override
     public void sendEmailAuthorizationToken(String email, String authorizationToken) throws MessagingException {

@@ -19,17 +19,22 @@ spring:
       hibernate:
     #        dialect: org.hibernate.dialect.MySQL5Dialect
     hibernate:
-      ddl-auto: create-drop
-      show-sql: true # 실제 서비스시 삭제
+      ddl-auto: update
+      show-sql: false
   mail:
     default-encoding: UTF-8
     host: smtp.gmail.com
     port: 587
-    username: ${EMAIL_ADDRESS} # 실제 서비스 시 환경변수로 변경
-    password: ${EMAIL_PASSWORD} # 실제 서비스 시 환경병수로 변경
+    username: ${EMAIL_ADDRESS}
+    password: ${EMAIL_PASSWORD}
     protocol: smtp
     tls: true
     properties.mail.smtp:
       auth: true
       starttls.enable: true
       ssl.trust: smtp.gmail.com
+security:
+  jwt:
+    token:
+      secret-key: ${EMOTIE_SECRET_KEY}
+      expire-length: ${EXPIRE_LENGTH_IN_MILLISECONDS}
