@@ -23,7 +23,7 @@ public abstract class Postings extends TimestampEntity {
     @JoinColumn(name = "writer_id", nullable = false)
     protected Member writer;
 
-    @Column(name = "content", nullable = false)
+    @Column(name = "content", nullable = false, columnDefinition = "text")
     protected String content;
 
     @Column(name = "report_count", nullable = false)
