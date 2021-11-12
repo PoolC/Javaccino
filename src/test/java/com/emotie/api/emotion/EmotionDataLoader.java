@@ -80,14 +80,14 @@ public class EmotionDataLoader implements ApplicationRunner {
 
     private void generateEmotions() {
 
-        emotionNames.add("설렘|FLUTTER");
-        emotionNames.add("질투|JEALOUS");
-        emotionNames.add("놀람|SURPRISED");
-        emotionNames.add("화남|ANGRY");
-        emotionNames.add("기쁨|HAPPY");
-        emotionNames.add("슬픔|SAD");
-        emotionNames.add("지침|TIRED");
-        emotionNames.add("무감정|NONE");
+        emotionNames.add("설렘");
+        emotionNames.add("질투");
+        emotionNames.add("놀람");
+        emotionNames.add("화남");
+        emotionNames.add("기쁨");
+        emotionNames.add("슬픔");
+        emotionNames.add("지침");
+        emotionNames.add("무감정");
 
         emotionColors.add("#A29CB6");
         emotionColors.add("#9431A4");
@@ -102,18 +102,18 @@ public class EmotionDataLoader implements ApplicationRunner {
             Emotion emotion = Emotion.of(emotionNames.get(i), emotionColors.get(i));
             emotionRepository.saveAndFlush(emotion);
             if (i < 7) {
-                Diary diary = Diary.of(adminMember, "s", emotion, false);
+                Diary diary = Diary.of(adminMember, "test", emotion, false);
                 diaryRepository.save(diary);
 
             }
             emotionRepository.saveAndFlush(emotion);
         }
 
-        updatingEmotionId = emotionRepository.findByEmotion("슬픔|SAD").orElseThrow().getId();
-        beforeUpdatingEmotion = "슬픔|SAD";
+        updatingEmotionId = emotionRepository.findByEmotion("슬픔").orElseThrow().getId();
+        beforeUpdatingEmotion = "슬픔";
 
-        deletingFailEmotionId = emotionRepository.findByEmotion("지침|TIRED").orElseThrow().getId();
-        deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정|NONE").orElseThrow().getId();
+        deletingFailEmotionId = emotionRepository.findByEmotion("지침").orElseThrow().getId();
+        deletingSuccessEmotionId = emotionRepository.findByEmotion("무감정").orElseThrow().getId();
 
     }
 }

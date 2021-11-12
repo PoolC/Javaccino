@@ -1,9 +1,11 @@
 package com.emotie.api.member.controller;
 
+import com.emotie.api.common.service.MailService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import net.bytebuddy.utility.RandomString;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,17 +21,19 @@ import java.util.Map;
 public class MemberController {
     // TODO: 2021-08-20 컨트롤러에서 유효성 검사 
     private final MemberService memberService;
+    private final MailService mailService;
 
     @PostMapping
     public ResponseEntity<Void> register(@RequestBody @Valid MemberCreateRequest request) throws Exception {
-        memberService.create(request);
+        String authorizationToken = createRandomToken();
+        memberService.create(request, authorizationToken);
+        mailService.sendEmailAuthorizationToken(request.getEmail(), authorizationToken);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<MemberResponse> getMyInformation(@AuthenticationPrincipal Member user) {
-        MemberResponse response = MemberResponse.of(user);
-        return ResponseEntity.ok().body(response);
+    @GetMapping("me")
+    public ResponseEntity<MemberResponse> getMyInformation(@AuthenticationPrincipal Member member) {
+        return ResponseEntity.ok().body(new MemberResponse(member));
     }
 
     @GetMapping("/nickname")
@@ -61,6 +65,7 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
 
+
     @PostMapping(value = "/follow/{memberId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<MemberFollowResponse> toggleMemberFollow(
             @AuthenticationPrincipal Member user, @PathVariable String memberId
@@ -69,9 +74,13 @@ public class MemberController {
         return ResponseEntity.ok(new MemberFollowResponse(isFollowing));
     }
 
-    @DeleteMapping("/{memberId}")
-    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal Member executor, @PathVariable String memberId) throws Exception {
-        memberService.delete(executor, memberId);
+    @DeleteMapping
+    public ResponseEntity<Void> deleteMember(@AuthenticationPrincipal Member user, @RequestBody MemberWithdrawalRequest memberWithdrawalRequest) throws Exception {
+        memberService.delete(user, memberWithdrawalRequest);
         return ResponseEntity.ok().build();
+    }
+
+    private String createRandomToken() {
+        return RandomString.make(40);
     }
 }

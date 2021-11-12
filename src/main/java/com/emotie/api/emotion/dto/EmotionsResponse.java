@@ -9,8 +9,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EmotionsResponse {
 
-    private List<EmotionResponseUnused> emotions;
+    private List<EmotionResponse> emotions;
 
     @JsonCreator
-    public EmotionsResponse(List<EmotionResponseUnused> emotions) { this.emotions = emotions; }
+    public EmotionsResponse(List<EmotionResponse> emotions) { this.emotions = emotions; }
 }

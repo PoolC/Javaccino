@@ -26,6 +26,7 @@ public class Diary extends Postings {
     private Diary(
             Member writer, String content, Emotion emotion, Boolean isOpened
     ) {
+
         this.writer = writer;
         this.content = content;
         this.emotion = emotion;
@@ -50,7 +51,7 @@ public class Diary extends Postings {
     }
 
     public Diary read(Member user) {
-        checkIsOpened(user);
+        checkIsOpenedOrWriter(user);
         return this;
     }
 
@@ -64,7 +65,11 @@ public class Diary extends Postings {
         return this;
     }
 
-    private void checkIsOpened(Member user) {
+    public void checkIsOpened() {
+        if (!this.isOpened) throw new UnauthorizedException("비공개 게시물에 대해 수행할 수 없는 요청입니다.");
+    }
+
+    private void checkIsOpenedOrWriter(Member user) {
         if (!this.writer.equals(user) && !this.isOpened) throw new PeekingPrivatePostException("비공개 게시물입니다.");
     }
 

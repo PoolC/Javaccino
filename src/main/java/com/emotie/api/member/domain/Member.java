@@ -8,6 +8,7 @@ import com.emotie.api.common.domain.TimestampEntity;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
+import com.emotie.api.member.dto.MemberWithdrawalRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것
+// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity(name = "members")
@@ -65,20 +66,18 @@ public class Member extends TimestampEntity implements UserDetails {
     @Embedded
     private MemberRoles roles;
 
-//    // TODO: reference object의 경우 one to many로 연결하는게 더 좋다는데..
-//    @ElementCollection(fetch = FetchType.LAZY)
-//    private final List<Member> followers = new ArrayList<>();
-//
-//    @ElementCollection(fetch = FetchType.LAZY)
-//    private final List<Member> followees = new ArrayList<>();
-
     @Column(name = "withdrawal_date")
     @Nullable
     private LocalDateTime withdrawalDate = null;
 
+
     @OneToMany(targetEntity = EmotionScore.class, fetch = FetchType.EAGER, cascade = {CascadeType.ALL})
     @MapKeyJoinColumn(name = "emotion")
     private final Map<Emotion, EmotionScore> emotionScore = new HashMap<>();
+
+    @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
+    private String withdrawalReason = null;
+
 
     protected Member() {
     }
@@ -183,56 +182,14 @@ public class Member extends TimestampEntity implements UserDetails {
         }
     }
 
-//    public boolean isFollowing(Member member) {
-//        return this.followees.contains(member);
-//    }
-//
-//    @SuppressWarnings("unused")
-//    public boolean isFollowedBy(Member member) {
-//        return this.followers.contains(member);
-//    }
-//
-//    // 사용자가 누군가를 팔로우한다는 것은
-//    public void follow(Member member) {
-//        // 사용자의 팔로이에 그 사람이 추가 되고
-//        this.followees.add(member);
-//
-//        // 그 사람의 팔로워에 사용자가 추가되는 것이다.
-//        member.followers.add(this);
-//    }
-//
-//    public void unfollow(Member member) {
-//        this.followees.remove(member);
-//        member.followers.remove(member);
-//    }
-
-    private void checkAuthorizationToken(String authorizationToken) {
-        checkTokenExpired(this.authorizationTokenValidUntil);
-        checkTokenCorrect(this.authorizationToken, authorizationToken);
-    }
-
-    private void checkPasswordResetToken(String passwordResetToken) {
-        checkTokenExpired(this.passwordResetTokenValidUntil);
-        checkTokenCorrect(this.passwordResetToken, passwordResetToken);
-    }
-
-    private void checkTokenExpired(LocalDateTime memberTokenValidUntil) {
-        if (!memberTokenValidUntil.isAfter(LocalDateTime.now()))
-            throw new ExpiredTokenException("토큰이 만료되었습니다.");
-    }
-
-    private void checkTokenCorrect(String memberToken, String inputToken) {
-        if (!memberToken.equals(inputToken))
-            throw new WrongTokenException("인증 토큰이 틀렸습니다.");
-    }
-
     private void changeMember() {
         this.roles.changeRole(MemberRole.MEMBER);
         this.authorizationToken = null;
         this.authorizationTokenValidUntil = null;
     }
 
-    public void withdraw() {
+    public void withdraw(MemberWithdrawalRequest request) {
+        this.withdrawalReason = request.getReason();
         this.roles.changeRole(MemberRole.WITHDRAWAL);
         this.withdrawalDate = LocalDateTime.now();
     }
@@ -244,6 +201,8 @@ public class Member extends TimestampEntity implements UserDetails {
     public void updatePassword(String updatePassword) {
         this.passwordHash = updatePassword;
     }
+
+    public void updateIntroduction(String updatingIntroduction){this.introduction = updatingIntroduction;}
 
     public void updateUserInfo(MemberUpdateRequest request) {
         this.nickname = request.getNickname();
@@ -306,5 +265,25 @@ public class Member extends TimestampEntity implements UserDetails {
         if (!this.UUID.equals(memberId)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
         }
+    }
+
+    private void checkAuthorizationToken(String authorizationToken) {
+        checkTokenExpired(this.authorizationTokenValidUntil);
+        checkTokenCorrect(this.authorizationToken, authorizationToken);
+    }
+
+    private void checkPasswordResetToken(String passwordResetToken) {
+        checkTokenExpired(this.passwordResetTokenValidUntil);
+        checkTokenCorrect(this.passwordResetToken, passwordResetToken);
+    }
+
+    private void checkTokenExpired(LocalDateTime memberTokenValidUntil) {
+        if (!memberTokenValidUntil.isAfter(LocalDateTime.now()))
+            throw new ExpiredTokenException("토큰이 만료되었습니다.");
+    }
+
+    private void checkTokenCorrect(String memberToken, String inputToken) {
+        if (!memberToken.equals(inputToken))
+            throw new WrongTokenException("인증 토큰이 틀렸습니다.");
     }
 }
