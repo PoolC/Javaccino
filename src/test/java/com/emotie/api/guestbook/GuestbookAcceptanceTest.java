@@ -38,7 +38,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = ""; ///
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
@@ -51,7 +51,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistMemberId, 1); ///
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, notExistMemberId, 0); ///
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value());
@@ -64,7 +64,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = testerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -79,7 +79,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = writerLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 0);
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -94,7 +94,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
 
         // when
-        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 2);
+        ExtractableResponse<Response> response = getAllGuestbookRequest(accessToken, owner.getUUID(), 1);
         for (GuestbookResponse g : response.body().jsonPath().getList("data", GuestbookResponse.class)) {
             System.out.println(g.getContent());
         }
