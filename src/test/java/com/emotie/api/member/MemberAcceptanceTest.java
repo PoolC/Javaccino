@@ -366,7 +366,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
                 .gender(Gender.HIDDEN)
-                .nickname(authorizedNickname)
+                .nickname(unauthorizedNickname)
                 .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .build();
 
@@ -385,7 +385,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         // given
         String accessToken = authorizedLogin();
         MemberUpdateRequest request = MemberUpdateRequest.builder()
-                .nickname(notExistNickname)
+                .nickname(authorizedNickname)
                 .gender(Gender.HIDDEN)
                 .dateOfBirth(LocalDateTime.now().toLocalDate())
                 .build();
@@ -749,9 +749,6 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-
-
     }
 
 

@@ -90,7 +90,7 @@ public class MemberService {
     }
 
     public void update(Member member, MemberUpdateRequest request) {
-        if (!checkNicknameUse(request.getNickname())) {
+        if (!member.checkNicknameSame(request.getNickname()) && !checkNicknameUse(request.getNickname())) {
             throw new DuplicatedException("중복되는 닉네임이 존재합니다.");
         }
         member.updateUserInfo(request);

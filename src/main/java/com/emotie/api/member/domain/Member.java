@@ -19,7 +19,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 // TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Getter
@@ -202,7 +205,9 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordHash = updatePassword;
     }
 
-    public void updateIntroduction(String updatingIntroduction){this.introduction = updatingIntroduction;}
+    public void updateIntroduction(String updatingIntroduction) {
+        this.introduction = updatingIntroduction;
+    }
 
     public void updateUserInfo(MemberUpdateRequest request) {
         this.nickname = request.getNickname();
@@ -265,6 +270,12 @@ public class Member extends TimestampEntity implements UserDetails {
         if (!this.UUID.equals(memberId)) {
             throw new UnauthorizedException("방명록 전체 삭제 권한이 없습니다.");
         }
+    }
+
+    public boolean checkNicknameSame(String updateNickname) {
+        if (nickname.equals(updateNickname))
+            return true;
+        return false;
     }
 
     private void checkAuthorizationToken(String authorizationToken) {
