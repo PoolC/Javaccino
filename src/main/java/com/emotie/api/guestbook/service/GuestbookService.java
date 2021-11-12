@@ -32,7 +32,7 @@ public class GuestbookService {
     public List<GuestbookResponse> getAllBoards(Member user, String memberId, Integer page) {
         checkGetAllBoardsRequestValidity(memberId);
         Member owner = memberService.getMemberById(memberId);
-        Pageable pageable = PageRequest.of(page - 1, PAGE_SIZE, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, PAGE_SIZE, Sort.by("createdAt").descending());
         List<Guestbook> guestbooks = guestbookRepository.findByOwner(user, owner, Guestbook.reportCountThreshold, pageable);
         return guestbooks.stream()
                 .map(GuestbookResponse::of)
