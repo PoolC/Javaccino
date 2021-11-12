@@ -36,7 +36,7 @@ public class MemberController {
         return ResponseEntity.ok().body(new MemberResponse(member));
     }
 
-    @GetMapping("/nickname")
+    @PostMapping("/nickname")
     public ResponseEntity<Map<String, Boolean>> checkNicknameDuplicate(@RequestBody @Valid NicknameCheckRequest request) {
         Boolean checkNicknameDuplicateFlag = memberService.checkNicknameUse(request.getNickname());
         return ResponseEntity.ok().body(Map.of("checkNickname", checkNicknameDuplicateFlag));

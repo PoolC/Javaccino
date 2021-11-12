@@ -768,7 +768,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
                 .auth().oauth2(accessToken)
                 .body(request)
                 .contentType(APPLICATION_JSON_VALUE)
-                .when().get("/members/nickname")
+                .when().post("/members/nickname")
                 .then().log().all()
                 .extract();
     }
