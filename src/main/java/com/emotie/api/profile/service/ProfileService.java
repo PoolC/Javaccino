@@ -3,9 +3,10 @@ package com.emotie.api.profile.service;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.emotion.domain.Emotion;
+import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.dto.EmotionResponse;
 import com.emotie.api.emotion.dto.EmotionsResponse;
-import com.emotie.api.member.domain.EmotionScore;
+import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
@@ -19,9 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +29,7 @@ public class ProfileService {
     private final MemberService memberService;
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
+    private final EmotionRepository emotionRepository;
 
     public ProfileResponse getProfile(Member member, String memberId){
         Member profileMember = memberService.getMemberById(memberId);
@@ -57,14 +56,10 @@ public class ProfileService {
     }
 
     private List<EmotionResponse> getAllEmotion(Member profileMember) {
-        Map<Emotion, EmotionScore> emotionScore = new TreeMap<>(profileMember.getEmotionScore());
+        Emotions emotions = new Emotions(profileMember, emotionRepository.findAllByMember(profileMember));
 
-        List<EmotionResponse> allEmotion = new ArrayList<>();
-        for (Entry<Emotion, EmotionScore> entry: emotionScore.entrySet()) {
-            if(entry.getValue().getScore() > 0) {
-                allEmotion.add(new EmotionResponse(entry.getKey()));
-            }
-        }
+        List<EmotionResponse> allEmotion =
+                emotions.allMemberEmotions().stream().map(EmotionResponse::new).collect(Collectors.toList());
         return allEmotion;
     }
 
