@@ -1,11 +1,13 @@
 package com.emotie.api.emotion.domain;
 
 import com.emotie.api.member.domain.Member;
+import lombok.Getter;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
 @Entity
+@Getter
 @DiscriminatorValue("SAD")
 public class SadEmotion extends Emotion {
     private static final String COLOR = "#9FA7EF";
