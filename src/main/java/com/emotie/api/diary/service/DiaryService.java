@@ -4,20 +4,16 @@ import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.common.domain.Postings;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.diary.domain.DiaryIds;
-import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.domain.MemberBlindDiary;
 import com.emotie.api.diary.domain.MemberReportDiary;
 import com.emotie.api.diary.dto.*;
 import com.emotie.api.diary.repository.DiaryRepository;
 import com.emotie.api.diary.repository.MemberBlindDiaryRepository;
 import com.emotie.api.diary.repository.MemberReportDiaryRepository;
-import com.emotie.api.emotion.domain.Emotion;
-import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.emotion.service.EmotionService;
 import com.emotie.api.member.domain.Follow;
 import com.emotie.api.member.domain.Member;
-import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.repository.FollowRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -102,7 +97,7 @@ public class DiaryService {
             feed.addAll(diaries);
         });
         feed.sort(Comparator.comparing(Diary::getCreatedAt).reversed());
-        List<DiaryReadResponse> collect = feed.stream().map(DiaryReadResponse::new).skip(page * 5).limit(5).collect(Collectors.toList());
+        List<DiaryReadResponse> collect = feed.stream().map(DiaryReadResponse::new).skip(page * PAGE_SIZE).limit(PAGE_SIZE).collect(Collectors.toList());
         return new DiaryReadAllResponse(collect);
     }
 
