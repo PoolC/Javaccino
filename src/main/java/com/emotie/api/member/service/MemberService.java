@@ -98,13 +98,13 @@ public class MemberService {
         return passwordHashProvider.matches(request.getPassword(), user.getPassword());
     }
 
-    @Transactional
     public void updatePassword(Member member, PasswordUpdateRequest request) {
         if (!passwordHashProvider.matches(request.getCurrentPassword(), member.getPassword()))
             throw new WrongPasswordException("비밀번호를 확인해주세요.");
         request.checkPasswordMatches();
         String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
         member.updatePassword(passwordHash);
+        memberRepository.saveAndFlush(member);
     }
 
     public Boolean toggleFollowUnfollow(Member fromMember, String toMemberId) {
