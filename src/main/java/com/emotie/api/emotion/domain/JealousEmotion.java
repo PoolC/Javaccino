@@ -11,8 +11,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("JEALOUS")
 public class JealousEmotion extends Emotion {
     private static final String COLOR = "#9431A4";
-    private static final String DESCRIPTION = "질투";
-    private static final String NAME = "jealous";
+    private static final String DESCRIPTION = "jealous";
+    private static final String NAME = "질투";
 
     protected JealousEmotion() {
     }

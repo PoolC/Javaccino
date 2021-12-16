@@ -11,8 +11,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("SEOLEM")
 public class FlutterEmotion extends Emotion {
     private static final String COLOR = "#A29CB6";
-    private static final String DESCRIPTION = "설렘";
-    private static final String NAME = "flutter";
+    private static final String DESCRIPTION = "flutter";
+    private static final String NAME = "설렘";
 
     protected FlutterEmotion() {
     }

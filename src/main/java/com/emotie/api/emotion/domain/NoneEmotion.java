@@ -11,8 +11,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("NEUTRAL")
 public class NoneEmotion extends Emotion {
     private static final String COLOR = "#FFFFFF";
-    private static final String DESCRIPTION = "무감정";
-    private static final String NAME = "none";
+    private static final String DESCRIPTION = "none";
+    private static final String NAME = "무감정";
 
     protected NoneEmotion() {
     }

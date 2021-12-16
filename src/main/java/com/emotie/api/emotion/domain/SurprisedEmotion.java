@@ -11,8 +11,8 @@ import javax.persistence.Entity;
 @DiscriminatorValue("SURPRISED")
 public class SurprisedEmotion extends Emotion {
     private static final String COLOR = "#AEE477";
-    private static final String DESCRIPTION = "놀람";
-    private static final String NAME = "surprised";
+    private static final String DESCRIPTION = "surprised";
+    private static final String NAME = "놀람";
 
     protected SurprisedEmotion() {
     }
