@@ -4,6 +4,7 @@ import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.infra.JwtTokenProvider;
 import com.emotie.api.common.service.MailService;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.utility.RandomString;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
     private final MailService mailService;
 
     public String createAccessToken(String loginId, String password) {
@@ -41,6 +43,7 @@ public class AuthService {
         loginMember.checkAuthorized();
         String validAuthorizationToken = checkRequestValid(authorizationToken);
         loginMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
+        memberRepository.saveAndFlush(loginMember);
     }
 
     public void sendEmailPasswordResetToken(Optional<String> email) throws Exception {
