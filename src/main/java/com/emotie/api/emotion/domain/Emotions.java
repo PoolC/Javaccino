@@ -17,10 +17,11 @@ public class Emotions {
     private static final Integer DEEPEN_AMOUNT = 1;
     private static final Integer NOT_DEEPEN_AMOUNT = 0;
 
+    private final Member member;
     private final List<Emotion> emotions;
 
     public Emotions(Member member, List<Emotion> emotions) {
-        if(noEmotionsYet(emotions)) {
+        if (noEmotionsYet(emotions)) {
             emotions = new Reflections(EMOTION_BASE_PACKAGE, new SubTypesScanner())
                     .getSubTypesOf(Emotion.class).stream()
                     .map(concreteEmotionClass -> {
@@ -33,6 +34,11 @@ public class Emotions {
                     .collect(Collectors.toList());
         }
         this.emotions = Collections.unmodifiableList(emotions);
+        this.member = member;
+    }
+
+    public Member getMember() {
+        return this.member;
     }
 
     public List<Emotion> allMemberEmotions() {
@@ -47,6 +53,34 @@ public class Emotions {
     public void deepenCurrentEmotionScore(String emotionName) {
         deepenScore(emotionName);
         notDeepenEmotionScoresWithoutEmotion(emotionName);
+    }
+
+    public Double computeEuclideanDistance(Emotions other) {
+        return Math.sqrt(
+                emotions.stream().mapToDouble(
+                        emotion -> {
+                            Emotion otherEmotion = other.getEmotion(emotion.getName());
+                            return Math.pow(emotion.getScore() - otherEmotion.getScore(), 2);
+                        }
+                ).sum()
+        );
+    }
+
+    public Double computeCosineSimilarity(Emotions other) {
+        double sizeProduct = computeSize() * other.computeSize();
+        if (sizeProduct == 0)
+            return 0.0;
+        return innerProduct(other) / sizeProduct;
+    }
+
+    private Emotion getEmotion(String emotionName) {
+        return emotions.stream().filter(
+                emotion -> emotion.getName().equals(emotionName)
+        ).findFirst().orElseThrow(
+                () -> new NoSuchElementException(
+                        emotionName + " could not be found. This exception is impossible"
+                )
+        );
     }
 
     private void notReduceEmotionScoresWithoutEmotion(String excludeEmotionName) {
@@ -88,9 +122,26 @@ public class Emotions {
     }
 
     private void validateAmount(Integer score) {
-        if(!acceptedScoreRange(score)) {
+        if (!acceptedScoreRange(score)) {
             throw new ArithmeticException("Score can only be 0 or 1");
         }
+    }
+
+    private Double computeSize() {
+        return Math.sqrt(
+                emotions.stream().mapToDouble(
+                        emotion -> Math.pow(emotion.getScore(), 2)
+                ).sum()
+        );
+    }
+
+    private Double innerProduct(Emotions other) {
+        return emotions.stream().mapToDouble(
+                emotion -> {
+                    Emotion otherEmotion = other.getEmotion(emotion.getName());
+                    return emotion.getScore() * otherEmotion.getScore();
+                }
+        ).sum();
     }
 
     private boolean acceptedScoreRange(Integer score) {
