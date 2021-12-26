@@ -18,8 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,13 +35,13 @@ public class ProfileService {
         Boolean followed = memberService.isFollowed(member, profileMember);
         List<FollowerResponse> followers = memberService.getFollowersByMember(profileMember);
         List<FolloweeResponse> followees = memberService.getFolloweesByMember(profileMember);
-        List<EmotionResponse> allEmotion = getAllEmotion(profileMember);
+        Emotion allEmotion = getAllEmotion(profileMember);
         List<EmotionResponse> recentEmotion = getRecentEmotion(profileMember).stream().map(EmotionResponse::new).collect(Collectors.toList());
 
         return ProfileResponse.builder()
                 .nickname(profileMember.getNickname())
                 .introduction(profileMember.getIntroduction())
-                .allEmotion(new EmotionsResponse(allEmotion))
+                .allEmotion(new EmotionResponse(allEmotion))
                 .recentEmotion(new EmotionsResponse(recentEmotion))
                 .followed(followed)
                 .followers(followers)
@@ -55,12 +54,11 @@ public class ProfileService {
         memberRepository.save(member);
     }
 
-    private List<EmotionResponse> getAllEmotion(Member profileMember) {
+    private Emotion getAllEmotion(Member profileMember) {
         Emotions emotions = new Emotions(profileMember, emotionRepository.findAllByMember(profileMember));
+        Comparator<Emotion> comparatorByEmotionScore = Comparator.comparingDouble(Emotion::getScore);
+        return emotions.allMemberEmotions().stream().max(comparatorByEmotionScore).get();
 
-        List<EmotionResponse> allEmotion =
-                emotions.allMemberEmotions().stream().map(EmotionResponse::new).collect(Collectors.toList());
-        return allEmotion;
     }
 
     private List<Emotion> getRecentEmotion(Member profileMember) {
@@ -77,4 +75,5 @@ public class ProfileService {
         }
         return recentEmotion;
     }
+
 }
