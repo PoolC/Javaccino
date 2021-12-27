@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-// TODO: 2021-09-17 감정 점수 계산 로직은 따로 클래스를 뺄 것 
 @Getter
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Entity(name = "members")
