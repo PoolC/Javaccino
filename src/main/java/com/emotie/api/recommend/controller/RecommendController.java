@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RecommendController {
     public final RecommendService recommendService;
 
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<RecommendResponse> getRecommendations(@AuthenticationPrincipal Member user) {
         return ResponseEntity.ok(recommendService.recommendProfilesToUser(user));
     }
