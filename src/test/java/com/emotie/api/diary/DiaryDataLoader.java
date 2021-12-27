@@ -155,11 +155,11 @@ public class DiaryDataLoader implements ApplicationRunner {
     }
 
     private void loadEmotion() {
-        diaryEmotion = emotionRepository.findByMemberAndName(writer, "happy").get();
-        otherEmotion = emotionRepository.findByMemberAndName(writer, "sad").get();
+        diaryEmotion = emotionRepository.findByMemberAndName(writer, "기쁨").get();
+        otherEmotion = emotionRepository.findByMemberAndName(writer, "슬픔").get();
     }
 
-    private void writeDiaries() {
+    private void writeDiaries() throws InterruptedException {
         Diary openedDiary = Diary.of(
                 writer,
                 originalContent,
@@ -206,6 +206,7 @@ public class DiaryDataLoader implements ApplicationRunner {
                 );
                 deepenDiaryEmotion();
             }
+            Thread.sleep(1000L);
         }
     }
 
