@@ -68,10 +68,12 @@ public class Emotions {
     }
 
     public Double computeCosineSimilarity(Emotions other) {
-        double sizeProduct = computeSize() * other.computeSize();
-        if (sizeProduct == 0)
+        try{
+            double sizeProduct = computeSize() * other.computeSize();
+            return innerProduct(other) / sizeProduct;
+        } catch (ArithmeticException e) {
             return 0.0;
-        return innerProduct(other) / sizeProduct;
+        }
     }
 
     private Emotion getEmotion(String emotionName) {
