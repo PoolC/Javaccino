@@ -25,6 +25,9 @@ public abstract class Emotion {
     @Column(name = "score")
     protected Double score;
 
+    @Column(name = "count")
+    protected Long count;
+
     @Column(name = "name")
     protected String name;
 
@@ -48,11 +51,15 @@ public abstract class Emotion {
     public void deepenScore(Integer amount) {
         this.score = TRANSFER_WEIGHT * this.score + (1 - TRANSFER_WEIGHT) * amount;
         if (this.score > 1) this.score = 1.0;
+        this.count++;
     }
 
     public void reduceScore(Integer amount) {
         this.score = REVERSE_TRANSFER_WEIGHT * this.score + (1 - REVERSE_TRANSFER_WEIGHT) * amount;
         if (this.score < 0) this.score = 0.0;
+
+        this.count--;
+        if (this.count < 0) this.count = 0L;
     }
 
     @Override
