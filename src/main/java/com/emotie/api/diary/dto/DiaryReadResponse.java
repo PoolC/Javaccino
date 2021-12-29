@@ -12,6 +12,7 @@ public class DiaryReadResponse {
     private final Long diaryId;
     private final String nickname;
     private final EmotionResponse emotion;
+    private final String uuid;
     private final String date;
     private final String content;
     private final Boolean isOpened;
@@ -22,6 +23,7 @@ public class DiaryReadResponse {
         this.diaryId = diary.getId();
         this.nickname = diary.getWriter().getNickname();
         this.emotion = new EmotionResponse(diary.getEmotion());
+        this.uuid = diary.getWriter().getUUID();
         this.date = diary.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME);
         this.content = diary.getContent();
         this.isOpened = diary.getIsOpened();
@@ -29,11 +31,12 @@ public class DiaryReadResponse {
 
     @JsonCreator
     public DiaryReadResponse(
-            Long diaryId, String nickname, EmotionResponse emotion, String date, String content, Boolean isOpened
+            Long diaryId, String nickname, EmotionResponse emotion, String uuid, String date, String content, Boolean isOpened
     ) {
         this.diaryId = diaryId;
         this.nickname = nickname;
         this.emotion = emotion;
+        this.uuid = uuid;
         this.date = date;
         this.content = content;
         this.isOpened = isOpened;

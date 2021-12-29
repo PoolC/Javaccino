@@ -89,6 +89,7 @@ public class ProfileApiTest extends AcceptanceTest {
 
         ProfileUpdateRequest request = ProfileUpdateRequest.builder()
                 .introduction("자기소개 수정했습니다.")
+                .characterName("dust")
                 .build();
 
         // when

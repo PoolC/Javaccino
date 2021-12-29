@@ -138,7 +138,7 @@ public class ProfileDataLoader implements ApplicationRunner {
     }
 
     private void loadEmotion() {
-        diaryEmotion = emotionRepository.findByMemberAndName(profileMember, "happy").get();
+        diaryEmotion = emotionRepository.findByMemberAndName(profileMember, "기쁨").get();
     }
 
     private void generateDiaries() {
@@ -153,7 +153,7 @@ public class ProfileDataLoader implements ApplicationRunner {
             );
             deepenDiaryEmotion();
         }
-        Emotion flutter = emotionRepository.findByMemberAndName(profileMember, "flutter").get();
+        Emotion flutter = emotionRepository.findByMemberAndName(profileMember, "설렘").get();
         for (int i = 0; i < 3; i++) {
             diaryRepository.save(
                     Diary.builder()
@@ -163,7 +163,7 @@ public class ProfileDataLoader implements ApplicationRunner {
                             .isOpened(true)
                             .build());
         }
-        Emotion jealous = emotionRepository.findByMemberAndName(profileMember, "jealous").get();
+        Emotion jealous = emotionRepository.findByMemberAndName(profileMember, "질투").get();
         diaryRepository.save(
                 Diary.builder()
                         .writer(profileMember)

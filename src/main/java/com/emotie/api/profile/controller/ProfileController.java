@@ -26,7 +26,7 @@ public class ProfileController {
 
     @PutMapping()
     public ResponseEntity<Void> updateProfile(@AuthenticationPrincipal Member user,  @RequestBody @Valid ProfileUpdateRequest profileUpdateRequest){
-        profileService.updateProfile(user, profileUpdateRequest.getIntroduction());
+        profileService.updateProfile(user, profileUpdateRequest);
         return ResponseEntity.ok().build();
     }
 }

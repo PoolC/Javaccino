@@ -82,6 +82,7 @@ public class MemberService {
                 .authorizationTokenValidUntil(LocalDateTime.now().plusDays(1L))
                 .reportCount(0)
                 .roles(MemberRoles.getDefaultFor(MemberRole.UNACCEPTED))
+                .characterName("dust")
                 .build();
         memberRepository.save(user);
     }

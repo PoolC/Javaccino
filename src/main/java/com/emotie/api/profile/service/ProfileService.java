@@ -13,6 +13,7 @@ import com.emotie.api.member.service.MemberService;
 import com.emotie.api.profile.dto.FolloweeResponse;
 import com.emotie.api.profile.dto.FollowerResponse;
 import com.emotie.api.profile.dto.ProfileResponse;
+import com.emotie.api.profile.dto.ProfileUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -42,15 +43,15 @@ public class ProfileService {
                 .nickname(profileMember.getNickname())
                 .introduction(profileMember.getIntroduction())
                 .allEmotion(new EmotionResponse(allEmotion))
-                .recentEmotion(new EmotionsResponse(recentEmotion))
+                .recentEmotion(recentEmotion)
                 .followed(followed)
                 .followers(followers)
                 .followees(followees)
                 .build();
     }
 
-    public void updateProfile(Member member, String updatingIntroduction){
-        member.updateIntroduction(updatingIntroduction);
+    public void updateProfile(Member member, ProfileUpdateRequest profileUpdateRequest){
+        member.updateProfile(profileUpdateRequest);
         memberRepository.save(member);
     }
 
