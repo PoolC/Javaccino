@@ -40,7 +40,9 @@ public class RecommendService {
 
         List<Member> randomMembers = getRandomMembers(NUMBER_OF_SAMPLES);
         List<ProfileResponse> recommendations =
-                randomMembers.stream().map(
+                randomMembers.stream().filter(
+                        member -> !member.equals(user)
+                ).map(
                         member -> new Emotions(member, emotionRepository.findAllByMember(member))
                 ).sorted(comparator).limit(NUMBER_OF_RECOMMENDATIONS)
                         .map(Emotions::getMember)
@@ -48,7 +50,6 @@ public class RecommendService {
                         member -> profileService.getProfile(member, member.getUUID())
                 ).collect(Collectors.toList());
 
-        Collections.reverse(recommendations);
         return RecommendResponse.builder().profiles(recommendations).build();
     }
 

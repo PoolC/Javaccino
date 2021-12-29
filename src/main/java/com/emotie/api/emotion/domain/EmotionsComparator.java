@@ -5,7 +5,7 @@ import java.util.Comparator;
 public class EmotionsComparator implements Comparator<Emotions> {
     private final Emotions anchorEmotions;
 
-    private final Double EUCLIDEAN_DISTANCE_WEIGHT = 0.3;
+    private final Double EUCLIDEAN_DISTANCE_WEIGHT = 0.7;
 
     public EmotionsComparator(Emotions anchorEmotions) {
         this.anchorEmotions = anchorEmotions;
@@ -19,7 +19,7 @@ public class EmotionsComparator implements Comparator<Emotions> {
     }
 
     private Double recommendationScore(Emotions o) {
-        return EUCLIDEAN_DISTANCE_WEIGHT * anchorEmotions.computeEuclideanDistance(o) +
+        return EUCLIDEAN_DISTANCE_WEIGHT * anchorEmotions.computeEuclideanDistance(o) -
                 (1 - EUCLIDEAN_DISTANCE_WEIGHT) * anchorEmotions.computeCosineSimilarity(o);
     }
 }
