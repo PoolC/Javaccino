@@ -33,7 +33,7 @@ public class JavaMailServiceImpl implements MailService {
         helper.setSubject("이모티 아이디 비밀번호 재설정 안내메일입니다.");
         helper.setText(String.format("안녕하세요 이모티입니다. 비밀번호 재설정을 하려면 해당 url( %s )로 접속하여 변경하시면 됩니다.\n" +
                         "감사합니다.",
-                address + "/auth/password-reset?passwordResetToken=" + resetPasswordToken));
+                address + "/auth/password-reset?email=" + email + "&passwordResetToken="+resetPasswordToken));
         helper.setTo(email);
         mailSender.send(message);
     }
