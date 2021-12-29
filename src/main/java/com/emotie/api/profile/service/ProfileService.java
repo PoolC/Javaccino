@@ -43,7 +43,7 @@ public class ProfileService {
                 .nickname(profileMember.getNickname())
                 .introduction(profileMember.getIntroduction())
                 .allEmotion(new EmotionResponse(allEmotion))
-                .recentEmotion(new EmotionsResponse(recentEmotion))
+                .recentEmotion(recentEmotion)
                 .followed(followed)
                 .followers(followers)
                 .followees(followees)
