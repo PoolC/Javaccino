@@ -42,7 +42,9 @@ public class RecommendDataLoader implements ApplicationRunner {
     private static final String LEADER_NICKNAME_TEMPLATE = "leaderNickname";
     private static final String LEADER_PASSWORD_TEMPLATE = "leaderPassword";
 
-    private static final Integer MAX_DIARY_COUNT = 300;
+    public static final Integer MAX_DIARY_COUNT = 300;
+    public static final Integer NUMBER_OF_CANDIDATES = 15;
+    public static final Integer LENGTH_OF_RANDOM_RANGE = 3;
 
     public static final String GROUP_PURE_HAPPY = "HAPPY_PURE";
     public static final String GROUP_PURE_SAD = "SAD_PURE";
@@ -58,79 +60,30 @@ public class RecommendDataLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        createPureGroup(15, 3, 10);
-        createMajorGroup(15, 3, 10);
-        createMinorGroup(15, 3 ,10);
+        createAllGroups(NUMBER_OF_CANDIDATES, LENGTH_OF_RANDOM_RANGE, System.currentTimeMillis());
     }
 
-    private void createPureGroup(Integer candidateCount, Integer randomCountRange, Integer baseSeed) {
-        List<String> testEmotion = List.of("기쁨", "슬픔", "지침");
-        Map<String, String> testEmotionToGroup = Map.of(
-                "기쁨", GROUP_PURE_HAPPY,
-                "슬픔", GROUP_PURE_SAD,
-                "지침", GROUP_PURE_TIRED
-        );
-        for (String emotion: testEmotion) {
-            Map<String, Integer> pureCountMap = defaultCountMap();
-            pureCountMap.put(emotion, MAX_DIARY_COUNT);
+    private void createAllGroups(
+            Integer candidateCount, Integer randomCountRange, Long baseSeed
+    ) {
+        List<String> testEmotions = List.of("기쁨", "슬픔", "지침");
+        List<String> groupTypes = List.of("PURE", "MAJOR", "MINOR");
 
-            createGroup(
-                    testEmotionToGroup.get(emotion), pureCountMap, candidateCount, randomCountRange, baseSeed
-            );
-        }
-    }
-
-    private void createMajorGroup(Integer candidateCount, Integer randomCountRange, Integer baseSeed) {
-        List<String> testEmotion = List.of("기쁨", "슬픔", "지침");
-        Map<String, String> testEmotionToGroup = Map.of(
-                "기쁨", GROUP_MAJOR_HAPPY,
-                "슬픔", GROUP_MAJOR_SAD,
-                "지침", GROUP_MAJOR_TIRED
-        );
-        for (String emotion: testEmotion) {
-            Map<String, Integer> majorCountMap = defaultCountMap();
-            majorCountMap.replaceAll(
-                    (emotionName, stdCount) -> {
-                        if (emotionName.equals(emotion)) {
-                            return (int)(0.6 * MAX_DIARY_COUNT);
-                        }
-                        return (int)(0.4 * MAX_DIARY_COUNT / 7);
-                    }
-            );
-
-            createGroup(
-                    testEmotionToGroup.get(emotion), majorCountMap, candidateCount, randomCountRange, baseSeed
-            );
-        }
-    }
-
-    private void createMinorGroup(Integer candidateCount, Integer randomCountRange, Integer baseSeed) {
-        List<String> testEmotion = List.of("기쁨", "슬픔", "지침");
-        Map<String, String> testEmotionToGroup = Map.of(
-                "기쁨", GROUP_MINOR_HAPPY,
-                "슬픔", GROUP_MINOR_SAD,
-                "지침", GROUP_MINOR_TIRED
-        );
-        for (String emotion: testEmotion) {
-            Map<String, Integer> majorCountMap = defaultCountMap();
-            majorCountMap.replaceAll(
-                    (emotionName, stdCount) -> {
-                        if (emotionName.equals(emotion)) {
-                            return (int)(0.3 * MAX_DIARY_COUNT);
-                        }
-                        return (int)(0.1 * MAX_DIARY_COUNT);
-                    }
-            );
-
-            createGroup(
-                    testEmotionToGroup.get(emotion), majorCountMap, candidateCount, randomCountRange, baseSeed
-            );
+        for (String groupType: groupTypes) {
+            Map<String, String> testEmotionToGroup = getTestEmotionToGroupMap(groupType);
+            for (String testEmotion: testEmotions) {
+                String groupName = testEmotionToGroup.get(testEmotion);
+                Map<String, Integer> countMap = getDefaultCountMap(testEmotion, groupType);
+                createGroup(
+                        groupName, countMap, candidateCount, randomCountRange, baseSeed
+                );
+            }
         }
     }
 
     private void createGroup(
             String groupName, Map<String, Integer> emotionCountMap, Integer candidateCount,
-            Integer randomCountRange, Integer baseSeed
+            Integer randomCountRange, Long baseSeed
     ) {
         Member leader = Member.builder()
                 .UUID(UUID.randomUUID().toString())
@@ -203,19 +156,31 @@ public class RecommendDataLoader implements ApplicationRunner {
     }
 
     private void setMemberEmotionWithRandomDifference(
-            Member member, Map<String, Integer> emotionCountMap, Integer randomCountRange, Integer seed
+            Member member, Map<String, Integer> emotionCountMap, Integer randomCountRange, Long seed
     ) {
         Emotions memberEmotions = new Emotions(member, emotionRepository.findAllByMember(member));
+        List<String> emotions = flattenEmotionCountMap(emotionCountMap, randomCountRange, seed);
+        emotions.forEach(memberEmotions::deepenCurrentEmotionScore);
+        emotionRepository.saveAllAndFlush(memberEmotions.allMemberEmotions());
+    }
+
+    private List<String> flattenEmotionCountMap(
+            Map<String, Integer> emotionCountMap, Integer randomCountRange, Long seed
+    ) {
+        Random randomizer = new Random(seed);
+        List<String> emotions = new LinkedList<>();
+
         emotionCountMap.forEach(
                 (emotionName, stdCount) -> {
-                    Random randomizer = new Random(seed);
-                    int deepenEmotionCount = stdCount + randomizer.nextInt(randomCountRange);
-                    for (int i = 0; i < deepenEmotionCount; i++) {
-                        memberEmotions.deepenCurrentEmotionScore(emotionName);
+                    int emotionCount = stdCount + randomizer.nextInt(randomCountRange);
+                    for (int i = 0; i < emotionCount; i++) {
+                        emotions.add(emotionName);
                     }
                 }
         );
-        emotionRepository.saveAllAndFlush(memberEmotions.allMemberEmotions());
+
+        Collections.shuffle(emotions, randomizer);
+        return emotions;
     }
 
     private void createEmotions(Member member) {
@@ -232,7 +197,7 @@ public class RecommendDataLoader implements ApplicationRunner {
         emotionRepository.saveAllAndFlush(emotions);
     }
 
-    private Map<String, Integer> defaultCountMap() {
+    private Map<String, Integer> getDefaultCountMap() {
         Map<String, Integer> defaultCountMap = new HashMap<>();
         defaultCountMap.put("기쁨", 0);
         defaultCountMap.put("슬픔", 0);
@@ -243,5 +208,44 @@ public class RecommendDataLoader implements ApplicationRunner {
         defaultCountMap.put("화남", 0);
         defaultCountMap.put("무감정", 0);
         return defaultCountMap;
+    }
+
+    private Map<String, Integer> getDefaultCountMap(String emotion, String type) {
+        Map<String, Integer> defaultCountMap = getDefaultCountMap();
+        double p;
+        if (type.equals("PURE")) p = 1.0;
+        else if (type.equals("MAJOR")) p = 0.8;
+        else p = 0.6;
+
+        defaultCountMap.replaceAll(
+                (emotionName, stdCount) -> {
+                    if (emotionName.equals(emotion)) {
+                        return (int) (p * MAX_DIARY_COUNT);
+                    }
+                    return (int) ((1 - p) * MAX_DIARY_COUNT / 7);
+                }
+        );
+
+        return defaultCountMap;
+    }
+
+    private Map<String, String> getTestEmotionToGroupMap(String type) {
+        if (type.equals("PURE"))
+            return Map.of(
+                    "기쁨", GROUP_PURE_HAPPY,
+                    "슬픔", GROUP_PURE_SAD,
+                    "지침", GROUP_PURE_TIRED
+            );
+        if (type.equals("MAJOR"))
+            return Map.of(
+                    "기쁨", GROUP_MAJOR_HAPPY,
+                    "슬픔", GROUP_MAJOR_SAD,
+                    "지침", GROUP_MAJOR_TIRED
+            );
+        return Map.of(
+                "기쁨", GROUP_MINOR_HAPPY,
+                "슬픔", GROUP_MINOR_SAD,
+                "지침", GROUP_MINOR_TIRED
+        );
     }
 }
