@@ -49,6 +49,10 @@ public class MemberRoles {
                 .orElse(MemberRole.PUBLIC);
     }
 
+    public boolean isPublic() {
+        return roles.contains(MemberRole.PUBLIC) || getHighestRole().equals(MemberRole.PUBLIC);
+    }
+
     public boolean isAcceptedMember() {
         return !roles.contains(MemberRole.UNACCEPTED);
     }
