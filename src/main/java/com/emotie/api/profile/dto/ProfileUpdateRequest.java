@@ -14,11 +14,16 @@ public class ProfileUpdateRequest {
     @NotNull
     private String introduction;
 
+    @NotNull
+    private String characterName;
+
     @Builder
     @JsonCreator
     public ProfileUpdateRequest(
-            @JsonProperty(value = "introduction", required = true) String introduction
+            @JsonProperty(value = "introduction", required = true) String introduction,
+            @JsonProperty(value = "characterName", required = true) String characterName
     ) {
     this.introduction = introduction;
+    this.characterName = characterName;
     }
 }
