@@ -1,5 +1,6 @@
 package com.emotie.api.recommend.service;
 
+import com.emotie.api.auth.exception.UnauthorizedException;
 import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.domain.EmotionsComparator;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +33,8 @@ public class RecommendService {
     private final Integer NUMBER_OF_RECOMMENDATIONS = 20;
 
     public RecommendResponse recommendProfilesToUser(Member user) {
+        if (!user.getRoles().isAcceptedMember()) throw new UnauthorizedException("인증된 회원만 이용할 수 있는 서비스입니다.");
+        if (user.getRoles().isPublic()) throw new UnauthorizedException("회원 가입 이후 이용할 수 있는 서비스입니다.");
         Emotions userEmotions = new Emotions(user, emotionRepository.findAllByMember(user));
         EmotionsComparator comparator = new EmotionsComparator(userEmotions);
 
@@ -43,6 +48,7 @@ public class RecommendService {
                         member -> profileService.getProfile(member, member.getUUID())
                 ).collect(Collectors.toList());
 
+        Collections.reverse(recommendations);
         return RecommendResponse.builder().profiles(recommendations).build();
     }
 
