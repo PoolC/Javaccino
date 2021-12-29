@@ -9,6 +9,7 @@ import com.emotie.api.emotion.domain.Emotion;
 import com.emotie.api.guestbook.exception.MyselfException;
 import com.emotie.api.member.dto.MemberUpdateRequest;
 import com.emotie.api.member.dto.MemberWithdrawalRequest;
+import com.emotie.api.profile.dto.ProfileUpdateRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Getter;
@@ -76,12 +77,14 @@ public class Member extends TimestampEntity implements UserDetails {
     @Column(name = "withdrawal_reason", columnDefinition = "varchar(255)")
     private String withdrawalReason = null;
 
+    @Column(name = "character_name", columnDefinition = "varchar(255)")
+    private String characterName;
 
     protected Member() {
     }
 
     @Builder
-    public Member(String UUID, String email, String nickname, String passwordHash, Gender gender, LocalDate dateOfBirth, String introduction, String passwordResetToken, LocalDateTime passwordResetTokenValidUntil, String authorizationToken, LocalDateTime authorizationTokenValidUntil, int reportCount, MemberRoles roles) {
+    public Member(String UUID, String email, String nickname, String passwordHash, Gender gender, LocalDate dateOfBirth, String introduction, String passwordResetToken, LocalDateTime passwordResetTokenValidUntil, String authorizationToken, LocalDateTime authorizationTokenValidUntil, int reportCount, MemberRoles roles, LocalDateTime withdrawalDate, String withdrawalReason, String characterName) {
         this.UUID = UUID;
         this.email = email;
         this.nickname = nickname;
@@ -95,6 +98,9 @@ public class Member extends TimestampEntity implements UserDetails {
         this.authorizationTokenValidUntil = authorizationTokenValidUntil;
         this.reportCount = reportCount;
         this.roles = roles;
+        this.withdrawalDate = withdrawalDate;
+        this.withdrawalReason = withdrawalReason;
+        this.characterName = characterName;
     }
 
     public Member(MemberRoles roles) {
@@ -200,8 +206,9 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordHash = updatePassword;
     }
 
-    public void updateIntroduction(String updatingIntroduction) {
-        this.introduction = updatingIntroduction;
+    public void updateProfile(ProfileUpdateRequest profileUpdateRequest) {
+        this.introduction = profileUpdateRequest.getIntroduction();
+        this.characterName = profileUpdateRequest.getCharacterName();
     }
 
     public void updateUserInfo(MemberUpdateRequest request) {
