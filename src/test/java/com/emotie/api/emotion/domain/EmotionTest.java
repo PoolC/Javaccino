@@ -6,6 +6,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +33,7 @@ public class EmotionTest {
                 assertThat(emotion.getClass().getSimpleName().replace("Emotion", "").toLowerCase())
                         .withFailMessage("Emotion class name should be in format {EmotionName}Emotion." +
                                 " Errored class: %s", emotion.getClass().getSimpleName())
-                        .isEqualTo(emotion.getName()));
+                        .isEqualTo(emotion.getDescription()));
     }
 
     @Test

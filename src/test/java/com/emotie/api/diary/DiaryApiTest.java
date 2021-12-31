@@ -232,7 +232,7 @@ public class DiaryApiTest extends AcceptanceTest {
 
         //then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertWellPaged(response, "90");
+        assertWellPaged(response, "93");
         assertThat(response.body().as(DiaryReadAllResponse.class).getDiaries()).allMatch(DiaryReadResponse::getIsOpened);
         assertThat(response.body().jsonPath().getList("diaries", DiaryReadResponse.class)).extracting("diaryId").doesNotContain(viewerReportedId, overReportedId, viewerBlindedId);
     }
