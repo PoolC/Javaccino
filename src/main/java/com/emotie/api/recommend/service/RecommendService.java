@@ -33,8 +33,6 @@ public class RecommendService {
     private final Integer NUMBER_OF_RECOMMENDATIONS = 20;
 
     public RecommendResponse recommendProfilesToUser(Member user) {
-        if (!user.getRoles().isAcceptedMember()) throw new UnauthorizedException("인증된 회원만 이용할 수 있는 서비스입니다.");
-        if (user.getRoles().isPublic()) throw new UnauthorizedException("회원 가입 이후 이용할 수 있는 서비스입니다.");
         Emotions userEmotions = new Emotions(user, emotionRepository.findAllByMember(user));
         EmotionsComparator comparator = new EmotionsComparator(userEmotions);
 
