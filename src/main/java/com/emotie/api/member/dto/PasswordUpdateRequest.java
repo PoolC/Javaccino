@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 @Getter
 public class PasswordUpdateRequest {
@@ -14,9 +16,15 @@ public class PasswordUpdateRequest {
     private final String currentPassword;
 
     @NotBlank(message = "변경할 비밀번호를 입력해주세요.")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$).*$",
+            message = "비밀번호는 적어도 하나의 영문 글자와 적어도 하나의 숫자를 포함해야 합니다. 띄어쓰기는 허용되지 않습니다.")
+    @Size(message = "비밀번호는 8글자 이상 20글자 이하여야 합니다.", min = 8, max = 20)
     private final String password;
 
     @NotBlank(message = "비밀번호 확인란에 입력해주세요.")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-zA-Z])(?=\\S+$).*$",
+            message = "비밀번호는 적어도 하나의 영문 글자와 적어도 하나의 숫자를 포함해야 합니다. 띄어쓰기는 허용되지 않습니다.")
+    @Size(message = "비밀번호는 8글자 이상 20글자 이하여야 합니다.", min = 8, max = 20)
     private final String passwordCheck;
 
     @JsonCreator
