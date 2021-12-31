@@ -1,9 +1,11 @@
 package com.emotie.api.member.controller;
 
 import com.emotie.api.common.service.MailService;
+import com.emotie.api.emotion.dto.EmotionResponse;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.service.MemberService;
+import com.emotie.api.profile.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.http.MediaType;
@@ -12,7 +14,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @SuppressWarnings({"RedundantThrows", "unused"})
 @RestController
@@ -22,6 +26,7 @@ public class MemberController {
     // TODO: 2021-08-20 컨트롤러에서 유효성 검사 
     private final MemberService memberService;
     private final MailService mailService;
+    private final ProfileService profileService;
 
     @PostMapping
     public ResponseEntity<Void> register(@RequestBody @Valid MemberCreateRequest request) throws Exception {
@@ -33,7 +38,8 @@ public class MemberController {
 
     @GetMapping("me")
     public ResponseEntity<MemberResponse> getMyInformation(@AuthenticationPrincipal Member member) {
-        return ResponseEntity.ok().body(new MemberResponse(member));
+        List<EmotionResponse> recentEmotion = profileService.getRecentEmotion(member).stream().map(EmotionResponse::new).collect(Collectors.toList());
+        return ResponseEntity.ok().body(new MemberResponse(member,recentEmotion));
     }
 
     @PostMapping("/nickname")

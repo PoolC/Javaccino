@@ -55,14 +55,7 @@ public class ProfileService {
         memberRepository.save(member);
     }
 
-    private Emotion getAllEmotion(Member profileMember) {
-        Emotions emotions = new Emotions(profileMember, emotionRepository.findAllByMember(profileMember));
-        Comparator<Emotion> comparatorByEmotionScore = Comparator.comparingDouble(Emotion::getScore);
-        return emotions.allMemberEmotions().stream().max(comparatorByEmotionScore).get();
-
-    }
-
-    private List<Emotion> getRecentEmotion(Member profileMember) {
+    public List<Emotion> getRecentEmotion(Member profileMember) {
         List<Emotion> recentEmotion = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(0, 100, Sort.by("createdAt").descending());
         List<Diary> diaries = diaryRepository.findByWriter(profileMember, pageRequest);
@@ -77,4 +70,10 @@ public class ProfileService {
         return recentEmotion;
     }
 
+    private Emotion getAllEmotion(Member profileMember) {
+        Emotions emotions = new Emotions(profileMember, emotionRepository.findAllByMember(profileMember));
+        Comparator<Emotion> comparatorByEmotionScore = Comparator.comparingDouble(Emotion::getScore);
+        return emotions.allMemberEmotions().stream().max(comparatorByEmotionScore).get();
+
+    }
 }
