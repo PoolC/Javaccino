@@ -4,6 +4,7 @@ import com.emotie.api.AcceptanceTest;
 import com.emotie.api.auth.dto.LoginRequest;
 import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.member.domain.Gender;
+import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.dto.*;
 import com.emotie.api.member.repository.FollowRepository;
 import io.restassured.RestAssured;
@@ -29,15 +30,15 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @RequiredArgsConstructor
 public class MemberAcceptanceTest extends AcceptanceTest {
-    // TODO: 2021-08-13 가입과 수정에 관한 모든 경우에 대하여, password, nickname 의 형식이 필요할 것으로 보임.
 
     @Autowired
     public FollowRepository followRepository;
 
     private final String
             createTestEmail = "randomhuman@gmail.com",
-            createTestPassword = "creative!password",
-            changedPassword = "better_password?",
+            createTestPassword = "create❤pa55word982?",
+            changedPassword = "new_password182!",
+            invalidPatternPassword = "worst-password!",
             notExistNickname = "공릉동익룡";
 
     /*
@@ -128,8 +129,29 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
     @Test
     @Order(6)
-    @DisplayName("회원 가입 실패 [400]; 잘못된 형식의 Req")
+    @DisplayName("회원 가입 실패 [400]; 비밀번호가 형식에 맞지 않을 때")
     public void 회원가입_실패_BAD_REQUEST_6() throws Exception {
+        //given
+        MemberCreateRequest request = MemberCreateRequest.builder()
+                .nickname(createTestEmail)
+                .passwordCheck(invalidPatternPassword)
+                .passwordCheck(invalidPatternPassword)
+                .gender(Gender.HIDDEN)
+                .dateOfBirth(LocalDateTime.now().toLocalDate())
+                .email(createTestEmail)
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = memberCreateRequest(request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("회원 가입 실패 [400]; 잘못된 형식의 Req")
+    public void 회원가입_실패_BAD_REQUEST_7() throws Exception {
         ExtractableResponse<Response> response = RestAssured
                 .given().log().all()
                 .body("{\"nickname\":\"wow\", \"password\":\"wow\", \"passwordCheck\":\"wow\", \"gender\": \"RANDOM\", " +
@@ -143,7 +165,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("회원가입 실패 [409]; 이미 사용 중인 닉네임으로 닉네임 설정")
     public void 회원가입_실패_CONFLICT_1() throws Exception {
         // given
@@ -164,7 +186,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     @DisplayName("회원가입 실패 [409]; 이미 사용 중인 이메일로 이메일 설정")
     public void 회원가입_실패_CONFLICT_2() throws Exception {
         // given
@@ -300,10 +322,6 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
-
-//        // 실제 수정되었는지 확인
-//        Member user = getByAccessTokenAssertingExistence(accessToken);
-//        assertThat(user.getPassword()).isEqualTo(createTestPassword);
     }
 
     @Test
@@ -362,13 +380,6 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-
-//        // 실제 수정되었는지 확인
-//        Member user = getByAccessTokenAssertingExistence(accessToken);
-//
-//        assertThat(user.getPassword()).isEqualTo(createTestPassword);
-//        assertThat(user.getGender()).isEqualTo(Gender.HIDDEN);
-//        assertThat(user.getDateOfBirth()).isEqualTo(now);
 
         // rollback
         MemberUpdateRequest rollbackRequest = MemberUpdateRequest.builder()
@@ -474,6 +485,25 @@ public class MemberAcceptanceTest extends AcceptanceTest {
 
     @Test
     @Order(23)
+    @DisplayName("비밀번호 변경 실패 [400]; 변경 후 비밀번호가 형식에 맞지 않을 때")
+    public void 비밀번호_변경_실패_BAD_REQUEST_3() throws Exception {
+        //given
+        String accessToken = authorizedLogin();
+        PasswordUpdateRequest request = PasswordUpdateRequest.builder()
+                .currentPassword(password)
+                .password(invalidPatternPassword)
+                .passwordCheck(invalidPatternPassword)
+                .build();
+
+        //when
+        ExtractableResponse<Response> response = updatePasswordRequest(accessToken, request);
+
+        //then
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    }
+
+    @Test
+    @Order(24)
     @DisplayName("비밀번호 변경 실패 [403]; 현재 비밀번호가 틀렸을 때")
     public void 비밀번호_변경_실패_FORBIDDEN() throws Exception {
         //given
@@ -481,7 +511,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         PasswordUpdateRequest request = PasswordUpdateRequest.builder()
                 .currentPassword("1")
                 .password(changedPassword)
-                .passwordCheck(wrongPassword)
+                .passwordCheck(changedPassword)
                 .build();
 
         //when
@@ -492,7 +522,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(24)
+    @Order(25)
     @DisplayName("비밀번호 변경 성공 [200]")
     public void 비밀번호_변경_성공_OK() throws Exception {
         //given
@@ -521,7 +551,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         회원 팔로우/언팔로우 테스트
      */
     @Test
-    @Order(25)
+    @Order(26)
     @DisplayName("회원 팔로우 실패 [403]; 로그인하지 않음")
     public void 회원_팔로우_실패_FORBIDDEN_1() throws Exception {
         // given
@@ -535,7 +565,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(26)
+    @Order(27)
     @DisplayName("회원 팔로우 실패 [403]; 이메일 인증하지 않음")
     public void 회원_팔로우_실패_FORBIDDEN_2() throws Exception {
         // given
@@ -549,7 +579,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(27)
+    @Order(28)
     @DisplayName("회원 팔로우 실패 [404]; 해당 nickname 의 회원이 존재하지 않음")
     public void 회원_팔로우_실패_NOT_FOUND() throws Exception {
         // given
@@ -563,7 +593,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(28)
+    @Order(29)
     @DisplayName("회원 팔로우 실패 [409]; 해당 nickname 의 회원이 팔로우 신청할 수 없는 대상일 때")
     public void 회원_팔로우_실패_CONFLICT_1() throws Exception {
         // given
@@ -577,7 +607,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(29)
+    @Order(30)
     @DisplayName("회원 팔로우 실패 [409]; 해당 nickname 의 회원이 자신일 때")
     public void 회원_팔로우_실패_CONFLICT_2() throws Exception {
         // given
@@ -591,7 +621,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(30)
+    @Order(31)
     @DisplayName("회원 팔로우 성공 [200]; Unfollowed -> Following")
     public void 회원_팔로우_성공_OK_1() throws Exception {
         // given
@@ -610,7 +640,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(31)
+    @Order(32)
     @DisplayName("회원 언팔로우 성공 [200]; Followed -> Unfollowing")
     public void 회원_팔로우_성공_OK_2() throws Exception {
         // given
@@ -630,7 +660,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
         회원 탈퇴 테스트
      */
     @Test
-    @Order(32)
+    @Order(33)
     @DisplayName("회원 탈퇴 실패 [403]; 비밀번호 틀렸을 때")
     public void 회원_탈퇴_실패_FORBIDDEN() {
         // given
@@ -649,7 +679,7 @@ public class MemberAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @Order(33)
+    @Order(34)
     @DisplayName("회원 탈퇴 실패 [403]; 로그인하지 않음.")
     public void 회원_탈퇴_실패_FORBIDDEN_1() throws Exception {
         // given
