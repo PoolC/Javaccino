@@ -1,0 +1,74 @@
+version: '3'
+services:
+        api:
+                image: poolchm/javaccino:latest
+                container_name: javaccino
+                restart: always
+                environment:
+                    - EMOTIE_SECRET_KEY=emotie_javaccino_secret_key
+                    - EXPIRE_LENGTH_IN_MILLISECONDS=1209600000
+                    - EMAIL_ADDRESS=poolc.official@gmail.com
+                    - EMAIL_PASSWORD=czurnkdprpkrsljk
+                    - EMOTIE_DOMAIN=http://54.180.165.50:8080/
+                    - DB_HOST=db
+                    - DB_NAME=emotie
+                    - DB_USER_NAME=emotie
+                    - DB_PASSWORD=emotie123!
+                    - TZ=Asia/Seoul
+                ports:
+                    - "8080:8080"
+                networks:
+                    - emotie
+        web:
+                image: poolchm/emotie:v0.0.2
+                container_name: emotie
+                restart: always
+                networks:
+                    - emotie
+        db:
+                container_name: emotie-db
+                image: mysql:8.0.27
+                volumes:
+                    - "/home/ubuntu/data/mysql:/var/lib/mysql"
+                environment:
+                    - MYSQL_ROOT_PASSWORD=emotie
+                    - MYSQL_USER=emotie
+                    - MYSQL_PASSWORD=emotie123!
+                    - MYSQL_DATABASE=emotie
+                networks:
+                    - emotie
+        nginx:
+                image: nginx:1.15
+                container_name: nginx
+                ports:
+                    - '80:80'
+                    - '443:443'
+                volumes:
+                    - '/home/ubuntu/data/nginx:/etc/nginx:ro'
+                restart: always
+                networks:
+                    - emotie
+                depends_on:
+                    - web
+                    - api
+                    - jenkins
+        jenkins:
+                container_name: 'jenkins'
+                image: 'jenkins/jenkins:latest'
+                restart: always
+                user : root
+                ports:
+                    - '9090:8080'
+                    - '9091:50000'
+                volumes:
+                    - '/home/ubuntu/data/jenkins:/var/jenkins_home'
+                    - '/var/run/docker.sock:/var/run/docker.sock'
+                    - '/usr/bin/docker:/usr/bin/docker'
+                    - '/usr/local/bin/docker-compose:/usr/local/bin/docker-compose'
+                networks:
+                    - emotie
+                environment:
+                        TZ: "Asiz/Seoul"
+networks:
+    emotie:
+        driver: bridge
