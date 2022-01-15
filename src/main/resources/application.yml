@@ -12,7 +12,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL5Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       show-sql: false
   mail:
     default-encoding: UTF-8
