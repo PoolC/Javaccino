@@ -1,5 +1,6 @@
 package com.emotie.api.diary.dto;
 
+import com.emotie.api.common.service.TimeService;
 import com.emotie.api.diary.domain.Diary;
 import com.emotie.api.emotion.dto.EmotionResponse;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -24,7 +25,7 @@ public class DiaryReadResponse {
         this.nickname = diary.getWriter().getNickname();
         this.emotion = new EmotionResponse(diary.getEmotion());
         this.uuid = diary.getWriter().getUUID();
-        this.date = diary.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME);
+        this.date = TimeService.calculateTime(diary.getCreatedAt());
         this.content = diary.getContent();
         this.isOpened = diary.getIsOpened();
     }

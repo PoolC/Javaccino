@@ -1,5 +1,6 @@
 package com.emotie.api.guestbook.dto;
 
+import com.emotie.api.common.service.TimeService;
 import com.emotie.api.guestbook.domain.Guestbook;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,7 +21,7 @@ public class GuestbookResponse {
                 .guestbookId(guestbook.getId())
                 .nickname(guestbook.getWriter().getNickname())
                 .content(guestbook.getContent())
-                .date(guestbook.getCreatedAt().format(DateTimeFormatter.ISO_DATE_TIME))
+                .date(TimeService.calculateTime(guestbook.getCreatedAt()))
                 .build();
     }
 
