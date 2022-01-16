@@ -47,6 +47,7 @@ public class ProfileService {
                 .followed(followed)
                 .followers(followers)
                 .followees(followees)
+                .characterName(profileMember.getCharacterName())
                 .build();
     }
 

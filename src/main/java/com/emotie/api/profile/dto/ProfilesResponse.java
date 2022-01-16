@@ -1,21 +1,20 @@
-package com.emotie.api.recommend.dto;
+package com.emotie.api.profile.dto;
 
-import com.emotie.api.profile.dto.ProfileResponse;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
-@Deprecated
+
 @Getter
-public class RecommendResponse {
+public class ProfilesResponse {
+
     private final List<ProfileResponse> profiles;
 
     @JsonCreator
     @Builder
-    public RecommendResponse(
-            List<ProfileResponse> profiles
-    ) {
+    public ProfilesResponse(List<ProfileResponse> profiles){
         this.profiles = profiles;
     }
 }

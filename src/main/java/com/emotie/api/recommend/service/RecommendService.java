@@ -7,6 +7,7 @@ import com.emotie.api.emotion.domain.EmotionsComparator;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.profile.dto.ProfileResponse;
+import com.emotie.api.profile.dto.ProfilesResponse;
 import com.emotie.api.profile.service.ProfileService;
 import com.emotie.api.recommend.dto.RecommendResponse;
 import com.emotie.api.recommend.repository.RecommendRepository;
@@ -32,7 +33,7 @@ public class RecommendService {
     private final Integer NUMBER_OF_SAMPLES = 100;
     private final Integer NUMBER_OF_RECOMMENDATIONS = 20;
 
-    public RecommendResponse recommendProfilesToUser(Member user) {
+    public ProfilesResponse recommendProfilesToUser(Member user) {
         Emotions userEmotions = new Emotions(user, emotionRepository.findAllByMember(user));
         EmotionsComparator comparator = new EmotionsComparator(userEmotions);
 
@@ -48,7 +49,7 @@ public class RecommendService {
                         member -> profileService.getProfile(member, member.getUUID())
                 ).collect(Collectors.toList());
 
-        return RecommendResponse.builder().profiles(recommendations).build();
+        return ProfilesResponse.builder().profiles(recommendations).build();
     }
 
     private List<Member> getRandomMembers(Integer count) {
