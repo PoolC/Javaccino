@@ -20,10 +20,12 @@ public class ProfileResponse {
     private List<FollowerResponse> followers;
     private List<FolloweeResponse> followees;
     private String characterName;
+    private String memberId;
 
     @JsonCreator
     @Builder
-    public ProfileResponse(String nickname, String introduction, EmotionResponse allEmotion, List<EmotionResponse> recentEmotion, Boolean followed, List<FollowerResponse> followers, List<FolloweeResponse> followees, String characterName) {
+    public ProfileResponse(String nickname, String introduction, EmotionResponse allEmotion, List<EmotionResponse> recentEmotion, Boolean followed, List<FollowerResponse> followers, List<FolloweeResponse> followees, String characterName, String memberId) {
+
         this.nickname = nickname;
         this.introduction = introduction;
         this.allEmotion = allEmotion;
@@ -32,5 +34,6 @@ public class ProfileResponse {
         this.followers = followers;
         this.followees = followees;
         this.characterName = characterName;
+        this.memberId = memberId;
     }
 }
