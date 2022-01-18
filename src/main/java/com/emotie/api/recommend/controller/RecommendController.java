@@ -2,7 +2,6 @@ package com.emotie.api.recommend.controller;
 
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.profile.dto.ProfilesResponse;
-import com.emotie.api.recommend.dto.RecommendResponse;
 import com.emotie.api.recommend.service.RecommendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

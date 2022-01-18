@@ -4,6 +4,7 @@ package com.emotie.api.profile.dto;
 import com.emotie.api.emotion.dto.EmotionResponse;
 import com.emotie.api.emotion.dto.EmotionsResponse;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -24,7 +25,16 @@ public class ProfileResponse {
 
     @JsonCreator
     @Builder
-    public ProfileResponse(String nickname, String introduction, EmotionResponse allEmotion, List<EmotionResponse> recentEmotion, Boolean followed, List<FollowerResponse> followers, List<FolloweeResponse> followees, String characterName, String memberId) {
+    public ProfileResponse(
+            @JsonProperty("nickname") String nickname,
+            @JsonProperty("introduction") String introduction,
+            @JsonProperty("allEmotion") EmotionResponse allEmotion,
+            @JsonProperty("recentEmotion") List<EmotionResponse> recentEmotion,
+            @JsonProperty("followed") Boolean followed,
+            @JsonProperty("followers") List<FollowerResponse> followers,
+            @JsonProperty("followees") List<FolloweeResponse> followees,
+            @JsonProperty("characterName") String characterName,
+            @JsonProperty("memberId") String memberId) {
 
         this.nickname = nickname;
         this.introduction = introduction;

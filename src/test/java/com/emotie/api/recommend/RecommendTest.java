@@ -6,7 +6,7 @@ import com.emotie.api.auth.dto.LoginResponse;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.profile.dto.ProfileResponse;
-import com.emotie.api.recommend.dto.RecommendResponse;
+import com.emotie.api.profile.dto.ProfilesResponse;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -63,7 +63,7 @@ public class RecommendTest extends AcceptanceTest {
 
             //then
             assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-            assertThat(response.body().as(RecommendResponse.class).getProfiles()).map(
+            assertThat(response.body().as(ProfilesResponse.class).getProfiles()).map(
                     ProfileResponse::getNickname
             ).map(
                     nickname -> nickname.split("-")[0]
