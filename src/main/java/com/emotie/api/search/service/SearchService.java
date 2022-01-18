@@ -23,7 +23,7 @@ public class SearchService {
 
     public ProfilesResponse searchProfile(Member user, String keyword, Integer page) {
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
-        List<Member> searchedMembers = searchRepository.findByNicknameContainingIgnoreCase(keyword,pageable);
+        List<Member> searchedMembers = searchRepository.findByNicknameContaining(keyword,pageable);
         List<ProfileResponse> searchResult =
                 searchedMembers.stream().filter(
                                 member -> member.getRoles().isMember()
