@@ -35,11 +35,11 @@ public class RecommendService {
                 randomMembers.stream().filter(
                         member -> !member.equals(user)
                 ).map(
-                        member -> new Emotions(user, emotionRepository.findAllByMember(member))
+                        member -> new Emotions(member, emotionRepository.findAllByMember(member))
                 ).sorted(comparator).limit(NUMBER_OF_RECOMMENDATIONS)
                         .map(Emotions::getMember)
                 .map(
-                        member -> profileService.getProfile(member, member.getUUID())
+                        member -> profileService.getProfile(user, member.getUUID())
                 ).collect(Collectors.toList());
 
         return ProfilesResponse.builder().profiles(recommendations).build();
