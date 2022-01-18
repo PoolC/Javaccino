@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface SearchRepository extends JpaRepository<Member, String> {
-    List<Member> findByNicknameContainingIgnoreCase(String keyword, Pageable pageable);
+    List<Member> findByNicknameContaining(String keyword, Pageable pageable);
 }
