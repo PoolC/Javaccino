@@ -10,7 +10,10 @@ import java.util.List;
 public interface RecommendRepository extends JpaRepository<Member, String> {
     @Query(
             value = "SELECT * " +
-                    "FROM members " +
+                    "FROM members" +
+                    "JOIN role" +
+                    "ON members.id = role.member_id " +
+                    "WHERE role.roles = 'MEMBER'" +
                     "ORDER BY rand() ",
             nativeQuery = true
     )
