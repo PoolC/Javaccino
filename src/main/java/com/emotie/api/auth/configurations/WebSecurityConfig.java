@@ -95,6 +95,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.DELETE, "/guestbooks/user/{memberId}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
 
                 .antMatchers(HttpMethod.GET, "/recommend").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
+                .antMatchers(HttpMethod.GET, "/search/{keyword}").hasAnyAuthority(MemberRole.ADMIN.name(), MemberRole.MEMBER.name())
 
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated().and()
