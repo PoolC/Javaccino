@@ -30,7 +30,7 @@ public class SearchApiTest extends AcceptanceTest {
         String accessToken = "";
         String keyword = "follower";
 
-        ExtractableResponse<Response> response = searchRequest(accessToken, keyword);
+        ExtractableResponse<Response> response = searchRequest(accessToken, keyword,0);
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
 
@@ -40,12 +40,12 @@ public class SearchApiTest extends AcceptanceTest {
     @DisplayName("테스트 01-02: 프로필 검색 성공 [200];")
     public void 프로필_검색_성공_OK() throws Exception {
         String accessToken = profileMemberLogin();
-        String keyword = "follower";
+        String keyword = "follow";
 
-        ExtractableResponse<Response> response = searchRequest(accessToken, keyword);
+        ExtractableResponse<Response> response = searchRequest(accessToken, keyword, 0);
 
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
-        assertThat(response.body().as(ProfilesResponse.class).getProfiles().size()).isEqualTo(4);
+        assertThat(response.body().as(ProfilesResponse.class).getProfiles().size()).isEqualTo(8);
     }
 
     private static String profileMemberLogin() {
@@ -59,10 +59,11 @@ public class SearchApiTest extends AcceptanceTest {
                 .getAccessToken();
     }
 
-    private static ExtractableResponse<Response> searchRequest(String accessToken, String keyword) {
+    private static ExtractableResponse<Response> searchRequest(String accessToken, String keyword, Integer page) {
         return RestAssured
                 .given().log().all()
                 .auth().oauth2(accessToken)
+                .queryParam("page", page)
                 .when().get("/search/{keyword}", keyword)
                 .then().log().all()
                 .extract();
