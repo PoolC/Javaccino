@@ -29,7 +29,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/authorization")
+    @GetMapping(value = "/authorization")
     public ResponseEntity<Void> checkAuthorizationCode(@RequestParam Optional<String> email,
                                                        @RequestParam(name = "AuthorizationToken") Optional<String> authorizationToken) {
         authService.checkAuthorizationTokenRequestAndChangeMemberRole(email, authorizationToken);
@@ -42,7 +42,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping(value = "/password-reset")
+    @GetMapping(value = "/password-reset")
     public ResponseEntity<Void> updatePassword(@RequestParam(name = "PasswordResetToken") Optional<String> passwordResetToken,
                                                @RequestBody PasswordResetRequest request) {
         authService.checkPasswordResetRequestAndUpdatePassword(passwordResetToken, request);
