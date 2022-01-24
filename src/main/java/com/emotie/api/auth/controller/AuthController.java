@@ -29,20 +29,20 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/authorization")
+    @PutMapping(value = "/authorization")
     public ResponseEntity<Void> checkAuthorizationCode(@RequestParam Optional<String> email,
                                                        @RequestParam(name = "authorizationToken") Optional<String> authorizationToken) {
         authService.checkAuthorizationTokenRequestAndChangeMemberRole(email, authorizationToken);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/password-reset")
+    @PostMapping (value = "/password-reset")
     public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "email") Optional<String> email) throws Exception {
         authService.sendEmailPasswordResetToken(email);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(value = "/password-reset")
+    @PutMapping (value = "/password-reset")
     public ResponseEntity<Void> updatePassword(@RequestParam(name = "passwordResetToken") Optional<String> passwordResetToken,
                                                @RequestBody PasswordResetRequest request) {
         authService.checkPasswordResetRequestAndUpdatePassword(passwordResetToken, request);
