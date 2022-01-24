@@ -42,7 +42,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping(value = "/password-reset")
+    @PostMapping(value = "/password-reset")
     public ResponseEntity<Void> updatePassword(@RequestParam(name = "passwordResetToken") Optional<String> passwordResetToken,
                                                @RequestBody PasswordResetRequest request) {
         authService.checkPasswordResetRequestAndUpdatePassword(passwordResetToken, request);
