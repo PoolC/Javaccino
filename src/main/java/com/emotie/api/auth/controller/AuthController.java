@@ -37,7 +37,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/password-reset")
-    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "Email") Optional<String> email) throws Exception {
+    public ResponseEntity<Void> sendEmailPasswordResetToken(@RequestParam(name = "email") Optional<String> email) throws Exception {
         authService.sendEmailPasswordResetToken(email);
         return ResponseEntity.ok().build();
     }

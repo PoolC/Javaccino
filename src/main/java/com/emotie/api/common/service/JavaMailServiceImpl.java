@@ -18,9 +18,10 @@ public class JavaMailServiceImpl implements MailService {
     public void sendEmailAuthorizationToken(String email, String authorizationToken) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
-        helper.setSubject("이모티 아이디 인증 안내메일입니다.");
-        helper.setText(String.format("안녕하세요. 이모티입니다. 아이디를 인증하시려면 해당 url( %s )로 들어가시면 됩니다.\n" +
-                        "감사합니다.",
+        helper.setSubject("[Emotie] Emotie 회원가입 인증 안내 메일입니다.");
+        helper.setText(String.format("안녕하세요. Emotie입니다. 회원 인증을 완료하시려면 아래의 링크를 클릭해 주세요.\n" +
+                        "(%s) \n\n 이용해 주셔서 감사합니다." +
+                        "- Emotie 올림 - \n\n\n\n\n\n\n\n (인증을 위한 링크는 24시간 동안만 유효합니다)",
                 address + "/auth/authorization?email=" + email + "&authorizationToken=" + authorizationToken));
         helper.setTo(email);
         mailSender.send(message);
@@ -30,9 +31,10 @@ public class JavaMailServiceImpl implements MailService {
     public void sendEmailPasswordResetToken(String email, String resetPasswordToken) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, "utf-8");
-        helper.setSubject("이모티 아이디 비밀번호 재설정 안내메일입니다.");
-        helper.setText(String.format("안녕하세요 이모티입니다. 비밀번호 재설정을 하려면 해당 url( %s )로 접속하여 변경하시면 됩니다.\n" +
-                        "감사합니다.",
+        helper.setSubject("[Emotie] Emotie 비밀번호 재설정 안내 메일입니다.");
+        helper.setText(String.format("안녕하세요 Emotie입니다. 비밀번호 재설정을 완료하시려면 아래의 링크를 클릭해 주세요.\n" +
+                        "(%s) \n\n 이용해 주셔서 감사합니다." +
+                        "- Emotie 올림 - \n\n\n\n\n\n\n\n (인증을 위한 링크는 24시간 동안만 유효합니다)",
                 address + "/auth/password-reset?email=" + email + "&passwordResetToken="+resetPasswordToken));
         helper.setTo(email);
         mailSender.send(message);
