@@ -45,13 +45,14 @@ public class AuthService {
         loginMember.checkAuthorizationTokenAndChangeMemberRole(validAuthorizationToken);
         memberRepository.saveAndFlush(loginMember);
     }
-
+    @Transactional
     public void sendEmailPasswordResetToken(Optional<String> email) throws Exception {
         String validEmail = email.get();
         String passwordResetToken = CreatePasswordResetToken(validEmail);
         mailService.sendEmailPasswordResetToken(validEmail, passwordResetToken);
     }
 
+    @Transactional
     public void checkPasswordResetRequestAndUpdatePassword(Optional<String> passwordResetToken, PasswordResetRequest request) {
         Member member = checkPasswordResetRequest(request);
         String validPasswordResetToken = checkRequestValid(passwordResetToken);
