@@ -31,7 +31,7 @@ public class AuthController {
 
     @GetMapping(value = "/authorization")
     public ResponseEntity<Void> checkAuthorizationCode(@RequestParam Optional<String> email,
-                                                       @RequestParam(name = "AuthorizationToken") Optional<String> authorizationToken) {
+                                                       @RequestParam(name = "authorizationToken") Optional<String> authorizationToken) {
         authService.checkAuthorizationTokenRequestAndChangeMemberRole(email, authorizationToken);
         return ResponseEntity.ok().build();
     }
@@ -43,7 +43,7 @@ public class AuthController {
     }
 
     @GetMapping(value = "/password-reset")
-    public ResponseEntity<Void> updatePassword(@RequestParam(name = "PasswordResetToken") Optional<String> passwordResetToken,
+    public ResponseEntity<Void> updatePassword(@RequestParam(name = "passwordResetToken") Optional<String> passwordResetToken,
                                                @RequestBody PasswordResetRequest request) {
         authService.checkPasswordResetRequestAndUpdatePassword(passwordResetToken, request);
         return ResponseEntity.ok().build();
