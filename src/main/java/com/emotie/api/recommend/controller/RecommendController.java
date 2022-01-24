@@ -1,6 +1,7 @@
 package com.emotie.api.recommend.controller;
 
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.profile.dto.ProfileCardsResponse;
 import com.emotie.api.profile.dto.ProfilesResponse;
 import com.emotie.api.recommend.service.RecommendService;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class RecommendController {
     public final RecommendService recommendService;
 
     @GetMapping()
-    public ResponseEntity<ProfilesResponse> getRecommendations(@AuthenticationPrincipal Member user) {
+    public ResponseEntity<ProfileCardsResponse> getRecommendations(@AuthenticationPrincipal Member user) {
         return ResponseEntity.ok(recommendService.recommendProfilesToUser(user));
     }
 }

@@ -4,6 +4,8 @@ import com.emotie.api.emotion.domain.Emotions;
 import com.emotie.api.emotion.domain.EmotionsComparator;
 import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.profile.dto.ProfileCardResponse;
+import com.emotie.api.profile.dto.ProfileCardsResponse;
 import com.emotie.api.profile.dto.ProfileResponse;
 import com.emotie.api.profile.dto.ProfilesResponse;
 import com.emotie.api.profile.service.ProfileService;
@@ -26,12 +28,12 @@ public class RecommendService {
     private final Integer NUMBER_OF_SAMPLES = 100;
     private final Integer NUMBER_OF_RECOMMENDATIONS = 20;
 
-    public ProfilesResponse recommendProfilesToUser(Member user) {
+    public ProfileCardsResponse recommendProfilesToUser(Member user) {
         Emotions userEmotions = new Emotions(user, emotionRepository.findAllByMember(user));
         EmotionsComparator comparator = new EmotionsComparator(userEmotions);
 
         List<Member> randomMembers = getRandomMembers(NUMBER_OF_SAMPLES);
-        List<ProfileResponse> recommendations =
+        List<ProfileCardResponse> recommendations =
                 randomMembers.stream().filter(
                         member -> !member.equals(user)
                 ).map(
@@ -39,10 +41,10 @@ public class RecommendService {
                 ).sorted(comparator).limit(NUMBER_OF_RECOMMENDATIONS)
                         .map(Emotions::getMember)
                 .map(
-                        member -> profileService.getProfile(user, member.getUUID())
+                        member -> profileService.getProfileCard(user, member.getUUID())
                 ).collect(Collectors.toList());
 
-        return ProfilesResponse.builder().profiles(recommendations).build();
+        return ProfileCardsResponse.builder().profiles(recommendations).build();
     }
 
     private List<Member> getRandomMembers(Integer count) {

@@ -1,6 +1,7 @@
 package com.emotie.api.search.controller;
 
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.profile.dto.ProfileCardsResponse;
 import com.emotie.api.profile.dto.ProfilesResponse;
 import com.emotie.api.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/{keyword}")
-    public ResponseEntity<ProfilesResponse> searchProfile
+    public ResponseEntity<ProfileCardsResponse> searchProfile
             (@AuthenticationPrincipal Member user, @PathVariable String keyword , @RequestParam Integer page){
         return ResponseEntity.ok(searchService.searchProfile(user, keyword, page));
     }

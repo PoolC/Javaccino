@@ -1,6 +1,8 @@
 package com.emotie.api.search.service;
 
 import com.emotie.api.member.domain.Member;
+import com.emotie.api.profile.dto.ProfileCardResponse;
+import com.emotie.api.profile.dto.ProfileCardsResponse;
 import com.emotie.api.profile.dto.ProfileResponse;
 import com.emotie.api.profile.dto.ProfilesResponse;
 import com.emotie.api.profile.service.ProfileService;
@@ -21,17 +23,17 @@ public class SearchService {
 
     private final Integer PAGE_SIZE = 10;
 
-    public ProfilesResponse searchProfile(Member user, String keyword, Integer page) {
+    public ProfileCardsResponse searchProfile(Member user, String keyword, Integer page) {
         Pageable pageable = PageRequest.of(page, PAGE_SIZE);
         List<Member> searchedMembers = searchRepository.findByNicknameContaining(keyword,pageable);
-        List<ProfileResponse> searchResult =
+        List<ProfileCardResponse> searchResult =
                 searchedMembers.stream().filter(
                                 member -> member.getRoles().isMember()
                         )
                         .map(
-                                member -> profileService.getProfile(user, member.getUUID())
+                                member -> profileService.getProfileCard(user, member.getUUID())
                         ).collect(Collectors.toList());
-        return ProfilesResponse.builder().profiles(searchResult).build();
+        return ProfileCardsResponse.builder().profiles(searchResult).build();
 
     }
 }

@@ -10,10 +10,7 @@ import com.emotie.api.emotion.repository.EmotionRepository;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
 import com.emotie.api.member.service.MemberService;
-import com.emotie.api.profile.dto.FolloweeResponse;
-import com.emotie.api.profile.dto.FollowerResponse;
-import com.emotie.api.profile.dto.ProfileResponse;
-import com.emotie.api.profile.dto.ProfileUpdateRequest;
+import com.emotie.api.profile.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,6 +27,20 @@ public class ProfileService {
     private final DiaryRepository diaryRepository;
     private final MemberRepository memberRepository;
     private final EmotionRepository emotionRepository;
+
+    public ProfileCardResponse getProfileCard(Member member, String memberId){
+        Member profileMember = memberService.getMemberById(memberId);
+        Emotion allEmotion = getAllEmotion(profileMember);
+        List<EmotionResponse> recentEmotion = getRecentEmotion(profileMember).stream().map(EmotionResponse::new).collect(Collectors.toList());
+        return ProfileCardResponse.builder()
+                .nickname(profileMember.getNickname())
+                .introduction(profileMember.getIntroduction())
+                .allEmotion(new EmotionResponse(allEmotion))
+                .recentEmotion(recentEmotion)
+                .characterName(profileMember.getCharacterName())
+                .memberId(memberId)
+                .build();
+    }
 
     public ProfileResponse getProfile(Member member, String memberId){
         Member profileMember = memberService.getMemberById(memberId);
