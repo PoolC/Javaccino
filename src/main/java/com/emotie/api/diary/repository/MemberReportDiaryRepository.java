@@ -16,5 +16,5 @@ public interface MemberReportDiaryRepository extends JpaRepository<MemberReportD
     void deleteAllByMember(Member member);
 
     @Transactional
-    void deleteAllByDiary(Diary diary);
+    void deleteByDiary(Diary diary);
 }

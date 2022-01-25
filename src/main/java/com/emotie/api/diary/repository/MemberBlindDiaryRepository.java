@@ -16,5 +16,5 @@ public interface MemberBlindDiaryRepository extends JpaRepository<MemberBlindDia
     void deleteAllByMember(Member member);
 
     @Transactional
-    void deleteAllByDiary(Diary diary);
+    void deleteByDiary(Diary diary);
 }
