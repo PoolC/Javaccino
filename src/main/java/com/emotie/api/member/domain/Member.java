@@ -203,6 +203,8 @@ public class Member extends TimestampEntity implements UserDetails {
 
     public void updatePassword(String updatePassword) {
         this.passwordHash = updatePassword;
+        this.passwordResetToken = null;
+        this.passwordResetTokenValidUntil = null;
     }
 
     public void updateProfile(ProfileUpdateRequest profileUpdateRequest) {
