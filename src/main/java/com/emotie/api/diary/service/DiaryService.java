@@ -84,6 +84,8 @@ public class DiaryService {
                     Diary deleteDiary = getDiaryById(diaryId);
                     emotionService.reduceEmotionScore(user, deleteDiary.getEmotion().getName());
                     diaryRepository.delete(deleteDiary);
+                    memberReportDiaryRepository.deleteAllByDiary(deleteDiary);
+                    memberBlindDiaryRepository.deleteAllByDiary(deleteDiary);
                 }
         );
     }
