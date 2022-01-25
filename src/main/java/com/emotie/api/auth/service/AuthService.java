@@ -2,6 +2,7 @@ package com.emotie.api.auth.service;
 
 import com.emotie.api.auth.dto.PasswordResetRequest;
 import com.emotie.api.auth.infra.JwtTokenProvider;
+import com.emotie.api.auth.infra.PasswordHashProvider;
 import com.emotie.api.common.service.MailService;
 import com.emotie.api.member.domain.Member;
 import com.emotie.api.member.repository.MemberRepository;
@@ -21,6 +22,7 @@ public class AuthService {
     private final MemberService memberService;
     private final MemberRepository memberRepository;
     private final MailService mailService;
+    private final PasswordHashProvider passwordHashProvider;
 
     public String createAccessToken(String loginId, String password) {
         Member member = memberService.getMemberIfRegistered(loginId, password);
@@ -56,7 +58,8 @@ public class AuthService {
     public void checkPasswordResetRequestAndUpdatePassword(Optional<String> passwordResetToken, PasswordResetRequest request) {
         Member member = checkPasswordResetRequest(request);
         String validPasswordResetToken = checkRequestValid(passwordResetToken);
-        member.checkPasswordResetTokenAndUpdatePassword(validPasswordResetToken, request);
+        String passwordHash = passwordHashProvider.encodePassword(request.getPassword());
+        member.checkPasswordResetTokenAndUpdatePassword(validPasswordResetToken, passwordHash);
     }
 
     private String checkMemberAuthorizedAndCreateAuthorizationToken(Member loginMember) {

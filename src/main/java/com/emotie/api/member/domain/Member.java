@@ -169,9 +169,9 @@ public class Member extends TimestampEntity implements UserDetails {
         this.passwordResetTokenValidUntil = LocalDateTime.now().plusDays(1L);
     }
 
-    public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, PasswordResetRequest request) {
+    public void checkPasswordResetTokenAndUpdatePassword(String passwordResetToken, String passwordHash) {
         checkPasswordResetToken(passwordResetToken);
-        updatePassword(request.getPassword());
+        updatePassword(passwordHash);
     }
 
     public void checkAuthorized() {
