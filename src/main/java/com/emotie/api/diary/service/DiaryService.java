@@ -21,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -75,7 +76,7 @@ public class DiaryService {
                 allOpenedDiaries.stream().map(DiaryReadResponse::new).collect(Collectors.toList())
         );
     }
-
+    @Transactional
     public void delete(Member user, DiaryDeleteRequest request) {
         DiaryIds id = new DiaryIds(request.getDiaryId());
         checkDeleteListValidity(user, id.getDiaryIds());
