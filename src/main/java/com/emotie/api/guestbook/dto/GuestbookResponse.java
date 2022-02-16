@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 public class GuestbookResponse {
     private Long guestbookId;
     private String writerId;
+    private String nickname;
     private String content;
     private String date;
 
@@ -20,6 +21,7 @@ public class GuestbookResponse {
         return GuestbookResponse.builder()
                 .guestbookId(guestbook.getId())
                 .writerId(guestbook.getWriter().getUUID())
+                .nickname(guestbook.getWriter().getNickname())
                 .content(guestbook.getContent())
                 .date(TimeService.calculateTime(guestbook.getCreatedAt()))
                 .build();
@@ -27,11 +29,12 @@ public class GuestbookResponse {
 
     @JsonCreator
     @Builder
-    public GuestbookResponse(@JsonProperty("guestbookId") Long guestbookId, @JsonProperty("writerId") String writerId,
+    public GuestbookResponse(@JsonProperty("guestbookId") Long guestbookId, @JsonProperty("writerId") String writerId, @JsonProperty("nickname") String nickname,
                              @JsonProperty("content") String content,
                              @JsonProperty("date") String date) {
         this.guestbookId = guestbookId;
         this.writerId = writerId;
+        this.nickname = nickname;
         this.content = content;
         this.date = date;
     }

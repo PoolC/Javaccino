@@ -70,6 +70,7 @@ public class GuestbookAcceptanceTest extends AcceptanceTest {
         assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").doesNotContain(testerReportedId, ownerReportedId, overReportedId);
         assertThat(response.body().jsonPath().getList("guestbooks", GuestbookResponse.class)).extracting("guestbookId").contains(existId, almostReportedId);
+        System.out.println("response.body() = " + response.body());
     }
 
     @Test
